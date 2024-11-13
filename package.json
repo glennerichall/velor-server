@@ -19,6 +19,7 @@
   "dependencies": {
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
+    "csrf-sync": "^4.0.3",
     "ejs": "^3.1.10",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
@@ -28,6 +29,9 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-magic-link": "^2.1.1",
     "querystring": "^0.2.1",
-    "velor": "github:glennerichall/velor-utils"
+    "velor-backend": "github:glennerichall/velor-backend",
+    "velor-messaging": "github:glennerichall/velor-messaging",
+    "velor-services": "github:glennerichall/velor-services",
+    "velor-utils": "github:glennerichall/velor-utils"
   }
 }

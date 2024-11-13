@@ -4,7 +4,8 @@ import {
     isSessionValid,
     isSessionValidAndAuthenticated
 } from "./predicates.mjs";
-import {notAsync} from "velor/utils/predicates.mjs";
+
+import {notAsync} from "velor-utils/utils/predicates.mjs";
 
 export const verify = (predicate, status = 403) => {
     return async (req, res, next) => {

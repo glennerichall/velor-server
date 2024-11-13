@@ -1,7 +1,7 @@
 import {
     decryptText,
     encryptText
-} from "velor/utils/encryption.mjs";
+} from "velor-utils/utils/encryption.mjs";
 
 export function serializeUser(user) {
     return encryptText(JSON.stringify(user));

@@ -1,4 +1,4 @@
-import {allAsync} from "velor/utils/predicates.mjs";
+import {allAsync} from "velor-utils/utils/predicates.mjs";
 
 export const isAuthenticated = async req => req.isAuthenticated();
 

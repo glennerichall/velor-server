@@ -1,4 +1,4 @@
-import {cartesian} from "velor/utils/collection.mjs";
+import {cartesian} from "velor-utils/utils/collection.mjs";
 
 
 export function getSortingValues(columns) {

@@ -1,4 +1,4 @@
-import {decryptText} from "velor/utils/encryption.mjs";
+import {decryptText} from "velor-utils/utils/encryption.mjs";
 
 export function composeMagicLinkValidateQuery(loginFailureUrl) {
 

@@ -2,7 +2,7 @@ import {GitHubStrategy} from "./github.mjs";
 import {GoogleStrategy} from "./google.mjs";
 import {MagicLinkStrategy} from "./magiclink.mjs";
 import {TokenStrategy} from "./token.mjs";
-import {getServiceBinder} from "velor/utils/injection/ServicesContext.mjs";
+import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import passport from 'passport';
 
 export function createStrategies(services, configs) {

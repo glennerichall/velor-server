@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import {encryptText} from "velor/utils/encryption.mjs";
+import {encryptText} from "velor-utils/utils/encryption.mjs";
 import {getFingerprint} from "./getFingerprint.mjs";
 import {createUserSession} from "./createUserSession.mjs";
 import {decryptUserSession} from "./decryptUserSession.mjs";
