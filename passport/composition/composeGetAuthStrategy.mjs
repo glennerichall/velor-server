@@ -1,4 +1,4 @@
-export function composeAuthStrategyProvider(strategies) {
+export function composeGetAuthStrategy(strategies) {
 
     return (req, res, next) => {
         let provider = req.params.provider;

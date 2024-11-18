@@ -1,5 +1,5 @@
 import Strategy from 'passport-github2';
-import {GITHUB} from "../../auth/authProviders.mjs";
+import {AUTH_GITHUB} from "velor-contrib/contrib/authProviders.mjs";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
 
 
@@ -23,20 +23,20 @@ export class GitHubStrategy {
         const configs = {
             clientID: this.#clientID,
             clientSecret: this.#clientSecret,
-            callbackURL: callbackURL.replace(':provider', GITHUB),
+            callbackURL: callbackURL.replace(':provider', AUTH_GITHUB),
             passReqToCallback: true,
             scope: ['profile'],
             state: true
         };
 
         this.#strategy = new Strategy(configs,
-            composeOnProfileReceived(this, GITHUB));
+            composeOnProfileReceived(this, AUTH_GITHUB));
 
-        this.#passport.use(GITHUB, this.#strategy);
+        this.#passport.use(AUTH_GITHUB, this.#strategy);
     }
 
     initiate(req, res, next) {
-        return this.#passport.authenticate(GITHUB,
+        return this.#passport.authenticate(AUTH_GITHUB,
             {
                 scope: ['user:email'],
                 passReqToCallback: true,
@@ -44,7 +44,7 @@ export class GitHubStrategy {
     }
 
     authenticate(req, res, next) {
-        return this.#passport.authenticate(GITHUB,
+        return this.#passport.authenticate(AUTH_GITHUB,
             {
                 failureFlash: true,
             })(req, res, next);

@@ -1,4 +1,4 @@
-import {ACL_CATEGORY_ANY} from "../../shared/constants/permissions.mjs";
+import {ACL_CATEGORY_ANY} from "../auth/permissions.mjs";
 
 export async function queryForAllAcl(client, schema) {
     const res = await client

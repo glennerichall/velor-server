@@ -1,5 +1,5 @@
-import {getClientProvider} from "../../../application/services/backendServices.mjs";
-import {forSessionId} from "../../../distribution/matchingRules.mjs";
+import {getMessageFactory} from "../../../application/services/serverServices.mjs";
+import {getClientProvider} from "velor-distribution/application/services/distributionServices.mjs";
 
 export function composeLoginFromXHR(services) {
     const clientProvider = getClientProvider(services);

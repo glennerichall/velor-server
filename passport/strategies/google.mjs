@@ -1,5 +1,5 @@
 import Strategy from 'passport-google-oauth20';
-import {GOOGLE} from "../../auth/authProviders.mjs";
+import {AUTH_GOOGLE} from "velor-contrib/contrib/authProviders.mjs";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
 
 export class GoogleStrategy {
@@ -22,20 +22,20 @@ export class GoogleStrategy {
         const configs = {
             clientID: this.#clientID,
             clientSecret: this.#clientSecret,
-            callbackURL: callbackURL.replace(':provider', GOOGLE),
+            callbackURL: callbackURL.replace(':provider', AUTH_GOOGLE),
             passReqToCallback: true,
             scope: ['profile'],
             state: true,
         };
 
         this.#strategy = new Strategy(configs,
-            composeOnProfileReceived(this, GOOGLE));
+            composeOnProfileReceived(this, AUTH_GOOGLE));
 
-        this.#passport.use(GOOGLE, this.#strategy);
+        this.#passport.use(AUTH_GOOGLE, this.#strategy);
     }
 
     initiate(req, res, next) {
-        return this.#passport.authenticate(GOOGLE,
+        return this.#passport.authenticate(AUTH_GOOGLE,
             {
                 scope: ['profile', 'email'],
                 passReqToCallback: true,
@@ -43,7 +43,7 @@ export class GoogleStrategy {
     }
 
     authenticate(req, res, next) {
-        return this.#passport.authenticate(GOOGLE,
+        return this.#passport.authenticate(AUTH_GOOGLE,
             {
                 failureFlash: true,
             })(req, res, next);

@@ -14,7 +14,9 @@
     "chai-as-promised": "^8.0.0",
     "chai-exclude": "^3.0.0",
     "playwright": "^1.48.1",
-    "sinon": "^19.0.2"
+    "sinon": "^19.0.2",
+    "sinon-chai": "^4.0.0",
+    "supertest": "^7.0.0"
   },
   "dependencies": {
     "cookie-session": "^2.1.0",
@@ -29,9 +31,11 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-magic-link": "^2.1.1",
     "querystring": "^0.2.1",
-    "velor-backend": "github:glennerichall/velor-backend",
+    "velor-database": "github:glennerichall/velor-database",
+    "velor-distribution": "github:glennerichall/velor-distribution",
     "velor-messaging": "github:glennerichall/velor-messaging",
     "velor-services": "github:glennerichall/velor-services",
+    "velor-contrib": "github:glennerichall/velor-contrib",
     "velor-utils": "github:glennerichall/velor-utils"
   }
 }

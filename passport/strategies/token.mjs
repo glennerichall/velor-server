@@ -1,5 +1,5 @@
 import Custom from 'passport-custom';
-import {TOKEN} from "../../auth/authProviders.mjs";
+import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
 import {chainHandlers} from "../../core/chainHandlers.mjs";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
 
@@ -17,6 +17,25 @@ function composeOnProfileReceivedTokenAdapter(onProfileReceived, token) {
     }
 }
 
+function composeInitiator(passport) {
+    const initiate = passport.authenticate(AUTH_TOKEN,
+        {
+            passReqToCallback: true,
+        });
+
+    const replyOnError = (err, req, res, next) => {
+        if (err.message === 'Invalid token') {
+            res.status(401).end();
+        } else {
+            next(err);
+        }
+    };
+
+    return chainHandlers(
+        initiate,
+        replyOnError
+    );
+}
 export class TokenStrategy {
     #passport;
     #strategy;
@@ -36,34 +55,14 @@ export class TokenStrategy {
     initialize() {
         this.#strategy = new Custom.Strategy(
             composeOnProfileReceivedTokenAdapter(
-                composeOnProfileReceived(this, TOKEN),
+                composeOnProfileReceived(this, AUTH_TOKEN),
+                this.#token
             )
         );
-
-        this.#passport.use(TOKEN, this.#strategy);
+        this.#passport.use(AUTH_TOKEN, this.#strategy);
     }
 
     initiate(req, res, next) {
         return this.#initiator(req, res, next);
     }
-}
-
-function composeInitiator(passport) {
-    const initiate = passport.authenticate(TOKEN,
-        {
-            passReqToCallback: true,
-        });
-
-    const replyOnError = (err, req, res, next) => {
-        if (err.message === 'Invalid token') {
-            res.status(401).end();
-        } else {
-            next(err);
-        }
-    };
-
-    return chainHandlers(
-        initiate,
-        replyOnError
-    );
 }

@@ -7,7 +7,7 @@ import {
     URL_LOGIN_SUCCESS,
     URL_LOGOUT,
     URL_PASSPORT_CALLBACK
-} from "./urls.mjs";
+} from "velor-contrib/contrib/urls.mjs";
 
 import {
     verifyAuthentication,
@@ -15,80 +15,62 @@ import {
 } from "../auth/verification.mjs";
 
 import {composeRenderLoginFailure} from "../passport/composition/composeRenderLoginFailure.mjs";
-import {composeAuthStrategyProvider} from "../passport/composition/composeAuthStrategyProvider.mjs";
+import {composeGetAuthStrategy} from "../passport/composition/composeGetAuthStrategy.mjs";
 import {composeRenderLoginSuccess} from "../passport/composition/composeRenderLoginSuccess.mjs";
 import {composePostConfirmEmail} from "../passport/composition/composePostConfirmEmail.mjs";
-import {composeLogOut} from "../passport/composition/composeLogOut.mjs";
 import {composeConfirmEmailCallback} from "../passport/composition/composeConfirmEmailCallback.mjs";
 import {initiateAuth} from "../passport/middlewares/initiateAuth.mjs";
 import {authenticate} from "../passport/middlewares/authenticate.mjs";
-import {composeNotifyLoginSuccess} from "../passport/composition/composeNotifyLoginSuccess.mjs";
-import {composeNotifyFailure} from "../passport/composition/composeNotifyFailure.mjs";
 import {createStrategies} from "../passport/strategies/createStrategies.mjs";
+import {logout} from "../passport/handlers/logout.mjs";
+import {login} from "../passport/handlers/login.mjs";
 
 
-export function createConfiguration(options) {
+export function createConfiguration(services, providers) {
 
-    const {
-        views,
-        email,
-        user,
-        database,
-        getUrl,
-    } = options;
+    const strategies = createStrategies(services, providers);
+    const logo = '/resources/logo.svg';
 
-    const {strategies, initialize} = createStrategies(options);
+    // strategy will be available from req.authStrategy
+    const getAuthStrategy = composeGetAuthStrategy(strategies);
 
-    const notifyLoginSuccess = composeNotifyLoginSuccess(
-        () => getUrl(URL_LOGIN_FAILURE),
-        () => getUrl(URL_LOGIN_SUCCESS),
-        user.getUser,
-        database.insertLoginEvent,
-        user.isSessionValid
-    );
-
-    const notifyLoginFailure = composeNotifyFailure(
-        () => getUrl(URL_LOGIN_FAILURE)
-    );
-
-
-    const configuration = [
+    return [
         {
             name: URL_LOGIN_SUCCESS,
             path: '/login_success',
-            get: composeRenderLoginSuccess(views.logo)
+            get: composeRenderLoginSuccess(logo)
         },
 
         {
             name: URL_LOGIN_FAILURE,
             path: '/login_failure',
-            get: composeRenderLoginFailure(views.logo)
+            get: composeRenderLoginFailure(logo)
         },
 
-        {
-            name: URL_CONFIRM_EMAIL,
-            path: '/email/confirm',
-            // sending an email confirmation with a link to GET /email/confirm
-            post: [
-                validateSession,
-                verifyAuthentication,
-                verifyCsrfToken,
-                composePostConfirmEmail(
-                    email.sendEmail,
-                    email.clientSecret,
-                    email.redirectUrl,
-                    user.getUser,
-                    user.getProfile,
-                    user.getLoginAuth
-                )
-            ],
-            // receiving the link from the confirmation email
-            get: composeConfirmEmailCallback(
-                email.clientSecret,
-                database.getTokens,
-                database.createToken
-            )
-        },
+        // {
+        //     name: URL_CONFIRM_EMAIL,
+        //     path: '/email/confirm',
+        //     // sending an email confirmation with a link to GET /email/confirm
+        //     post: [
+        //         validateSession,
+        //         verifyAuthentication,
+        //         verifyCsrfToken,
+        //         composePostConfirmEmail(
+        //             email.sendEmail,
+        //             email.clientSecret,
+        //             email.redirectUrl,
+        //             user.getUser,
+        //             user.getProfile,
+        //             user.getLoginAuth
+        //         )
+        //     ],
+        //     // receiving the link from the confirmation email
+        //     get: composeConfirmEmailCallback(
+        //         email.clientSecret,
+        //         database.getTokens,
+        //         database.createToken
+        //     )
+        // },
 
         {
             name: URL_LOGOUT,
@@ -97,11 +79,7 @@ export function createConfiguration(options) {
                 validateSession,
                 verifyAuthentication,
                 verifyCsrfToken,
-                composeLogOut(
-                    database.insertLoginEvent,
-                    user.getUser,
-                    user.emitLoggedOut
-                )
+                logout
             ]
         },
 
@@ -112,10 +90,8 @@ export function createConfiguration(options) {
             name: URL_LOGIN,
             path: '/login/:provider',
             get: [
-                composeAuthStrategyProvider(strategies),
-                initiateAuth,
-                notifyLoginSuccess,
-                notifyLoginFailure
+                getAuthStrategy,
+                initiateAuth
             ]
         },
 
@@ -124,16 +100,10 @@ export function createConfiguration(options) {
             name: URL_PASSPORT_CALLBACK,
             path: '/redirect/:provider',
             get: [
-                composeAuthStrategyProvider(strategies),
+                getAuthStrategy,
                 authenticate,
-                notifyLoginSuccess,
-                notifyLoginFailure
+                login
             ]
         }
     ];
-
-    return {
-        configuration,
-        initialize
-    };
 }

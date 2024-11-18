@@ -1,6 +1,15 @@
 import {composeInsertAuth} from "../profile/composeInsertAuth.mjs";
-import {getDatabase} from "../application/services/backendServices.mjs";
 import {composeInsertUser} from "../profile/composeInsertUser.mjs";
+import {
+    getDataAuths,
+    getDataUsers
+} from "../application/services/dataServices.mjs";
+import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
+import {
+    DATA_AUTHS,
+    DATA_USER_AUTHS,
+    DATA_USERS
+} from "../application/services/serverDataKeys.mjs";
 
 export class UserManager {
     #getOrInsertAuth;
@@ -8,21 +17,20 @@ export class UserManager {
 
     initialize() {
         const {
-            auths: {
+            [DATA_AUTHS]: {
                 queryByAuthIdProvider,
                 insertAuth
             },
-            users: {
+            [DATA_USERS]: {
                 insertUser,
                 grantUserRole
             },
-            userAuths: {
+            [DATA_USER_AUTHS]: {
                 queryForUserByAuthId,
                 queryForAuthsByUserId,
                 insertOrNothing
             }
-        } = getDatabase(this).auths;
-
+        } = getDatabase(this);
 
         this.#getOrInsertAuth = composeInsertAuth(
             queryByAuthIdProvider,
@@ -51,7 +59,7 @@ export class UserManager {
     async getLoginAuth(user) {
         let loginAuth = user.loginAuth;
         if (!loginAuth) {
-            loginAuth = await getDatabase(this).auths
+            loginAuth = await getDataAuths(this)
                 .queryAuthById(user.primary_auth_id);
         }
         return loginAuth;
@@ -59,7 +67,7 @@ export class UserManager {
 
     async grantUserRole(user, role) {
         const auth = await this.getLoginAuth(user);
-        return getDatabase(this).users.grantUserRoleByAuth(auth.auth_id, auth.provider, role);
+        return getDataUsers(this).grantUserRoleByAuth(auth.auth_id, auth.provider, role);
     }
 
 }

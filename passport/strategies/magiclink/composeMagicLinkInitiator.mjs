@@ -1,8 +1,8 @@
-import {MAGIC_LINK} from "../../../auth/authProviders.mjs";
+import {AUTH_MAGIC_LINK} from "velor-contrib/contrib/authProviders.mjs";
 import {chainHandlers} from "../../../core/chainHandlers.mjs";
 
 export function composeMagicLinkInitiator(passport) {
-    const initiate = passport.authenticate(MAGIC_LINK,
+    const initiate = passport.authenticate(AUTH_MAGIC_LINK,
         {
             action: 'requestToken',
             passReqToCallback: true,
