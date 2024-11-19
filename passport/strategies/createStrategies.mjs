@@ -48,5 +48,13 @@ export function createStrategies(services, providers) {
                 token.token);
     }
 
+    passport.serializeUser(async (user, done) => {
+        done(null, user);
+    });
+
+    passport.deserializeUser(async (user, done) => {
+        done(null, user);
+    })
+
     return strategies;
 }

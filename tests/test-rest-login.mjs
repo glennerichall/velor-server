@@ -17,6 +17,12 @@ import {
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {ENV_TEST} from "velor-utils/env.mjs";
 import {composeSessionParser} from "../auth/composeSessionParser.mjs";
+import {patchPassport} from "../auth/patchPassport.mjs";
+import {
+    URL_LOGIN,
+    URL_LOGIN_SUCCESS
+} from "velor-contrib/contrib/urls.mjs";
+import passport from "passport";
 
 
 const {
@@ -29,7 +35,7 @@ const {
 } = setupTestContext();
 
 describe('login', function () {
-    let services, app;
+    let services, application;
 
     beforeEach(async ({configs}) => {
         const {
@@ -52,31 +58,38 @@ describe('login', function () {
             }
         };
 
-        app = getExpressApp(services);
+        application = getExpressApp(services);
         const configuration = createAuthConfiguration(services, providers);
         let router = createRouterBuilder().configure(configuration).done();
 
         let session = composeSessionParser(services);
 
-        app.use(session);
-        app.use('/auth', router);
+        application
+            .use(session)
+            .use(patchPassport)
+            .use(passport.initialize())
+            .use(passport.session())
+            .use('/auth', router);
 
+        // setup must be called after routes have been mounted
         await setupExpressApp(services);
     })
 
-    async function loginWithToken(services) {
+    function loginWithToken(services) {
         let urls = getFullHostUrls(services);
-
-        await request(app)
+        let application = getExpressApp(services);
+        return request(application)
             .get(getTokenLoginUrl(urls))
-            .set('Authorization', getEnvValue(services, AUTH_TOKEN_SECRET))
-            .expect(302);
+            .set('Authorization', getEnvValue(services, AUTH_TOKEN_SECRET));
     }
 
     test.describe('login', () => {
 
         test('should login with token credentials', async () => {
-            await loginWithToken(services);
+            let urls = getFullHostUrls(services);
+            await loginWithToken(services)
+                .expect(302)
+                .expect('location', urls[URL_LOGIN_SUCCESS]);
         })
 
         // test('should have normal role', async () => {

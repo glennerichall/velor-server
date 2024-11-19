@@ -1,4 +1,5 @@
 import {
+    s_emitter,
     s_expressApp,
     s_server,
     s_userManager
@@ -8,11 +9,12 @@ import {s_databaseStatements} from "velor-database/application/services/database
 import {statements} from "../../database/statements.mjs";
 import {createServerInstance} from "../factories/createServerInstance.mjs";
 import express from "express";
-
+import {Emitter} from "velor-utils/utils/Emitter.mjs";
 
 export const serverFactories = {
     [s_userManager]: UserManager,
     [s_databaseStatements]: () => statements,
     [s_server]: createServerInstance,
     [s_expressApp]: () => express(),
+    [s_emitter]: Emitter
 }

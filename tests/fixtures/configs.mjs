@@ -6,7 +6,7 @@ let schema = `test_w${workerIndex}`;
 export const configs = [
     async ({}, use, testInfo) => {
         const connectionString = process.env[DATABASE_CONNECTION_STRING] ??
-            'postgres://postgres:postgres@localhost:5432/postgres';
+            'postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable';
 
         await use({
             workerIndex,
