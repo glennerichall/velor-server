@@ -6,21 +6,21 @@
 
 BEGIN;
 
-create schema if not exists "@SCHEMA";
+create schema if not exists "@{SCHEMA}";
 
 CREATE EXTENSION if not exists pgcrypto;
 
 -------------------------------------------------
 -- Tables
 -------------------------------------------------
-create table if not exists "@SCHEMA".@TABLE_ERROR
+create table if not exists "@{SCHEMA}".@{TABLE_ERROR}
 (
 	"id" serial not null,
 	"user_id" text,
 	"gcode_id" text
 );
 
-create table if not exists "@SCHEMA".@TABLE_ACCESS
+create table if not exists "@{SCHEMA}".@{TABLE_ACCESS}
 (
 	"id" serial not null,
 	"fingerprint" text,
@@ -34,7 +34,7 @@ create table if not exists "@SCHEMA".@TABLE_ACCESS
 	"logged_in" boolean default false
 );
 
-create table if not exists "@SCHEMA".@TABLE_PREFERENCES
+create table if not exists "@{SCHEMA}".@{TABLE_PREFERENCES}
 (
 	"id" serial not null,
 	"name" text not null,
@@ -44,7 +44,7 @@ create table if not exists "@SCHEMA".@TABLE_PREFERENCES
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_MIGRATIONS
+create table if not exists "@{SCHEMA}".@{TABLE_MIGRATIONS}
 (
 	"id" serial not null,
 	"version" text,
@@ -54,7 +54,7 @@ create table if not exists "@SCHEMA".@TABLE_MIGRATIONS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_AUTHS
+create table if not exists "@{SCHEMA}".@{TABLE_AUTHS}
 (
 	"id" serial not null,
 	"auth_id" text not null,
@@ -70,7 +70,7 @@ create table if not exists "@SCHEMA".@TABLE_AUTHS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_LOGINS
+create table if not exists "@{SCHEMA}".@{TABLE_LOGINS}
 (
 	"id" serial not null,
 	"auth_id" integer not null,
@@ -82,7 +82,7 @@ create table if not exists "@SCHEMA".@TABLE_LOGINS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_USERS
+create table if not exists "@{SCHEMA}".@{TABLE_USERS}
 (
 	"id" serial not null,
 	"primary_auth_id" integer not null,
@@ -91,7 +91,7 @@ create table if not exists "@SCHEMA".@TABLE_USERS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_USER_AUTHS
+create table if not exists "@{SCHEMA}".@{TABLE_USER_AUTHS}
 (
 	"id" serial not null,
 	"user_id" integer not null,
@@ -100,7 +100,7 @@ create table if not exists "@SCHEMA".@TABLE_USER_AUTHS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_ROLE_ACL
+create table if not exists "@{SCHEMA}".@{TABLE_ROLE_ACL}
 (
 	"id" serial not null,
 	"role" integer not null,
@@ -109,7 +109,7 @@ create table if not exists "@SCHEMA".@TABLE_ROLE_ACL
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_USER_ROLE
+create table if not exists "@{SCHEMA}".@{TABLE_USER_ROLE}
 (
 	"id" serial not null,
 	"role" integer,
@@ -118,7 +118,7 @@ create table if not exists "@SCHEMA".@TABLE_USER_ROLE
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_ROLE
+create table if not exists "@{SCHEMA}".@{TABLE_ROLE}
 (
 	"id" serial not null,
 	"name" text not null,
@@ -127,7 +127,7 @@ create table if not exists "@SCHEMA".@TABLE_ROLE
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_ACL
+create table if not exists "@{SCHEMA}".@{TABLE_ACL}
 (
 	"id" serial not null,
 	"name" text,
@@ -140,7 +140,7 @@ create table if not exists "@SCHEMA".@TABLE_ACL
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_API_KEYS
+create table if not exists "@{SCHEMA}".@{TABLE_API_KEYS}
 (
 	"id" serial not null,
 	"value" text not null,
@@ -152,7 +152,7 @@ create table if not exists "@SCHEMA".@TABLE_API_KEYS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_API_KEYS_ACL
+create table if not exists "@{SCHEMA}".@{TABLE_API_KEYS_ACL}
 (
 	"id" serial not null,
 	"api_key_id" integer,
@@ -161,7 +161,7 @@ create table if not exists "@SCHEMA".@TABLE_API_KEYS_ACL
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_DEPLOYMENTS
+create table if not exists "@{SCHEMA}".@{TABLE_DEPLOYMENTS}
 (
 	"id" serial not null,
 	"backend_version" text not null,
@@ -174,7 +174,7 @@ create table if not exists "@SCHEMA".@TABLE_DEPLOYMENTS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_USERS_API_KEYS
+create table if not exists "@{SCHEMA}".@{TABLE_USERS_API_KEYS}
 (
 	"id" serial not null,
 	"api_key_id" integer,
@@ -184,7 +184,7 @@ create table if not exists "@SCHEMA".@TABLE_USERS_API_KEYS
 );
 
 
-create table if not exists "@SCHEMA".@TABLE_AUTH_TOKENS
+create table if not exists "@{SCHEMA}".@{TABLE_AUTH_TOKENS}
 (
 	"id" serial not null,
 	"auth_id" integer not null,
@@ -194,7 +194,7 @@ create table if not exists "@SCHEMA".@TABLE_AUTH_TOKENS
         primary key(id)
 );
 
-create table if not exists "@SCHEMA".@TABLE_TOKENS
+create table if not exists "@{SCHEMA}".@{TABLE_TOKENS}
 (
 	"id" serial not null,
 	"expiration" timestamp with time zone default CURRENT_TIMESTAMP,
@@ -211,90 +211,90 @@ create table if not exists "@SCHEMA".@TABLE_TOKENS
 -------------------------------------------------
 -- Foreign keys
 -------------------------------------------------
-alter table "@SCHEMA".@TABLE_API_KEYS_ACL
+alter table "@{SCHEMA}".@{TABLE_API_KEYS_ACL}
     add constraint acl_fk
-        foreign key ("acl_id") references "@SCHEMA".@TABLE_ACL ("id")
+        foreign key ("acl_id") references "@{SCHEMA}".@{TABLE_ACL} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_API_KEYS_ACL
+alter table "@{SCHEMA}".@{TABLE_API_KEYS_ACL}
     add constraint api_key_fk
-        foreign key ("api_key_id") references "@SCHEMA".@TABLE_API_KEYS ("id")
+        foreign key ("api_key_id") references "@{SCHEMA}".@{TABLE_API_KEYS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_AUTH_TOKENS
+alter table "@{SCHEMA}".@{TABLE_AUTH_TOKENS}
     add constraint auth_id_fk
-        foreign key ("auth_id") references "@SCHEMA".@TABLE_AUTHS ("id")
+        foreign key ("auth_id") references "@{SCHEMA}".@{TABLE_AUTHS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_LOGINS
+alter table "@{SCHEMA}".@{TABLE_LOGINS}
     add constraint auth_id_fk
-        foreign key ("auth_id") references "@SCHEMA".@TABLE_AUTHS ("id")
+        foreign key ("auth_id") references "@{SCHEMA}".@{TABLE_AUTHS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_USER_AUTHS
+alter table "@{SCHEMA}".@{TABLE_USER_AUTHS}
     add constraint auth_id_fk
-        foreign key ("auth_id") references "@SCHEMA".@TABLE_AUTHS ("id")
+        foreign key ("auth_id") references "@{SCHEMA}".@{TABLE_AUTHS} ("id")
             on delete cascade;
 
 
-alter table "@SCHEMA".@TABLE_DEPLOYMENTS
+alter table "@{SCHEMA}".@{TABLE_DEPLOYMENTS}
     add constraint deployments_database_version_id_fkey
-        foreign key ("database_version_id") references "@SCHEMA".@TABLE_MIGRATIONS ("id")
+        foreign key ("database_version_id") references "@{SCHEMA}".@{TABLE_MIGRATIONS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_DEPLOYMENTS
+alter table "@{SCHEMA}".@{TABLE_DEPLOYMENTS}
     add constraint deployments_deployments_id_fk
-        foreign key ("previous_release_id") references "@SCHEMA".@TABLE_DEPLOYMENTS ("id")
+        foreign key ("previous_release_id") references "@{SCHEMA}".@{TABLE_DEPLOYMENTS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_MIGRATIONS
+alter table "@{SCHEMA}".@{TABLE_MIGRATIONS}
     add constraint migrations_rollback_id_fk
-        foreign key ("rollback") references "@SCHEMA".@TABLE_MIGRATIONS ("id")
+        foreign key ("rollback") references "@{SCHEMA}".@{TABLE_MIGRATIONS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_PREFERENCES
+alter table "@{SCHEMA}".@{TABLE_PREFERENCES}
     add constraint preferences_users_id_fk
-        foreign key ("user_id") references "@SCHEMA".@TABLE_USERS ("id")
+        foreign key ("user_id") references "@{SCHEMA}".@{TABLE_USERS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_USERS
+alter table "@{SCHEMA}".@{TABLE_USERS}
     add constraint prim_auth_id_fk
-        foreign key ("primary_auth_id") references "@SCHEMA".@TABLE_AUTHS ("id")
+        foreign key ("primary_auth_id") references "@{SCHEMA}".@{TABLE_AUTHS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_ROLE_ACL
+alter table "@{SCHEMA}".@{TABLE_ROLE_ACL}
     add constraint role_acl_acl_id_fk
-        foreign key ("acl") references "@SCHEMA".@TABLE_ACL ("id")
+        foreign key ("acl") references "@{SCHEMA}".@{TABLE_ACL} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_ROLE_ACL
+alter table "@{SCHEMA}".@{TABLE_ROLE_ACL}
     add constraint role_acl_role_id_fk
-        foreign key ("role") references "@SCHEMA".@TABLE_ROLE ("id")
+        foreign key ("role") references "@{SCHEMA}".@{TABLE_ROLE} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_USER_AUTHS
+alter table "@{SCHEMA}".@{TABLE_USER_AUTHS}
     add constraint user_id_fk
-        foreign key ("user_id") references "@SCHEMA".@TABLE_USERS ("id")
+        foreign key ("user_id") references "@{SCHEMA}".@{TABLE_USERS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_USER_ROLE
+alter table "@{SCHEMA}".@{TABLE_USER_ROLE}
     add constraint user_role_role_id_fk
-        foreign key ("role") references "@SCHEMA".@TABLE_ROLE ("id")
+        foreign key ("role") references "@{SCHEMA}".@{TABLE_ROLE} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_USER_ROLE
+alter table "@{SCHEMA}".@{TABLE_USER_ROLE}
     add constraint user_role_users_id_fk
-        foreign key ("user") references "@SCHEMA".@TABLE_USERS ("id")
+        foreign key ("user") references "@{SCHEMA}".@{TABLE_USERS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_USERS_API_KEYS
+alter table "@{SCHEMA}".@{TABLE_USERS_API_KEYS}
     add constraint users_api_keys_api_keys_id_fk
-        foreign key ("api_key_id") references "@SCHEMA".@TABLE_API_KEYS ("id")
+        foreign key ("api_key_id") references "@{SCHEMA}".@{TABLE_API_KEYS} ("id")
             on delete cascade;
 
-alter table "@SCHEMA".@TABLE_USERS_API_KEYS
+alter table "@{SCHEMA}".@{TABLE_USERS_API_KEYS}
     add constraint users_api_keys_users_id_fk
-        foreign key ("user_id") references "@SCHEMA".@TABLE_USERS ("id")
+        foreign key ("user_id") references "@{SCHEMA}".@{TABLE_USERS} ("id")
             on delete cascade;
 
 
@@ -303,54 +303,54 @@ alter table "@SCHEMA".@TABLE_USERS_API_KEYS
 -- Indexes
 -------------------------------------------------
 create  index if not exists acl_category_index
-            on "@SCHEMA".@TABLE_ACL ("category");
+            on "@{SCHEMA}".@{TABLE_ACL} ("category");
 
 create  index if not exists acl_method_index
-            on "@SCHEMA".@TABLE_ACL ("method");
+            on "@{SCHEMA}".@{TABLE_ACL} ("method");
 
 create unique index if not exists acl_name_key
-            on "@SCHEMA".@TABLE_ACL ("name");
+            on "@{SCHEMA}".@{TABLE_ACL} ("name");
 
 create  index if not exists acl_permission_index
-            on "@SCHEMA".@TABLE_ACL ("permission");
+            on "@{SCHEMA}".@{TABLE_ACL} ("permission");
 
 create  index if not exists acl_resource_index
-            on "@SCHEMA".@TABLE_ACL ("resource");
+            on "@{SCHEMA}".@{TABLE_ACL} ("resource");
 
 create unique index if not exists api_keys_public_id_key
-            on "@SCHEMA".@TABLE_API_KEYS ("public_id");
+            on "@{SCHEMA}".@{TABLE_API_KEYS} ("public_id");
 
 create unique index if not exists api_keys_value_key
-            on "@SCHEMA".@TABLE_API_KEYS ("value");
+            on "@{SCHEMA}".@{TABLE_API_KEYS} ("value");
 
 create  index if not exists api_keys_acl_acl_id_index
-            on "@SCHEMA".@TABLE_API_KEYS_ACL ("acl_id");
+            on "@{SCHEMA}".@{TABLE_API_KEYS_ACL} ("acl_id");
 
 create  index if not exists api_keys_acl_api_key_id_index
-            on "@SCHEMA".@TABLE_API_KEYS_ACL ("api_key_id");
+            on "@{SCHEMA}".@{TABLE_API_KEYS_ACL} ("api_key_id");
 
 create unique index if not exists auths_unique_id
-            on "@SCHEMA".@TABLE_AUTHS ("auth_id", "provider");
+            on "@{SCHEMA}".@{TABLE_AUTHS} ("auth_id", "provider");
 
 create unique index if not exists logins_id_uindex
-            on "@SCHEMA".@TABLE_LOGINS ("id");
+            on "@{SCHEMA}".@{TABLE_LOGINS} ("id");
 
 create unique index if not exists migrations_version_uindex
-            on "@SCHEMA".@TABLE_MIGRATIONS ("version");
+            on "@{SCHEMA}".@{TABLE_MIGRATIONS} ("version");
 
 create unique index if not exists preferences_id_uindex
-            on "@SCHEMA".@TABLE_PREFERENCES ("id");
+            on "@{SCHEMA}".@{TABLE_PREFERENCES} ("id");
 
 create unique index if not exists preferences_pk_2
-            on "@SCHEMA".@TABLE_PREFERENCES ("name", "user_id");
+            on "@{SCHEMA}".@{TABLE_PREFERENCES} ("name", "user_id");
 
 create unique index if not exists role_name_key
-            on "@SCHEMA".@TABLE_ROLE ("name");
+            on "@{SCHEMA}".@{TABLE_ROLE} ("name");
 
 create unique index if not exists value_unique
-            on "@SCHEMA".@TABLE_TOKENS ("value");
+            on "@{SCHEMA}".@{TABLE_TOKENS} ("value");
 
 create unique index if not exists user_auths_user_id_auth_id_uindex
-            on "@SCHEMA".@TABLE_USER_AUTHS ("auth_id", "user_id");
+            on "@{SCHEMA}".@{TABLE_USER_AUTHS} ("auth_id", "user_id");
 
 COMMIT;

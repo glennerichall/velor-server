@@ -1,9 +1,14 @@
+import {configDotenv} from "dotenv";
+
+configDotenv();
+
 import {defineConfig} from '@playwright/test';
 import os from "os";
 
+
 export default defineConfig({
     testDir: './tests',
-    testMatch: '*.mjs',
+    testMatch: 'test-*.mjs',
     timeout: 30000,
     retries: 0,
     fullyParallel: true,

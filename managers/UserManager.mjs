@@ -43,7 +43,7 @@ export class UserManager {
         );
     }
 
-    async updateUserFromAuthLogin(user, provider, profileOrAuthId) {
+    async updateUserFromAuthLogin(provider, profileOrAuthId) {
         let profile;
         if (typeof profileOrAuthId === 'string') {
             profile = {

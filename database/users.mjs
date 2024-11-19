@@ -28,7 +28,7 @@ export async function queryByLastFingerprint(client, schema, fp) {
 
 export async function queryByPrimaryAuth(client, schema, auth, provider) {
     const res = await client
-        .query(`select ${schema}.users.*
+        .query(`select ${schema}.users.*, a.*
                     from ${schema}.users
                     inner join ${schema}.auths a on a.id = users.primary_auth_id
                     where a.auth_id = $1

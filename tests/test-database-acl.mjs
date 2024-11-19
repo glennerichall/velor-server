@@ -1,27 +1,59 @@
-import {setupTestContext} from "velor-utils/test/setupTestContext.mjs";
-import {getFSAsync} from "velor-utils/utils/sysProvider.mjs";
-import * as path from "node:path";
-import {queryRaw} from "velor-database/database/queryRaw.mjs";
+import {
+    ACL_DENY,
+    ACL_GRANT,
+    createAclRuleDeny,
+    createAclRuleGrant,
+    queryForAllAcl
+} from "../database/acl.mjs";
+import {setupTestContext} from "./fixtures/setupTestContext.mjs";
+import {clearAcl} from "./fixtures/database-clear.mjs";
 
 const {
     expect,
-    test,
     describe,
     afterEach,
     beforeEach,
     it,
 } = setupTestContext();
 
-const __dirname = import.meta.dirname;
 
 describe('database acl', () => {
+
     beforeEach(async ({database}) => {
+        await clearAcl(database);
+    })
+
+    it('should query all acl', async ({database}) => {
         const {
-            schema,
-            client
+            client,
+            schema
         } = database;
-        let createSql = await getFSAsync().readFile(path.join(__dirname, '..', 'sql', 'createSql.sql'));
-        createSql = createSql.replace('@SCHEMA', schema);
-        await queryRaw(client, createSql);
+
+        let rule1 = await createAclRuleGrant(client, schema, {
+            name: 'rule1',
+            resource: '/foo/bar',
+            method: 'GET',
+            category: 'cat1',
+            description: 'baz qux'
+        });
+
+        let rule2 = await createAclRuleDeny(client, schema, {
+            name: 'rule2',
+            resource: '/foo/baz',
+            method: 'GET',
+            category: 'cat1',
+            description: 'biz baz buz'
+        });
+
+
+        const acl = await queryForAllAcl(client, schema);
+        expect(acl).to.have.length(2);
+
+        expect(acl[0]).to.have.property('name', 'rule1');
+        expect(acl[0]).to.have.property('permission', ACL_GRANT);
+
+        expect(acl[1]).to.have.property('name', 'rule2');
+        expect(acl[1]).to.have.property('permission', ACL_DENY);
+
     })
 })

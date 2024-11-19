@@ -1,23 +1,51 @@
 import {ACL_CATEGORY_ANY} from "../auth/permissions.mjs";
 
+export const ACL_GRANT = 'grant';
+export const ACL_DENY = 'deny';
+
+export async function createAclRule(client, schema, {
+    name,
+    resource,
+    permission,
+    method,
+    category,
+    description
+}) {
+    const res = await client
+        .query(`insert into ${schema}.acl 
+           (name, resource, permission, method, category, description) 
+           values ($1, $2, $3, $4, $5, $6) returning *`,
+            [
+                name,
+                resource,
+                permission,
+                method,
+                category,
+                description
+            ]);
+    return res.rowCount;
+}
+
+export async function createAclRuleGrant(client, schema, rule) {
+    return createAclRule(client, schema, {
+        ...rule,
+        permission: ACL_GRANT
+    });
+}
+
+export async function createAclRuleDeny(client, schema, rule) {
+    return createAclRule(client, schema, {
+        ...rule,
+        permission: ACL_DENY
+    });
+}
+
 export async function queryForAllAcl(client, schema) {
     const res = await client
         .query(`select * from ${schema}.acl`);
     return res.rows;
 }
 
-export async function queryRolesForUser(client, schema, id) {
-    const res = await client
-        .query(`select
-                        r.id as id,
-                        r.name as name,
-                        r.description as description
-                    from ${schema}.role r
-                             inner join ${schema}.user_role ur on r.id = ur.role
-                             inner join ${schema}.users u on u.id = ur.user
-                    where u.id = $1`, [id]);
-    return res.rows;
-}
 
 export async function queryAclForUser(client, schema, id, ...categories) {
     if (categories.length === 0) {

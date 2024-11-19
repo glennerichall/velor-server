@@ -1,16 +1,22 @@
-import {setupTestContext} from "velor-utils/test/setupTestContext.mjs";
 import {getFullHostUrls} from "../application/services/requestServices.mjs";
 import {getEnvValue} from "velor-services/injection/baseServices.mjs";
 import {createAppServicesInstance} from "velor-services/injection/ServicesContext.mjs";
 import {AUTH_TOKEN_SECRET} from "../application/services/serverEnvKeys.mjs";
 import {createRouterBuilder} from "../core/createRouterBuilder.mjs";
-import {createConfiguration} from "../routes/auth.mjs";
+import {createAuthConfiguration} from "../routes/auth.mjs";
 import request from 'supertest';
 import {mergeDefaultServerOptions} from "../application/services/mergeDefaultServerOptions.mjs";
 import {getExpressApp} from "../application/services/serverServices.mjs";
 import {setupExpressApp} from "../initialization/setupExpressApp.mjs";
 import {getTokenLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
+import {
+    DATABASE_CONNECTION_STRING,
+    DATABASE_SCHEMA
+} from "velor-database/application/services/databaseEnvKeys.mjs";
+import {setupTestContext} from "./fixtures/setupTestContext.mjs";
+import {ENV_TEST} from "velor-utils/env.mjs";
+import {composeSessionParser} from "../auth/composeSessionParser.mjs";
 
 
 const {
@@ -22,14 +28,20 @@ const {
     it,
 } = setupTestContext();
 
-test.describe('login', function () {
+describe('login', function () {
     let services, app;
 
-    test.beforeEach(async () => {
+    beforeEach(async ({configs}) => {
+        const {
+            schema,
+            connectionString
+        } = configs;
         let options = mergeDefaultServerOptions(
             {
                 env: {
-                    [AUTH_TOKEN_SECRET]: 'a-secret-token'
+                    [AUTH_TOKEN_SECRET]: 'a-secret-token',
+                    [DATABASE_CONNECTION_STRING]: connectionString,
+                    [DATABASE_SCHEMA]: schema
                 }
             });
         services = createAppServicesInstance(options);
@@ -41,8 +53,12 @@ test.describe('login', function () {
         };
 
         app = getExpressApp(services);
-        const configuration = createConfiguration(services, providers);
+        const configuration = createAuthConfiguration(services, providers);
         let router = createRouterBuilder().configure(configuration).done();
+
+        let session = composeSessionParser(services);
+
+        app.use(session);
         app.use('/auth', router);
 
         await setupExpressApp(services);

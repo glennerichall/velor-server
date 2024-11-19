@@ -1,17 +1,22 @@
-import {test as baseTest} from 'velor-utils/test/setupTestContext.mjs'
-import {createConnectionPool} from "velor-database/database/impl/postgres.mjs";
+import {queryRaw} from "velor-database/database/queryRaw.mjs";
 
-export const test = baseTest.extend({
-    database: [
-        async ({}, use, testInfo) => {
-            let workerIndex = Number.parseInt(process.env.TEST_WORKER_INDEX);
-            let schema = `schema-run-${workerIndex}`;
-            let pool = createConnectionPool(process.env.DATABASE_CONNECTION_STRING);
-            let client = await pool.connect();
+export const database = [
+    async ({databaseConnectionPool}, use, testInfo) => {
+
+        const {pool, schema} = databaseConnectionPool;
+
+        let client = await pool.acquireClient();
+
+        try {
             await use({
-                workerIndex,
-                schema
+                schema,
+                client,
+                queryRaw: (...args) => queryRaw(client, ...args)
             });
-        }, {scope: 'worker'}
-    ]
-})
+
+        } finally {
+            client.release();
+        }
+    },
+    {scope: 'worker'}
+];

@@ -2,7 +2,7 @@ import {
     DATA_ACCESS,
     DATA_AUTH_TOKENS,
     DATA_AUTHS,
-    DATA_USERS
+    DATA_USERS,
 } from "./serverDataKeys.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
 

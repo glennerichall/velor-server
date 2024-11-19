@@ -26,7 +26,7 @@ import {logout} from "../passport/handlers/logout.mjs";
 import {login} from "../passport/handlers/login.mjs";
 
 
-export function createConfiguration(services, providers) {
+export function createAuthConfiguration(services, providers) {
 
     const strategies = createStrategies(services, providers);
     const logo = '/resources/logo.svg';
