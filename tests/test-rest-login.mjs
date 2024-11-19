@@ -92,12 +92,13 @@ describe('login', function () {
                 .expect('location', urls[URL_LOGIN_SUCCESS]);
         })
 
-        // test('should have normal role', async () => {
-        //     const profile = await getProfileManager(context).getProfile();
-        //     expect(profile).to.have.property('roles');
-        //     expect(profile.roles).to.have.length(1);
-        //     expect(profile.roles[0]).to.eq('normal');
-        // })
+        test('should have normal role', async () => {
+            await loginWithToken(services);
+            const profile = await getProfileManager(context).getProfile();
+            expect(profile).to.have.property('roles');
+            expect(profile.roles).to.have.length(1);
+            expect(profile.roles[0]).to.eq('normal');
+        })
 
         // test('should not login without session', async () => {
         //     await context.request()
