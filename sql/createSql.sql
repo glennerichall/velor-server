@@ -13,13 +13,6 @@ CREATE EXTENSION if not exists pgcrypto;
 -------------------------------------------------
 -- Tables
 -------------------------------------------------
-create table if not exists "@{SCHEMA}".@{TABLE_ERROR}
-(
-	"id" serial not null,
-	"user_id" text,
-	"gcode_id" text
-);
-
 create table if not exists "@{SCHEMA}".@{TABLE_ACCESS}
 (
 	"id" serial not null,

@@ -5,21 +5,21 @@ import {
     clearRoles
 } from "./fixtures/database-clear.mjs";
 import {
-    assignRoleAcl,
-    insertRole,
-    queryRolesForUser
+    addAclRuleToRole,
+    insertRole
 } from "../database/roles.mjs";
 import {
-    createAclRuleDeny,
-    createAclRuleGrant,
-    queryAclForUser
+    insertAclDenyRule,
+    insertAclGrantRule
 } from "../database/acl.mjs";
 import {insertAuth} from "../database/auths.mjs";
 import {
     grantUserRole,
     insertUser,
-    queryForUserById,
-    revokeUserRole
+    getUserAcl,
+    getUserPrimaryAuthById,
+    revokeUserRole,
+    queryRolesForUser
 } from "../database/users.mjs";
 
 const {
@@ -53,7 +53,7 @@ describe('database user acl', () => {
         await clearRoles(database);
         await clearAuths(database); // users are cascaded
 
-        rule1 = await createAclRuleGrant(client, schema, {
+        rule1 = await insertAclGrantRule(client, schema, {
             name: 'rule1',
             resource: '/foo/bar',
             method: 'GET',
@@ -61,7 +61,7 @@ describe('database user acl', () => {
             description: 'baz qux'
         });
 
-        rule2 = await createAclRuleDeny(client, schema, {
+        rule2 = await insertAclDenyRule(client, schema, {
             name: 'rule2',
             resource: '/foo/baz',
             method: 'GET',
@@ -75,9 +75,9 @@ describe('database user acl', () => {
 
         auth.id = await insertAuth(client, schema, auth);
         let {id} = await insertUser(client, schema, auth);
-        user = await queryForUserById(client, schema, id);
+        user = await getUserPrimaryAuthById(client, schema, id);
 
-        await assignRoleAcl(client, schema, 'god', 'rule1');
+        await addAclRuleToRole(client, schema, 'god', 'rule1');
         await grantUserRole(client, schema, user.id, 'god');
         await grantUserRole(client, schema, user.id, 'normal');
     })
@@ -101,7 +101,7 @@ describe('database user acl', () => {
             schema
         } = database;
 
-        let acl = await queryAclForUser(client, schema, user.id);
+        let acl = await getUserAcl(client, schema, user.id);
 
         expect(acl).to.have.length(1);
         expect(acl[0].name).to.eq('rule1');

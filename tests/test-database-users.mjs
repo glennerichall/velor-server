@@ -3,10 +3,12 @@ import {clearAuths} from "./fixtures/database-clear.mjs";
 import {
     insertUser,
     queryByPrimaryAuth,
-    queryForUserById,
-    updateUserVerifiedEmail
+    getUserPrimaryAuthById
 } from "../database/users.mjs";
-import {insertAuth} from "../database/auths.mjs";
+import {
+    insertAuth,
+    setUserVerifiedEmail
+} from "../database/auths.mjs";
 import {queryRaw} from "velor-database/database/queryRaw.mjs";
 
 const {
@@ -45,7 +47,7 @@ describe('database users', () => {
             schema
         } = database;
 
-        let user = await insertUser(client, schema, auth);
+        let user = await insertUser(client, schema, auth.id);
 
         expect(user).to.not.be.undefined;
         expect(user).to.not.be.null;
@@ -61,7 +63,7 @@ describe('database users', () => {
 
         let {id} = await insertUser(client, schema, auth);
 
-        let user = await queryForUserById(client, schema, id);
+        let user = await getUserPrimaryAuthById(client, schema, id);
 
         expect(user.id).to.eq(id);
         expect(user.auth_id).to.eq(auth.auth_id);
@@ -93,8 +95,8 @@ describe('database users', () => {
 
         let {id} = await insertUser(client, schema, auth);
 
-        await updateUserVerifiedEmail(client, schema, id);
-        let user = await queryForUserById(client, schema, id);
+        await setUserVerifiedEmail(client, schema, id);
+        let user = await getUserPrimaryAuthById(client, schema, id);
         expect(user).to.have.property('verified', true);
     })
 

@@ -4,13 +4,13 @@ import {
     clearApiKeys
 } from "./fixtures/database-clear.mjs";
 import {
-    grantAuthorization,
-    insertApiKey
+    addAclRuleToApiKey,
+    createApiKey,
+    getApiKeyAclRules
 } from "../database/apiKeys.mjs";
 import {
-    createAclRuleDeny,
-    createAclRuleGrant,
-    queryAclForApiKey
+    insertAclDenyRule,
+    insertAclGrantRule
 } from "../database/acl.mjs";
 
 const {
@@ -34,7 +34,7 @@ describe('database api key acl', () => {
         await clearAcl(database);
         await clearApiKeys(database);
 
-        rule1 = await createAclRuleGrant(client, schema, {
+        rule1 = await insertAclGrantRule(client, schema, {
             name: 'rule1',
             resource: '/foo/bar',
             method: 'GET',
@@ -42,7 +42,7 @@ describe('database api key acl', () => {
             description: 'baz qux'
         });
 
-        rule2 = await createAclRuleDeny(client, schema, {
+        rule2 = await insertAclDenyRule(client, schema, {
             name: 'rule2',
             resource: '/foo/baz',
             method: 'GET',
@@ -50,7 +50,7 @@ describe('database api key acl', () => {
             description: 'biz baz buz'
         });
 
-        let rule3 = await createAclRuleDeny(client, schema, {
+        let rule3 = await insertAclDenyRule(client, schema, {
             name: 'rule3',
             resource: '/sdfsdfsdf',
             method: 'GET',
@@ -59,9 +59,9 @@ describe('database api key acl', () => {
         });
 
         let name = 'foo-bar';
-        apiKey = await insertApiKey(client, schema, name);
+        apiKey = await createApiKey(client, schema, name);
 
-        await grantAuthorization(client, schema, apiKey.id, 'rule1', 'rule2')
+        await addAclRuleToApiKey(client, schema, apiKey.id, 'rule1', 'rule2')
     })
 
     it('should assign acl to apikey', async ({database}) => {
@@ -70,7 +70,7 @@ describe('database api key acl', () => {
             schema
         } = database;
 
-        let acl = await queryAclForApiKey(client, schema, apiKey.api_key);
+        let acl = await getApiKeyAclRules(client, schema, apiKey.api_key);
         expect(acl).to.have.length(2);
         expect(acl.map(x => x.name)).to.include('rule1');
         expect(acl.map(x => x.name)).to.include('rule2');

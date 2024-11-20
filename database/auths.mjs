@@ -1,43 +1,78 @@
-export async function queryAuthById(client, schema, id) {
+export async function getAuthById(client, schema, authId) {
     const res = await client
-        .query(`select *
-                    from ${schema}.auths
-                    where id = $1`,
-            [id]);
+        .query(`select auth_id     as profileId,
+                       provider,
+                       email,
+                       verified,
+                       displayname as displayName,
+                       lastname    as lastName,
+                       firstname   as firstName,
+                       avatar,
+                       id
+                from ${schema}.auths
+                where id = $1`,
+            [authId]);
     if (res.rows.length === 1) {
         return res.rows[0];
     }
     return null;
 }
 
-export async function queryByAuthIdProvider(client, schema, auth, provider) {
+export async function getAuthByProvider(client, schema, providerAuthId, provider) {
     const res = await client
-        .query(`select *
-                    from ${schema}.auths
-                    where auth_id = $1
-                      and provider = $2`,
-            [auth, provider]);
+        .query(`select auth_id     as profileId,
+                       provider,
+                       email,
+                       verified,
+                       displayname as displayName,
+                       lastname    as lastName,
+                       firstname   as firstName,
+                       avatar,
+                       id
+                from ${schema}.auths
+                where auth_id = $1
+                  and provider = $2`,
+            [providerAuthId, provider]);
     if (res.rows.length === 1) {
         return res.rows[0];
     }
     return null;
 }
 
-export async function insertAuth(client, schema, auth) {
+export async function insertAuth(client, schema, {
+    profileId,
+    provider,
+    email,
+    verified,
+    displayName,
+    lastName,
+    firstName,
+    avatar
+}) {
     const res = await client
         .query(`insert into ${schema}.auths
-                    (auth_id, provider, email, verified,
-                     displayName, lastName, firstName, avatar)
-                    values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+                (auth_id, provider, email, verified,
+                 displayName, lastName, firstName, avatar)
+                values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
             [
-                auth.auth_id,
-                auth.provider,
-                auth.email,
-                auth.verified,
-                auth.displayName,
-                auth.lastName,
-                auth.firstName,
-                auth.avatar
+                profileId,
+                provider,
+                email,
+                verified,
+                displayName,
+                lastName,
+                firstName,
+                avatar
             ]);
     return res.rows[0].id;
+}
+
+export async function setUserVerifiedEmail(client, schema, authId) {
+    const res = await client
+        .query(`update ${schema}.auths
+                set verified = true
+                where id = $1`, [authId]);
+    if (res.rows.length === 1) {
+        return res.rows[0];
+    }
 }

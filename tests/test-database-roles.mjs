@@ -2,7 +2,7 @@ import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {clearRoles} from "./fixtures/database-clear.mjs";
 import {
     insertRole,
-    queryForAllRoles
+    getAllRoles
 } from "../database/roles.mjs";
 
 const {
@@ -33,7 +33,7 @@ describe('database roles', () => {
             schema
         } = database;
 
-        let roles = await queryForAllRoles(client, schema);
+        let roles = await getAllRoles(client, schema);
 
         expect(roles).to.have.length(2);
 

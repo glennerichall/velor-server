@@ -1,4 +1,4 @@
-export async function queryForAllAccess(client, schema) {
+export async function getAllAccessLog(client, schema) {
     const res = await client
         .query(`select * from ${schema}.access`);
     return res.rows;

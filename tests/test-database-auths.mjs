@@ -1,8 +1,8 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {
     insertAuth,
-    queryAuthById,
-    queryByAuthIdProvider
+    getAuthById,
+    getAuthByProvider
 } from "../database/auths.mjs";
 import {clearAuths} from "./fixtures/database-clear.mjs";
 
@@ -47,7 +47,7 @@ describe('database auths', () => {
         } = database;
 
         let id = await insertAuth(client, schema, auth);
-        let found = await queryAuthById(client, schema, id);
+        let found = await getAuthById(client, schema, id);
         expect(found).to.have.property('id', id);
         expect(found).to.have.property('auth_id', auth.auth_id);
         expect(found).to.have.property('provider', auth.provider);
@@ -60,7 +60,7 @@ describe('database auths', () => {
         } = database;
 
         let id = await insertAuth(client, schema, auth);
-        let found = await queryByAuthIdProvider(client, schema, auth.auth_id, auth.provider);
+        let found = await getAuthByProvider(client, schema, auth.auth_id, auth.provider);
 
         expect(found).to.have.property('id', id);
         expect(found).to.have.property('auth_id', auth.auth_id);

@@ -62,6 +62,7 @@ export function composeInsertAuth(queryByAuthIdProvider, insertAuth) {
             await insertAuth(auth);
             auth = await queryByAuthIdProvider(profile.id, provider);
         }
+
         return auth;
     }
 }

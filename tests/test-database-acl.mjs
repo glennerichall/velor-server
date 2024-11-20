@@ -1,9 +1,9 @@
 import {
     ACL_DENY,
     ACL_GRANT,
-    createAclRuleDeny,
-    createAclRuleGrant,
-    queryForAllAcl
+    insertAclDenyRule,
+    insertAclGrantRule,
+    getAllAclRules
 } from "../database/acl.mjs";
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {clearAcl} from "./fixtures/database-clear.mjs";
@@ -29,7 +29,7 @@ describe('database acl', () => {
             schema
         } = database;
 
-        let rule1 = await createAclRuleGrant(client, schema, {
+        let rule1 = await insertAclGrantRule(client, schema, {
             name: 'rule1',
             resource: '/foo/bar',
             method: 'GET',
@@ -37,7 +37,7 @@ describe('database acl', () => {
             description: 'baz qux'
         });
 
-        let rule2 = await createAclRuleDeny(client, schema, {
+        let rule2 = await insertAclDenyRule(client, schema, {
             name: 'rule2',
             resource: '/foo/baz',
             method: 'GET',
@@ -46,7 +46,7 @@ describe('database acl', () => {
         });
 
 
-        const acl = await queryForAllAcl(client, schema);
+        const acl = await getAllAclRules(client, schema);
         expect(acl).to.have.length(2);
 
         expect(acl[0]).to.have.property('name', 'rule1');
