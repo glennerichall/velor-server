@@ -2,15 +2,16 @@ import {ACL_CATEGORY_ANY} from "../auth/permissions.mjs";
 
 export async function getPrimaryAuthByUserId(client, schema, userId) {
     const res = await client
-        .query(`select a.auth_id     as profileId,
-                       a.provider,
-                       a.email,
-                       a.verified,
-                       a.displayname as displayName,
-                       a.lastname    as lastName,
-                       a.firstname   as firstName,
-                       a.avatar,
-                       a.id
+        .query(`select a.auth_id     as profile_id,
+                       a.provider    as provider,
+                       a.email       as email,
+                       a.verified    as verified,
+                       a.displayname as display_name,
+                       a.lastname    as last_name,
+                       a.firstname   as first_name,
+                       a.avatar      as avatar,
+                       a.id          as id,
+                       users.id      as user_id
                 from ${schema}.users
                          inner join ${schema}.auths a on a.id = users.primary_auth_id
                 where users.id = $1`
@@ -24,18 +25,18 @@ export async function getPrimaryAuthByUserId(client, schema, userId) {
 
 export async function getPrimaryAuthByProfile(client, schema, profileId, provider) {
     const res = await client
-        .query(`select a.auth_id     as profileId,
-                       a.provider,
-                       a.email,
-                       a.verified,
-                       a.displayname as displayName,
-                       a.lastname    as lastName,
-                       a.firstname   as firstName,
-                       a.avatar,
-                       a.id,
-                       u.id          as userId
+        .query(`select a.auth_id     as profile_id,
+                       a.provider    as provider,
+                       a.email       as email,
+                       a.verified    as verified,
+                       a.displayname as display_name,
+                       a.lastname    as last_name,
+                       a.firstname   as first_name,
+                       a.avatar      as avatar,
+                       a.id          as id,
+                       u.id          as user_id
                 from ${schema}.users u
-                         inner join ${schema}.auths a on a.id = users.primary_auth_id
+                         inner join ${schema}.auths a on a.id = u.primary_auth_id
                 where a.auth_id = $1
                   and a.provider = $2`
             , [profileId, provider]);
@@ -48,18 +49,18 @@ export async function getPrimaryAuthByProfile(client, schema, profileId, provide
 
 export async function getPrimaryAuthByAuthId(client, schema, authId) {
     const res = await client
-        .query(`select a.auth_id     as profileId,
-                       a.provider,
-                       a.email,
-                       a.verified,
-                       a.displayname as displayName,
-                       a.lastname    as lastName,
-                       a.firstname   as firstName,
-                       a.avatar,
-                       a.id,
-                       u.id          as userId
+        .query(`select a.auth_id     as profile_id,
+                       a.provider    as provider,
+                       a.email       as email,
+                       a.verified    as verified,
+                       a.displayname as display_name,
+                       a.lastname    as last_name,
+                       a.firstname   as first_name,
+                       a.avatar      as avatar,
+                       a.id          as id,
+                       u.id          as user_id
                 from ${schema}.users u
-                         inner join ${schema}.auths a on a.id = users.primary_auth_id
+                         inner join ${schema}.auths a on a.id = u.primary_auth_id
                 where a.id = $1`
             , [authId]);
     if (res.rows.length === 1) {
@@ -119,7 +120,7 @@ export async function insertLoginEvent(client, schema, fingerprint, auth_id, ip,
     return res.rowCount === 1;
 }
 
-export async function grantUserRoleByAuth(client, schema, authName, provider, roleName) {
+export async function grantUserRoleByProfile(client, schema, profileId, provider, roleName) {
     await client.query(`
                 insert into ${schema}.user_role (role, "user")
                 values ((select id from ${schema}.role where name = $1),
@@ -128,24 +129,10 @@ export async function grantUserRoleByAuth(client, schema, authName, provider, ro
                                   inner join ${schema}.auths a on a.id = users.primary_auth_id
                          where a.auth_id = $2
                            and a.provider = $3))`,
-        [roleName, authName, provider]);
+        [roleName, profileId, provider]);
 }
 
-export async function queryForUserByApiKey(client, schema, apiKey) {
-    const result = await client.query(`
-                select ${schema}.users.*
-                from ${schema}.api_keys
-                         inner join ${schema}.users_api_keys on users_api_keys.api_key_id = api_keys.id
-                         inner join ${schema}.users on users_api_keys.user_id = users.id
-                where api_keys.value = crypt(left($1, 36), api_keys.value)
-                  and api_keys.public_id = right ($1
-                    , 36)`,
-        [apiKey]);
-
-    return result.rowCount === 1 ? result.rows[0] : null;
-}
-
-export async function grantUserRole(client, schema, userId, roleName) {
+export async function grantUserRoleByUserId(client, schema, userId, roleName) {
     await client.query(`
                 insert into ${schema}.user_role (role, "user")
                 values ((select id from ${schema}.role where name = $1),
@@ -153,7 +140,21 @@ export async function grantUserRole(client, schema, userId, roleName) {
         [roleName, userId]);
 }
 
-export async function revokeUserRole(client, schema, authName, provider, roleName) {
+export async function getUserIdByApiKey(client, schema, apiKeyValue) {
+    const result = await client.query(`
+                select ${schema}.users.*
+                from ${schema}.api_keys
+                         inner join ${schema}.users_api_keys on users_api_keys.api_key_id = api_keys.id
+                         inner join ${schema}.users on users_api_keys.user_id = users.id
+                where api_keys.value = crypt(left($1, 36), api_keys.value)
+                  and api_keys.public_id = right ($1, 36)`,
+        [apiKeyValue]);
+
+    return result.rowCount === 1 ? result.rows[0] : null;
+}
+
+
+export async function revokeUserRoleByProfile(client, schema, authName, provider, roleName) {
     await client.query(`
                 delete
                 from ${schema}.user_role
@@ -166,7 +167,16 @@ export async function revokeUserRole(client, schema, authName, provider, roleNam
         [roleName, authName, provider]);
 }
 
-export async function getUserAcl(client, schema, userId, ...categories) {
+export async function revokeUserRoleByUserId(client, schema, userId, roleName) {
+    await client.query(`
+                delete
+                from ${schema}.user_role
+                where role in (select id from ${schema}.role where name = $1)
+                  and "user" in $2)`,
+        [roleName, userId]);
+}
+
+export async function getUserAclRulesByUserId(client, schema, userId, ...categories) {
     if (categories.length === 0) {
         categories.push(ACL_CATEGORY_ANY);
     }
@@ -250,7 +260,7 @@ export async function queryApiKeyForValueByUser(client, schema, value, userId) {
     return res.rowCount === 1 ? res.rows[0] : null;
 }
 
-export async function queryAllApiKeysForUser(client, schema, userId) {
+export async function getUserApiKeysByUserId(client, schema, userId) {
     const res = await client
         .query(`select *
                 from ${schema}.api_keys k
@@ -260,7 +270,7 @@ export async function queryAllApiKeysForUser(client, schema, userId) {
     return res.rows;
 }
 
-export async function queryRolesForUser(client, schema, id) {
+export async function getUserRolesByUserId(client, schema, userId) {
     const res = await client
         .query(`select r.id          as id,
                        r.name        as name,
@@ -268,6 +278,6 @@ export async function queryRolesForUser(client, schema, id) {
                 from ${schema}.role r
                          inner join ${schema}.user_role ur on r.id = ur.role
                          inner join ${schema}.users u on u.id = ur.user
-                where u.id = $1`, [id]);
+                where u.id = $1`, [userId]);
     return res.rows;
 }

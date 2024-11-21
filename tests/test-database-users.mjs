@@ -1,15 +1,16 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {clearAuths} from "./fixtures/database-clear.mjs";
 import {
+    getPrimaryAuthByProfile,
+    getPrimaryAuthByUserId,
     insertUser,
-    queryByPrimaryAuth,
-    getUserPrimaryAuthById
 } from "../database/users.mjs";
 import {
     insertAuth,
     setUserVerifiedEmail
 } from "../database/auths.mjs";
 import {queryRaw} from "velor-database/database/queryRaw.mjs";
+import {conformAuth} from "../models/conform/conformAuth.mjs";
 
 const {
     expect,
@@ -22,7 +23,7 @@ const {
 
 describe('database users', () => {
     const auth = {
-        auth_id: "mi@gmail.com",
+        profileId: "mi@gmail.com",
         provider: "google.com",
         email: "mi@gmail.com",
         verified: false,
@@ -61,12 +62,12 @@ describe('database users', () => {
             schema
         } = database;
 
-        let {id} = await insertUser(client, schema, auth);
+        let {id} = await insertUser(client, schema, auth.id);
 
-        let user = await getUserPrimaryAuthById(client, schema, id);
+        let user = conformAuth(await getPrimaryAuthByUserId(client, schema, id));
 
         expect(user.id).to.eq(id);
-        expect(user.auth_id).to.eq(auth.auth_id);
+        expect(user.profileId).to.eq(auth.profileId);
         expect(user.provider).to.eq(auth.provider);
         expect(user.email).to.eq(auth.email);
     })
@@ -77,12 +78,12 @@ describe('database users', () => {
             schema
         } = database;
 
-        let {id} = await insertUser(client, schema, auth);
+        let {id} = await insertUser(client, schema, auth.id);
 
-        let user = await queryByPrimaryAuth(client, schema, auth.auth_id, auth.provider);
+        let user = conformAuth(await getPrimaryAuthByProfile(client, schema, auth.profileId, auth.provider));
 
         expect(user.id).to.eq(id);
-        expect(user.auth_id).to.eq(auth.auth_id);
+        expect(user.profileId).to.eq(auth.profileId);
         expect(user.provider).to.eq(auth.provider);
         expect(user.email).to.eq(auth.email);
     })
@@ -93,10 +94,10 @@ describe('database users', () => {
             schema
         } = database;
 
-        let {id} = await insertUser(client, schema, auth);
+        let {id} = await insertUser(client, schema, auth.id);
 
         await setUserVerifiedEmail(client, schema, id);
-        let user = await getUserPrimaryAuthById(client, schema, id);
+        let user = await getPrimaryAuthByUserId(client, schema, id);
         expect(user).to.have.property('verified', true);
     })
 
@@ -106,7 +107,7 @@ describe('database users', () => {
             schema
         } = database;
 
-        let user = await insertUser(client, schema, auth);
+        let user = await insertUser(client, schema, auth.id);
         await clearAuths(database);
 
         let found = await queryRaw(client, `select * from ${schema}.users where id = $1`, [user.id]);

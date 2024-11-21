@@ -1,27 +1,17 @@
 import {getFullHostUrls} from "../application/services/requestServices.mjs";
 import {getEnvValue} from "velor-services/injection/baseServices.mjs";
-import {createAppServicesInstance} from "velor-services/injection/ServicesContext.mjs";
 import {AUTH_TOKEN_SECRET} from "../application/services/serverEnvKeys.mjs";
 import {createRouterBuilder} from "../core/createRouterBuilder.mjs";
 import {createAuthConfiguration} from "../routes/auth.mjs";
 import request from 'supertest';
-import {mergeDefaultServerOptions} from "../application/services/mergeDefaultServerOptions.mjs";
 import {getExpressApp} from "../application/services/serverServices.mjs";
 import {setupExpressApp} from "../initialization/setupExpressApp.mjs";
 import {getTokenLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
-import {
-    DATABASE_CONNECTION_STRING,
-    DATABASE_SCHEMA
-} from "velor-database/application/services/databaseEnvKeys.mjs";
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
-import {ENV_TEST} from "velor-utils/env.mjs";
 import {composeSessionParser} from "../auth/composeSessionParser.mjs";
 import {patchPassport} from "../auth/patchPassport.mjs";
-import {
-    URL_LOGIN,
-    URL_LOGIN_SUCCESS
-} from "velor-contrib/contrib/urls.mjs";
+import {URL_LOGIN_SUCCESS} from "velor-contrib/contrib/urls.mjs";
 import passport from "passport";
 
 
@@ -37,20 +27,7 @@ const {
 describe('login', function () {
     let services, application;
 
-    beforeEach(async ({configs}) => {
-        const {
-            schema,
-            connectionString
-        } = configs;
-        let options = mergeDefaultServerOptions(
-            {
-                env: {
-                    [AUTH_TOKEN_SECRET]: 'a-secret-token',
-                    [DATABASE_CONNECTION_STRING]: connectionString,
-                    [DATABASE_SCHEMA]: schema
-                }
-            });
-        services = createAppServicesInstance(options);
+    beforeEach(async ({services}) => {
 
         let providers = {
             [AUTH_TOKEN]: {

@@ -1,7 +1,7 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {clearRoles} from "./fixtures/database-clear.mjs";
 import {
-    insertRole,
+    createRole,
     getAllRoles
 } from "../database/roles.mjs";
 
@@ -23,8 +23,8 @@ describe('database roles', () => {
 
         await clearRoles(database);
 
-        await insertRole(client, schema, 'god', 'God mode');
-        await insertRole(client, schema, 'power', 'Power user');
+        await createRole(client, schema, 'god', 'God mode');
+        await createRole(client, schema, 'power', 'Power user');
     })
 
     it('should create role', async ({database}) => {
@@ -49,7 +49,7 @@ describe('database roles', () => {
 
         let error;
         try {
-            await insertRole(client, schema, 'god', 'There is only one');
+            await createRole(client, schema, 'god', 'There is only one');
         } catch (e) {
             error = e;
         }

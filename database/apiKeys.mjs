@@ -67,7 +67,23 @@ export async function getApiKeyByValue(client, schema, apiKeyValue) {
     return res.rowCount === 1 ? res.rows[0] : null;
 }
 
-export async function getApiKeyAclRules(client, schema, apiKeyValue, ...categories) {
+export async function getApiKeyById(client, schema, apiKeyId) {
+    const res = await client
+        .query(`select * from ${schema}.api_keys
+                where id=$1`,
+            [apiKeyId]);
+    return res.rowCount === 1 ? res.rows[0] : null;
+}
+
+export async function getApiKeyByPublicId(client, schema, publicId) {
+    const res = await client
+        .query(`select * from ${schema}.api_keys
+                where public_id=$1`,
+            [publicId]);
+    return res.rowCount === 1 ? res.rows[0] : null;
+}
+
+export async function getApiKeyAclRulesByValue(client, schema, apiKeyValue, ...categories) {
     if (categories.length === 0) {
         categories.push(ACL_CATEGORY_ANY);
     }
@@ -87,5 +103,27 @@ export async function getApiKeyAclRules(client, schema, apiKeyValue, ...categori
                     and (${schema}.acl.category = ANY($2::text[]) or '*' = ANY($2::text[]))
                 order by ${schema}.acl.permission, ${schema}.acl.resource`,
             [apiKeyValue, categories]);
+    return res.rows;
+}
+
+export async function getApiKeyAclRulesById(client, schema, apiKeyId, ...categories) {
+    if (categories.length === 0) {
+        categories.push(ACL_CATEGORY_ANY);
+    }
+
+    const res = await client
+        .query(`select
+                    ${schema}.acl.id as id,
+                    ${schema}.acl.name as name,
+                    ${schema}.acl.resource as resource,
+                    ${schema}.acl.method as method,
+                    ${schema}.acl.permission as permission
+                from ${schema}.acl
+                         inner join ${schema}.api_keys_acl aka on ${schema}.acl.id = aka.acl_id
+                         inner join ${schema}.api_keys ak on aka.api_key_id = ak.id
+                where ak.id = $1
+                    and (${schema}.acl.category = ANY($2::text[]) or '*' = ANY($2::text[]))
+                order by ${schema}.acl.permission, ${schema}.acl.resource`,
+            [apiKeyId, categories]);
     return res.rows;
 }

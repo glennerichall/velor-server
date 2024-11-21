@@ -1,12 +1,12 @@
 export async function getAuthById(client, schema, authId) {
     const res = await client
-        .query(`select auth_id     as profileId,
+        .query(`select auth_id     as profile_id,
                        provider,
                        email,
                        verified,
-                       displayname as displayName,
-                       lastname    as lastName,
-                       firstname   as firstName,
+                       displayname as display_name,
+                       lastname    as last_name,
+                       firstname   as first_name,
                        avatar,
                        id
                 from ${schema}.auths
@@ -20,13 +20,13 @@ export async function getAuthById(client, schema, authId) {
 
 export async function getAuthByProvider(client, schema, providerAuthId, provider) {
     const res = await client
-        .query(`select auth_id     as profileId,
+        .query(`select auth_id     as profile_id,
                        provider,
                        email,
                        verified,
-                       displayname as displayName,
-                       lastname    as lastName,
-                       firstname   as firstName,
+                       displayname as display_name,
+                       lastname    as last_name,
+                       firstname   as first_name,
                        avatar,
                        id
                 from ${schema}.auths

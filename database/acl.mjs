@@ -43,3 +43,10 @@ export async function getAllAclRules(client, schema) {
         .query(`select * from ${schema}.acl`);
     return res.rows;
 }
+
+export async function getAllAclRuleById(client, schema, ruleId) {
+    const res = await client
+        .query(`select * from ${schema}.acl
+                where id = $1`, [ruleId]);
+    return res.rowCount === 1 ? res.rows[0] : null;
+}

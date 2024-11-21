@@ -1,4 +1,3 @@
-import {composeInsertAuth} from "../profile/composeInsertAuth.mjs";
 import {composeInsertUser} from "../profile/composeInsertUser.mjs";
 import {
     getDataAuths,

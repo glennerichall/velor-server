@@ -5,6 +5,7 @@ import {
     getAuthByProvider
 } from "../database/auths.mjs";
 import {clearAuths} from "./fixtures/database-clear.mjs";
+import {conformAuth} from "../models/conform/conformAuth.mjs";
 
 const {
     expect,
@@ -17,7 +18,7 @@ const {
 
 describe('database auths', () => {
     const auth = {
-        auth_id: "mi@gmail.com",
+        profileId: "mi@gmail.com",
         provider: "google.com",
         email: "mi@gmail.com",
         verified: true,
@@ -47,9 +48,9 @@ describe('database auths', () => {
         } = database;
 
         let id = await insertAuth(client, schema, auth);
-        let found = await getAuthById(client, schema, id);
+        let found = conformAuth(await getAuthById(client, schema, id));
         expect(found).to.have.property('id', id);
-        expect(found).to.have.property('auth_id', auth.auth_id);
+        expect(found).to.have.property('profileId', auth.profileId);
         expect(found).to.have.property('provider', auth.provider);
     })
 
@@ -60,10 +61,10 @@ describe('database auths', () => {
         } = database;
 
         let id = await insertAuth(client, schema, auth);
-        let found = await getAuthByProvider(client, schema, auth.auth_id, auth.provider);
+        let found = conformAuth(await getAuthByProvider(client, schema, auth.profileId, auth.provider));
 
         expect(found).to.have.property('id', id);
-        expect(found).to.have.property('auth_id', auth.auth_id);
+        expect(found).to.have.property('profileId', auth.profileId);
         expect(found).to.have.property('provider', auth.provider);
     })
 
@@ -90,7 +91,7 @@ describe('database auths', () => {
 
         await insertAuth(client, schema, {
             ...auth,
-            auth_id: 'Yu@gmail.com'
+            profileId: 'Yu@gmail.com'
         });
     })
 })

@@ -6,7 +6,7 @@ import {
 } from "./fixtures/database-clear.mjs";
 import {
     addAclRuleToRole,
-    insertRole
+    createRole
 } from "../database/roles.mjs";
 import {
     insertAclDenyRule,
@@ -14,13 +14,14 @@ import {
 } from "../database/acl.mjs";
 import {insertAuth} from "../database/auths.mjs";
 import {
-    grantUserRole,
     insertUser,
-    getUserAcl,
-    getUserPrimaryAuthById,
-    revokeUserRole,
-    queryRolesForUser
+    getUserAclRulesByUserId,
+    revokeUserRoleByProfile,
+    getUserRolesByUserId,
+    getPrimaryAuthByUserId,
+    grantUserRoleByUserId
 } from "../database/users.mjs";
+import {conformAuth} from "../models/conform/conformAuth.mjs";
 
 const {
     expect,
@@ -33,7 +34,7 @@ const {
 
 describe('database user acl', () => {
     const auth = {
-        auth_id: "mi@gmail.com",
+        profileId: "mi@gmail.com",
         provider: "google.com",
         email: "mi@gmail.com",
         verified: false,
@@ -69,17 +70,17 @@ describe('database user acl', () => {
             description: 'biz baz buz'
         });
 
-        role1 = await insertRole(client, schema, 'god', 'God mode');
-        role2 = await insertRole(client, schema, 'power', 'Power user');
-        let role3 = await insertRole(client, schema, 'normal', 'Lambda user');
+        role1 = await createRole(client, schema, 'god', 'God mode');
+        role2 = await createRole(client, schema, 'power', 'Power user');
+        let role3 = await createRole(client, schema, 'normal', 'Lambda user');
 
         auth.id = await insertAuth(client, schema, auth);
-        let {id} = await insertUser(client, schema, auth);
-        user = await getUserPrimaryAuthById(client, schema, id);
+        let {id} = await insertUser(client, schema, auth.id);
+        user = conformAuth(await getPrimaryAuthByUserId(client, schema, id));
 
         await addAclRuleToRole(client, schema, 'god', 'rule1');
-        await grantUserRole(client, schema, user.id, 'god');
-        await grantUserRole(client, schema, user.id, 'normal');
+        await grantUserRoleByUserId(client, schema, user.id, 'god');
+        await grantUserRoleByUserId(client, schema, user.id, 'normal');
     })
 
     it('should assign role to user', async ({database}) => {
@@ -88,7 +89,7 @@ describe('database user acl', () => {
             schema
         } = database;
 
-        let roles = await queryRolesForUser(client, schema, user.id);
+        let roles = await getUserRolesByUserId(client, schema, user.id);
 
         expect(roles).to.have.length(2);
         expect(roles[0].name).to.eq('god');
@@ -101,7 +102,7 @@ describe('database user acl', () => {
             schema
         } = database;
 
-        let acl = await getUserAcl(client, schema, user.id);
+        let acl = await getUserAclRulesByUserId(client, schema, user.id);
 
         expect(acl).to.have.length(1);
         expect(acl[0].name).to.eq('rule1');
@@ -113,8 +114,8 @@ describe('database user acl', () => {
             schema
         } = database;
 
-        await revokeUserRole(client, schema, user.auth_id, user.provider, 'god');
-        let roles = await queryRolesForUser(client, schema, user.id);
+        await revokeUserRoleByProfile(client, schema, user.profileId, user.provider, 'god');
+        let roles = await getUserRolesByUserId(client, schema, user.id);
 
         expect(roles).to.have.length(1);
         expect(roles[0].name).to.eq('normal');
