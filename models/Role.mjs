@@ -1,7 +1,7 @@
 import {getDataRoles} from "../application/services/dataServices.mjs";
 import {conformRole} from "./conform/conformRole.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
-import {Rule} from "./Rule.mjs";
+import {RuleDAO} from "./RuleDAO.mjs";
 
 export class Role {
     #data;
@@ -56,7 +56,7 @@ export class Role {
             this.#aclRules = [];
             for (let rule of rules) {
                 this.#aclRules.push(
-                    getServiceBinder(this).createInstance(Rule, rule)
+                    getServiceBinder(this).createInstance(RuleDAO, rule)
                 );
             }
         }

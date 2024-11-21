@@ -1,13 +1,11 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
 import {
-    clearAcl,
-    clearAuths
+    clearAcl
 } from "./fixtures/database-clear.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
-import {Rule} from "../models/Rule.mjs";
+import {RuleDAO} from "../models/RuleDAO.mjs";
 import {getDataAcl} from "../application/services/dataServices.mjs";
-import {getAclRuleByName} from "../database/acl.mjs";
 import {conformRule} from "../models/conform/conformRule.mjs";
 
 const {
@@ -44,7 +42,7 @@ describe('Rule', () => {
     }
 
     it('should map properties from data', async ({services}) => {
-        let rule = getServiceBinder(services).createInstance(Rule, data);
+        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
         expect(rule.id).to.be.undefined;
 
         expect(rule.name).to.equal(data.name);
@@ -56,7 +54,7 @@ describe('Rule', () => {
     })
 
     it('should not load not saved rule', async ({services}) => {
-        let rule = getServiceBinder(services).createInstance(Rule, data);
+        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
         expect(rule.id).to.be.undefined;
 
         await rule.load();
@@ -71,7 +69,7 @@ describe('Rule', () => {
     })
 
     it('should save rule', async ({services}) => {
-        let rule = getServiceBinder(services).createInstance(Rule, data);
+        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
         expect(rule.id).to.be.undefined;
 
         let saved = await rule.save();
@@ -96,11 +94,11 @@ describe('Rule', () => {
     })
 
     it('should load rule from id', async () => {
-        let rule = getServiceBinder(services).createInstance(Rule, data);
+        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
         await rule.save();
         let id = rule.id;
 
-        rule = getServiceBinder(services).createInstance(Rule, {id});
+        rule = getServiceBinder(services).createInstance(RuleDAO, {id});
 
         expect(rule.name).to.be.undefined;
         expect(rule.category).to.be.undefined;
@@ -122,11 +120,11 @@ describe('Rule', () => {
     })
 
     it('should load rule from name', async () => {
-        let rule = getServiceBinder(services).createInstance(Rule, data);
+        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
         await rule.save();
         let id = rule.id;
 
-        rule = getServiceBinder(services).createInstance(Rule, {name: data.name});
+        rule = getServiceBinder(services).createInstance(RuleDAO, {name: data.name});
 
         expect(rule.id).to.be.undefined;
         expect(rule.category).to.be.undefined;
@@ -148,11 +146,11 @@ describe('Rule', () => {
     })
 
     it('should not save twice', async () => {
-        let rule = getServiceBinder(services).createInstance(Rule, data);
+        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
         await rule.save();
         let id = rule.id;
 
-        rule = getServiceBinder(services).createInstance(Rule, {name: data.name});
+        rule = getServiceBinder(services).createInstance(RuleDAO, {name: data.name});
         let saved = await rule.save();
         expect(saved).to.be.false;
 

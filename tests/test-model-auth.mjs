@@ -1,6 +1,6 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
-import {Auth} from "../models/Auth.mjs";
+import {AuthDAO} from "../models/AuthDAO.mjs";
 import {getDataAuths} from "../application/services/dataServices.mjs";
 import {conformAuth} from "../models/conform/conformAuth.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
@@ -27,155 +27,98 @@ describe('Auth', () => {
         avatar: 'yoyoyo'
     };
 
-    let services;
+    let services, auth;
 
     beforeEach(async ({services: s}) => {
         services = s;
         const database = getDatabase(services);
         await clearAuths(database);
+        auth = getServiceBinder(services).createInstance(AuthDAO);
     })
 
     function readAuthFromDatabase() {
         return getDataAuths(services).getAuthByProvider(profile.profileId, profile.provider);
     }
 
-    it('should give access to underlying data', async () => {
-        let auth = getServiceBinder(services).createInstance(Auth, profile);
-
-        expect(auth).to.have.property('profileId', profile.profileId);
-        expect(auth).to.have.property('provider', profile.provider);
-        expect(auth).to.have.property('email', profile.email);
-        expect(auth).to.have.property('verified', profile.verified);
-        expect(auth).to.have.property('displayName', profile.displayName);
-        expect(auth).to.have.property('lastName', profile.lastName);
-        expect(auth).to.have.property('firstName', profile.firstName);
-        expect(auth).to.have.property('avatar', profile.avatar);
-    })
-
     it('should save auth if not save', async () => {
-        let auth = getServiceBinder(services).createInstance(Auth, profile);
-
         // ensure current profile is NOT in database
-        let data = await readAuthFromDatabase(services);
+        let data = await readAuthFromDatabase();
         expect(data).to.be.null;
 
-        let saved = await auth.save();
+        let saved = await auth.save(profile);
 
-        expect(saved).to.be.true;
+        expect(saved).to.not.eq(profile);
 
         // check current profile is NOW in database
-        data = conformAuth(await readAuthFromDatabase(services));
+        data = conformAuth(await readAuthFromDatabase());
         expect(data).excluding(['id', 'avatar', 'userId']).to.deep.equal(profile);
 
-        expect(auth).to.have.property('id', data.id);
+        expect(saved).to.have.property('id', data.id);
     })
 
     it('should load auth from database using profile', async () => {
         // save instance into db
-        let auth = getServiceBinder(services).createInstance(Auth, profile);
-        await auth.save();
+        await auth.save(profile);
+        let data = await readAuthFromDatabase(services);
 
-        // create new instance, it should be loaded from database
-        expect(profile.id).to.be.undefined;
-        auth = getServiceBinder(services).createInstance(Auth, {
+        let loaded = await auth.load({
             profileId: profile.profileId,
             provider: profile.provider,
         });
-        expect(auth.id).to.be.undefined;
 
-        let data = await readAuthFromDatabase(services);
+        expect(data).to.not.eq(profile);
+        expect(loaded.id).to.not.be.undefined;
+        expect(loaded).to.have.property('id', data.id);
 
-        expect(auth).to.have.property('profileId', profile.profileId);
-        expect(auth).to.have.property('provider', profile.provider);
-        expect(auth).to.have.property('email', undefined);
-        expect(auth).to.have.property('verified', undefined);
-        expect(auth).to.have.property('displayName', undefined);
-        expect(auth).to.have.property('lastName', undefined);
-        expect(auth).to.have.property('firstName', undefined);
-        expect(auth).to.have.property('avatar', undefined);
-
-        await auth.load();
-        expect(profile.id).to.be.undefined;
-
-        expect(auth.id).to.not.be.undefined;
-        expect(auth).to.have.property('id', data.id);
-
-        expect(auth).to.have.property('profileId', profile.profileId);
-        expect(auth).to.have.property('provider', profile.provider);
-        expect(auth).to.have.property('email', profile.email);
-        expect(auth).to.have.property('verified', profile.verified);
-        expect(auth).to.have.property('displayName', profile.displayName);
-        expect(auth).to.have.property('lastName', profile.lastName);
-        expect(auth).to.have.property('firstName', profile.firstName);
-        expect(auth).to.have.property('avatar', profile.avatar);
+        expect(loaded).to.have.property('profileId', profile.profileId);
+        expect(loaded).to.have.property('provider', profile.provider);
+        expect(loaded).to.have.property('email', profile.email);
+        expect(loaded).to.have.property('verified', profile.verified);
+        expect(loaded).to.have.property('displayName', profile.displayName);
+        expect(loaded).to.have.property('lastName', profile.lastName);
+        expect(loaded).to.have.property('firstName', profile.firstName);
+        expect(loaded).to.have.property('avatar', profile.avatar);
     })
 
     it('should load auth from database using auth id', async () => {
         // save instance into db
-        let auth = getServiceBinder(services).createInstance(Auth, profile);
-        await auth.save();
-
+        await auth.save(profile);
         let data = await readAuthFromDatabase(services);
+        let loaded = await auth.load({id: data.id});
 
-        auth = getServiceBinder(services).createInstance(Auth, {
-            id: data.id,
-        });
-
-        expect(auth).to.have.property('id', data.id);
-        expect(auth).to.have.property('profileId', undefined);
-        expect(auth).to.have.property('provider', undefined);
-        expect(auth).to.have.property('email', undefined);
-        expect(auth).to.have.property('verified', undefined);
-        expect(auth).to.have.property('displayName', undefined);
-        expect(auth).to.have.property('lastName', undefined);
-        expect(auth).to.have.property('firstName', undefined);
-        expect(auth).to.have.property('avatar', undefined);
-
-        await auth.load();
-
-        expect(auth).to.have.property('id', data.id);
-
-        expect(auth).to.have.property('profileId', profile.profileId);
-        expect(auth).to.have.property('provider', profile.provider);
-        expect(auth).to.have.property('email', profile.email);
-        expect(auth).to.have.property('verified', profile.verified);
-        expect(auth).to.have.property('displayName', profile.displayName);
-        expect(auth).to.have.property('lastName', profile.lastName);
-        expect(auth).to.have.property('firstName', profile.firstName);
-        expect(auth).to.have.property('avatar', profile.avatar);
+        expect(loaded).to.have.property('id', data.id);
+        expect(loaded).to.have.property('profileId', profile.profileId);
+        expect(loaded).to.have.property('provider', profile.provider);
+        expect(loaded).to.have.property('email', profile.email);
+        expect(loaded).to.have.property('verified', profile.verified);
+        expect(loaded).to.have.property('displayName', profile.displayName);
+        expect(loaded).to.have.property('lastName', profile.lastName);
+        expect(loaded).to.have.property('firstName', profile.firstName);
+        expect(loaded).to.have.property('avatar', profile.avatar);
     })
 
     it('should not save auth if already in database', async () => {
-        // save instance into db
-        let auth = getServiceBinder(services).createInstance(Auth, profile);
-        await auth.save();
-
-        // create new instance, it should not save it into database
-        expect(profile.id).to.be.undefined;
-        auth = getServiceBinder(services).createInstance(Auth, profile);
-        expect(auth.id).to.be.undefined;
-
-        let saved = await auth.save();
-        expect(saved).to.be.false;
-
-        expect(auth.id).to.not.be.undefined;
+        let saved = await auth.save(profile);
+        expect(await auth.canSave(saved)).to.be.false;
+        saved = await auth.save(saved);
+        expect(saved).to.eq(saved);
     })
 
-    it('should set verified to true', async()=> {
+    it('should set verified to true', async () => {
         // save instance into db
-        let auth = getServiceBinder(services).createInstance(Auth, profile);
-        await auth.save();
+        let saved = await auth.save(profile);
 
         let data = await readAuthFromDatabase(services);
-
         expect(data).to.have.property('verified', false);
 
-        await auth.markAsConfirmed();
+        let verified = await auth.markAsConfirmed(saved);
 
         data = await readAuthFromDatabase(services);
 
         expect(data).to.have.property('verified', true);
-        expect(auth).to.have.property('verified', true);
+        expect(data).to.have.property('id', saved.id);
 
+        expect(saved).to.have.property('verified', true);
+        expect(verified).to.have.property('verified', true);
     })
 })

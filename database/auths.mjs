@@ -53,7 +53,7 @@ export async function insertAuth(client, schema, {
         .query(`insert into ${schema}.auths
                 (auth_id, provider, email, verified,
                  displayName, lastName, firstName, avatar)
-                values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+                values ($1, $2, $3, $4, $5, $6, $7, $8) returning *`,
             [
                 profileId,
                 provider,
@@ -64,7 +64,7 @@ export async function insertAuth(client, schema, {
                 firstName,
                 avatar
             ]);
-    return res.rows[0].id;
+    return res.rows[0];
 }
 
 export async function setUserVerifiedEmail(client, schema, authId) {

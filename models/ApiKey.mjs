@@ -1,15 +1,17 @@
 import {getDataApiKeys} from "../application/services/dataServices.mjs";
 import {conformApiKey} from "./conform/conformApiKey.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
-import {Rule} from "./Rule.mjs";
+import {RuleDAO} from "./RuleDAO.mjs";
 
 export class ApiKey {
     #data;
+    #query;
 
     #aclRules;
 
-    constructor(data) {
-        this.#data = data;
+    constructor(query) {
+        this.#query = query;
+        this.#data = {};
     }
 
     get #isLoaded() {
@@ -46,7 +48,7 @@ export class ApiKey {
 
     async load() {
         if (!this.#isLoaded) {
-            let query = this.#data;
+                let query = this.#query;
             let apiKey;
             if (query.publicId) {
                 apiKey = await getDataApiKeys(this).getApiKeyByPublicId(query.publicId);
@@ -71,7 +73,7 @@ export class ApiKey {
             this.#aclRules = [];
             for (let rule of rules) {
                 this.#aclRules.push(
-                    getServiceBinder(this).createInstance(Rule, rule)
+                    getServiceBinder(this).createInstance(RuleDAO, rule)
                 );
             }
         }

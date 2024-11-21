@@ -1,7 +1,6 @@
 import {setupTestContext} from "velor-utils/test/setupTestContext.mjs";
 import sinon from "sinon";
 import {composeInsertUser} from "../profile/composeInsertUser.mjs";
-import {composeInsertAuth} from "../profile/composeInsertAuth.mjs";
 
 const {
     expect,

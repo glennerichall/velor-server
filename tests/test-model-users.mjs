@@ -3,7 +3,7 @@ import {clearAuths} from "./fixtures/database-clear.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {User} from "../models/User.mjs";
-import {Auth} from "../models/Auth.mjs";
+import {AuthDAO} from "../models/AuthDAO.mjs";
 import {
     getDataUsers
 } from "../application/services/dataServices.mjs";
@@ -37,7 +37,7 @@ describe('User', () => {
         services = s;
         const database = getDatabase(services);
         await clearAuths(database); // users are cascaded
-        auth = getServiceBinder(services).createInstance(Auth, profile);
+        auth = getServiceBinder(services).createInstance(AuthDAO, profile);
         await auth.save();
 
         let role = getServiceBinder(services).createInstance(Role, {

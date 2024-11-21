@@ -1,7 +1,7 @@
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {getDataUsers} from "../application/services/dataServices.mjs";
-import {Auth} from "./Auth.mjs";
-import {Rule} from "./Rule.mjs";
+import {AuthDAO} from "./AuthDAO.mjs";
+import {RuleDAO} from "./RuleDAO.mjs";
 import {Role} from "./Role.mjs";
 import {ApiKey} from "./ApiKey.mjs";
 import {conformAuth} from "./conform/conformAuth.mjs";
@@ -39,13 +39,13 @@ export class User {
                 query.profileId,
                 query.provider);
 
-        } else if (query.auth instanceof Auth) {
+        } else if (query.auth instanceof AuthDAO) {
             this.#primaryAuth = query.auth;
         }
 
         if (auth) {
             auth = conformAuth(auth);
-            this.#primaryAuth = getServiceBinder(this).createInstance(Auth, auth);
+            this.#primaryAuth = getServiceBinder(this).createInstance(AuthDAO, auth);
             return auth.userId;
         }
 
@@ -124,7 +124,7 @@ export class User {
             this.#aclRules = [];
             for (let rule of rules) {
                 this.#aclRules.push(
-                    getServiceBinder(this).createInstance(Rule, rule)
+                    getServiceBinder(this).createInstance(RuleDAO, rule)
                 );
             }
         }

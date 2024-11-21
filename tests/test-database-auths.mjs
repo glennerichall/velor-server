@@ -47,7 +47,7 @@ describe('database auths', () => {
             schema
         } = database;
 
-        let id = await insertAuth(client, schema, auth);
+        let {id} = await insertAuth(client, schema, auth);
         let found = conformAuth(await getAuthById(client, schema, id));
         expect(found).to.have.property('id', id);
         expect(found).to.have.property('profileId', auth.profileId);
@@ -60,7 +60,7 @@ describe('database auths', () => {
             schema
         } = database;
 
-        let id = await insertAuth(client, schema, auth);
+        let {id} = await insertAuth(client, schema, auth);
         let found = conformAuth(await getAuthByProvider(client, schema, auth.profileId, auth.provider));
 
         expect(found).to.have.property('id', id);

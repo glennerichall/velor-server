@@ -14,6 +14,12 @@ import {ACL_CATEGORY_ANY} from "../auth/permissions.mjs";
 //     return res.rowCount === 1 ? res.rows[0] : null;
 // }
 
+export async function getAllApiKeys(client, schema) {
+    const res = await client
+        .query(`select * from ${schema}.api_keys`);
+    return res.rows;
+}
+
 export async function createApiKey(client, schema, name) {
     const res = await client
         .query(`WITH ins AS (SELECT gen_random_uuid() AS uuid_value)
