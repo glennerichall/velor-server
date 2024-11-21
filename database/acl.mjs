@@ -21,7 +21,7 @@ export async function insertAclRule(client, schema, {
                 category,
                 description
             ]);
-    return res.rowCount;
+    return res.rows[0];
 }
 
 export async function insertAclGrantRule(client, schema, rule) {
@@ -44,9 +44,17 @@ export async function getAllAclRules(client, schema) {
     return res.rows;
 }
 
-export async function getAllAclRuleById(client, schema, ruleId) {
+export async function getAclRuleById(client, schema, ruleId) {
     const res = await client
         .query(`select * from ${schema}.acl
                 where id = $1`, [ruleId]);
+    return res.rowCount === 1 ? res.rows[0] : null;
+}
+
+
+export async function getAclRuleByName(client, schema, name) {
+    const res = await client
+        .query(`select * from ${schema}.acl
+                where name = $1`, [name]);
     return res.rowCount === 1 ? res.rows[0] : null;
 }

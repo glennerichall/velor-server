@@ -4,6 +4,7 @@ import {Auth} from "./Auth.mjs";
 import {Rule} from "./Rule.mjs";
 import {Role} from "./Role.mjs";
 import {ApiKey} from "./ApiKey.mjs";
+import {conformAuth} from "./conform/conformAuth.mjs";
 
 export class User {
     #query;
@@ -43,6 +44,7 @@ export class User {
         }
 
         if (auth) {
+            auth = conformAuth(auth);
             this.#primaryAuth = getServiceBinder(this).createInstance(Auth, auth);
             return auth.userId;
         }
@@ -88,9 +90,13 @@ export class User {
     async save() {
         await this.loadUserId();
         if (!this.#id) {
-            this.#id = getDataUsers(this).insertUser(this.#primaryAuth.id);
-            await this.grantRole("normal");
-            return true;
+            await this.loadPrimaryAuth();
+            if (this.#primaryAuth) {
+                const user = await getDataUsers(this).insertUser(this.#primaryAuth.id);
+                this.#id = user.id;
+                await this.grantRole("normal");
+                return true;
+            }
         }
         return false;
     }

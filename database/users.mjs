@@ -35,8 +35,8 @@ export async function getPrimaryAuthByProfile(client, schema, profileId, provide
                        a.avatar      as avatar,
                        a.id          as id,
                        u.id          as user_id
-                from ${schema}.users u
-                         inner join ${schema}.auths a on a.id = u.primary_auth_id
+                from ${schema}.auths a
+                         left join ${schema}.users u on a.id = u.primary_auth_id
                 where a.auth_id = $1
                   and a.provider = $2`
             , [profileId, provider]);
@@ -60,7 +60,7 @@ export async function getPrimaryAuthByAuthId(client, schema, authId) {
                        a.id          as id,
                        u.id          as user_id
                 from ${schema}.users u
-                         inner join ${schema}.auths a on a.id = u.primary_auth_id
+                         right join ${schema}.auths a on a.id = u.primary_auth_id
                 where a.id = $1`
             , [authId]);
     if (res.rows.length === 1) {

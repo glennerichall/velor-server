@@ -9,7 +9,7 @@ export class Role {
     #aclRules;
 
     constructor(data) {
-        this.#data = data;
+        this.#data = {...data};
     }
 
     get #isLoaded() {
@@ -29,7 +29,7 @@ export class Role {
         return this.#data.description;
     }
 
-    async #loadName() {
+    async loadName() {
         if (!this.name) {
             await this.load();
         }
@@ -43,12 +43,14 @@ export class Role {
             } else if (this.name) {
                 role = await getDataRoles(this).getRoleByName(this.name);
             }
-            this.#data = conformRole(role);
+            if (role) {
+                this.#data = conformRole(role);
+            }
         }
     }
 
     async getAclRules(...categories) {
-        await this.#loadName();
+        await this.loadName();
         if (!this.#aclRules) {
             let rules = await getDataRoles(this).getRoleAclRulesByName(this.name, ...categories);
             this.#aclRules = [];
@@ -62,8 +64,9 @@ export class Role {
     }
 
     async save() {
+        await this.load();
         if (!this.id) {
-            this.#data.id = await getDataRoles(this).createRole(this.name, this.description);
+            this.#data = conformRole(await getDataRoles(this).createRole(this.name, this.description));
             return true;
         }
         return false;

@@ -34,7 +34,7 @@ export async function getRoleAclRulesByName(client, schema, roleId, ...categorie
 }
 
 export async function addAclRuleToRole(client, schema, roleName, aclName) {
-    const res = client.query(`insert into ${schema}.role_acl (role,acl)
+    const res = await client.query(`insert into ${schema}.role_acl (role,acl)
          values ((select id from ${schema}.role where name=$1),
                  (select id from ${schema}.acl where name=$2))`,
         [roleName, aclName]);
@@ -42,13 +42,13 @@ export async function addAclRuleToRole(client, schema, roleName, aclName) {
 }
 
 export async function getRoleById(client, schema, roleId) {
-    const res = client.query(`select * from ${schema}.role 
+    const res = await client.query(`select * from ${schema}.role 
         where id = $1`, [roleId]);
     return res.rowCount === 1 ? res.rows[0] : null;
 }
 
 export async function getRoleByName(client, schema, name) {
-    const res = client.query(`select * from ${schema}.role 
+    const res = await client.query(`select * from ${schema}.role 
         where name = $1`, [name]);
     return res.rowCount === 1 ? res.rows[0] : null;
 }

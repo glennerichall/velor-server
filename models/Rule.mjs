@@ -45,13 +45,22 @@ export class Rule {
 
     async load() {
         if (!this.#isLoaded) {
-            this.#data = conformRule(await getDataAcl(this).getAllAclRuleById(this.id));
+            let rule;
+            if (this.id) {
+                rule = await getDataAcl(this).getAclRuleById(this.id);
+            } else if (this.name) {
+                rule = await getDataAcl(this).getAclRuleByName(this.name);
+            }
+            if (rule) {
+                this.#data = conformRule(rule);
+            }
         }
     }
 
     async save() {
+        await this.load();
         if (!this.id) {
-            this.#data.id = await getDataAcl(this).insertAclRule(this);
+            this.#data = conformRule(await getDataAcl(this).insertAclRule(this));
             return true;
         }
         return false;
