@@ -6,11 +6,11 @@ import {
     s_expressApp,
     s_mailer,
     s_messageFactory,
+    s_preferenceDAO,
     s_roleDAO,
     s_ruleDAO,
     s_server,
     s_userDAO,
-    s_userManager
 } from "./serverServiceKeys.mjs";
 
 export function getMessageFactory(services) {
@@ -23,10 +23,6 @@ export function getEmitter(services) {
 
 export function getMailer(services) {
     return getProvider(services)[s_mailer]();
-}
-
-export function getUserManager(services) {
-    return getProvider(services)[s_userManager]();
 }
 
 export function getExpressApp(services) {
@@ -55,4 +51,8 @@ export function getUserDAO(services) {
 
 export function getAuthDAO(services) {
     return getProvider(services)[s_authDAO]();
+}
+
+export function getPreferenceDAO(services) {
+    return getProvider(services)[s_preferenceDAO]();
 }

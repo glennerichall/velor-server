@@ -1,5 +1,9 @@
 import {NotImplementedError} from "velor-utils/utils/errors/NotImplementedError.mjs";
 import {identOp} from "velor-utils/utils/functional.mjs";
+import {
+    isPristine,
+    saveInitialState
+} from "velor-utils/utils/objects.mjs";
 
 export class BaseDAO {
     isVO(obj) {
@@ -86,33 +90,40 @@ export function freezeVo(vo) {
     return vo;
 }
 
-const voSymbol = Symbol('VO');
+const typeSym = Symbol('VO-Type');
 
-const getIsVO = symbol => (vo) => vo && vo[symbol];
+export const composeIsVO = symbol => (vo) => vo && vo[typeSym] === symbol;
+export const composeCanSaveIfNotVo = (isVo) => async (data) => !isVo(data)
+export const composeCanSaveIfModified = (isVo, isPristine) => async (data) => !isPristine(data);
+export const canSaveIfModified = composeCanSaveIfModified(isPristine);
 
-const getCanSaveIfNotVo = (isVo) => async (data) => {
-    return !isVo(data);
-}
-
-const getMakeVo = symbol => (vo) => {
-    vo[symbol] = true;
+export const composeMakeFrozenVo = symbol => (vo) => {
+    vo[typeSym] = symbol;
     freezeVo(vo);
     return vo;
 };
 
-export const loadOneBaseOnQuery = getProvider => query => {
-    const request = getProvider(query);
-    return request(query);
-};
+export const composeMakeSaveStateVo = symbol => (vo) => {
+    vo[typeSym] = symbol;
+    saveInitialState(vo);
+    return vo;
+}
+
+export const composeMutablePolicy = symbol => {
+    return {
+        makeVO: composeMakeSaveStateVo(symbol),
+        canSave: canSaveIfModified,
+    };
+}
 
 export const DAOPolicy = (policy = {}) => {
 
     const {
-        symbol = voSymbol,
-        isVO = getIsVO(symbol),
+        symbol = Symbol(),
         conformVO = identOp,
-        makeVO = getMakeVo(symbol),
-        canSave = getCanSaveIfNotVo(isVO),
+        isVO = composeIsVO(symbol),
+        makeVO = composeMakeFrozenVo(symbol),
+        canSave = composeCanSaveIfNotVo(isVO),
     } = policy;
 
     return class extends BaseDAO {
@@ -131,22 +142,6 @@ export const DAOPolicy = (policy = {}) => {
         async canSave(data) {
             data = await this.loadOne(data);
             return canSave(data);
-        }
-
-        insertOne(vo) {
-            return dao.insertOne(vo);
-        }
-
-        selectOne(query) {
-            return dao.selectOne(query);
-        }
-
-        selectMany(query) {
-            return dao.selectMany(query);
-        }
-
-        insertMany(list) {
-            return dao.insertMany(list);
         }
     };
 }

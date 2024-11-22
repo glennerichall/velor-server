@@ -145,6 +145,7 @@ create table if not exists "@{SCHEMA}".@{TABLE_API_KEYS}
         primary key(id)
 );
 
+
 create table if not exists "@{SCHEMA}".@{TABLE_API_KEYS_ACL}
 (
 	"id" serial not null,

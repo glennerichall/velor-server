@@ -27,8 +27,8 @@ const {
 describe('login', function () {
     let services, application;
 
-    beforeEach(async ({services}) => {
-
+    beforeEach(async ({services: s}) => {
+        services = s;
         let providers = {
             [AUTH_TOKEN]: {
                 token: getEnvValue(services, AUTH_TOKEN_SECRET),

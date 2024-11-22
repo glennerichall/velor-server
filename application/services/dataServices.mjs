@@ -4,6 +4,7 @@ import {
     DATA_API_KEYS,
     DATA_AUTH_TOKENS,
     DATA_AUTHS,
+    DATA_PREFERENCES,
     DATA_ROLES,
     DATA_USERS,
 } from "./serverDataKeys.mjs";
@@ -35,4 +36,8 @@ export function getDataAcl(services) {
 
 export function getDataRoles(services) {
     return getDatabase(services)[DATA_ROLES];
+}
+
+export function getDataPreferences(services) {
+    return getDatabase(services)[DATA_PREFERENCES];
 }

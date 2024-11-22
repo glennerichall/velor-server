@@ -5,6 +5,7 @@ import * as authTokens from './authTokens.mjs';
 import * as users from './users.mjs';
 import * as auths from './auths.mjs';
 import * as roles from './roles.mjs';
+import * as preferences from './preferences.mjs';
 
 import {
     DATA_ACCESS,
@@ -13,7 +14,8 @@ import {
     DATA_AUTH_TOKENS,
     DATA_AUTHS,
     DATA_USERS,
-    DATA_ROLES
+    DATA_ROLES,
+    DATA_PREFERENCES
 } from "../application/services/serverDataKeys.mjs";
 
 export const statements = {
@@ -24,4 +26,5 @@ export const statements = {
     [DATA_API_KEYS]: apiKeys,
     [DATA_ACL]: acl,
     [DATA_ROLES]: roles,
+    [DATA_PREFERENCES]: preferences,
 };

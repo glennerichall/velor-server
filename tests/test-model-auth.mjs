@@ -99,14 +99,16 @@ describe('Auth', () => {
 
     it('should not save auth twice', async () => {
         let saved = await auth.saveOne(profile);
+        expect(auth.isVO(saved)).to.be.true;
         expect(await auth.canSave(saved)).to.be.false;
         saved = await auth.saveOne(saved);
-        expect(saved).to.eq(saved);
+        expect(auth.isVO(saved)).to.be.true;
     })
 
     it('should not save auth if already in database', async () => {
         let first = await auth.saveOne(profile);
         let loaded = await auth.saveOne(profile);
+        expect(auth.isVO(loaded)).to.be.true;
 
         let auths = await getDataAuths(services).getAllAuths();
         expect(auths).to.have.length(1);
