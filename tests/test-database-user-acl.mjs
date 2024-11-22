@@ -74,8 +74,8 @@ describe('database user acl', () => {
         role2 = await createRole(client, schema, 'power', 'Power user');
         let role3 = await createRole(client, schema, 'normal', 'Lambda user');
 
-        auth.id = await insertAuth(client, schema, auth);
-        let {id} = await insertUser(client, schema, auth.id);
+        let {id: authId} = await insertAuth(client, schema, auth);
+        let {id} = await insertUser(client, schema, authId);
         user = conformAuth(await getPrimaryAuthByUserId(client, schema, id));
 
         await addAclRuleToRole(client, schema, 'god', 'rule1');

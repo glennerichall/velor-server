@@ -6,7 +6,6 @@ import {
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
 import {
     DATA_AUTHS,
-    DATA_USER_AUTHS,
     DATA_USERS
 } from "../application/services/serverDataKeys.mjs";
 
@@ -24,7 +23,7 @@ export class UserManager {
                 insertUser,
                 grantUserRole
             },
-            [DATA_USER_AUTHS]: {
+            bob: {
                 queryForUserByAuthId,
                 queryForAuthsByUserId,
                 insertOrNothing

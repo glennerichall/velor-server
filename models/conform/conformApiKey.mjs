@@ -2,7 +2,7 @@ export function conformApiKey(apiKey) {
     if(!apiKey) return null;
     return {
         id: apiKey.id,
-        value: apiKey.value,
+        value: apiKey.api_key,
         creation: apiKey.creation,
         name: apiKey.name,
         publicId: apiKey.publicId ?? apiKey.public_id,

@@ -1,25 +1,15 @@
 import {getDataAuths} from "../application/services/dataServices.mjs";
 import {conformAuth} from "./conform/conformAuth.mjs";
-import {saveInitialState} from "velor-utils/utils/objects.mjs";
+import {DAOPolicy} from "./BaseDAO.mjs";
 
 const authSym = Symbol("auth");
 
-export function isAuth(auth) {
-    return auth && auth[authSym];
-}
+export class AuthDAO extends DAOPolicy({
+    symbol: authSym,
+    conformVO: conformAuth
+}) {
 
-function makeAuth(auth) {
-    auth[authSym] = true;
-    return saveInitialState(auth);
-}
-
-export class AuthDAO {
-
-    async load(query) {
-        if (isAuth(query)) {
-            return query;
-        }
-
+    async selectOne(query) {
         let auth;
         if (query.id) {
             auth = await getDataAuths(this).getAuthById(query.id);
@@ -28,34 +18,21 @@ export class AuthDAO {
                 query.profileId,
                 query.provider);
         }
-        if (auth) {
-            auth = conformAuth(auth);
-            auth = makeAuth(auth);
-        }
-
         return auth;
     }
 
     async markAsConfirmed(auth) {
-        auth = await this.load(auth);
-        if (!isAuth(auth)) return false;
+        auth = await this.loadOne(auth);
+        if (!this.isVO(auth)) return false;
         await getDataAuths(this).setUserVerifiedEmail(auth.id);
-        auth.verified = true;
-        return auth;
+        auth = {
+            ...auth,
+            verified: true,
+        };
+        return this.makeVO(auth);
     }
 
-    async canSave(profile) {
-        let auth = await this.load(profile);
-        return !isAuth(auth);
-    }
-
-    async save(profile) {
-        let auth = profile;
-        if (await this.canSave(auth)) {
-            auth = await getDataAuths(this).insertAuth(auth);
-            auth = conformAuth(auth);
-            auth = makeAuth(auth);
-        }
-        return auth;
+    async insertOne(profile) {
+        return getDataAuths(this).insertAuth(profile);
     }
 }

@@ -27,25 +27,11 @@ describe('confirm models', () => {
             sandbox.restore();
         });
 
-        // Normal cases
-        it('should return an object with same properties if no snake_case keys', function () {
-            const apiKey = {
-                id: 1,
-                value: 'value',
-                creation: 'creation',
-                name: 'name',
-                publicId: 'publicId',
-                lastUsed: 'lastUsed',
-                privateId: 'privateId',
-            };
-            expect(conformApiKey(apiKey)).to.eql(apiKey);
-        });
-
         // Edge cases
         it('should replace snake_case keys with camelCase keys', function () {
             const apiKey = {
                 id: 1,
-                value: 'value',
+                api_key: 'value',
                 creation: 'creation',
                 name: 'name',
                 public_id: 'publicId',
@@ -67,7 +53,7 @@ describe('confirm models', () => {
         it('should use camelCase keys value if both snake_case and camelCase keys exist', function () {
             const apiKey = {
                 id: 1,
-                value: 'value',
+                api_key: 'value',
                 creation: 'creation',
                 name: 'name',
                 publicId: 'camelCasePublicId',
@@ -121,7 +107,7 @@ describe('confirm models', () => {
         it("should return auth object with appropriate keys", () => {
             const result = conformAuth(auth);
             expect(result).to.have.all.keys('id', 'provider', 'verified', 'firstName',
-                'lastName', 'avatar', 'profileId', 'email', 'displayName', 'userId');
+                'lastName', 'avatar', 'profileId', 'email', 'displayName');
         });
 
         it("should map firstname to firstName", () => {

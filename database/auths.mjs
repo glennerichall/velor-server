@@ -76,3 +76,9 @@ export async function setUserVerifiedEmail(client, schema, authId) {
         return res.rows[0];
     }
 }
+
+export async function getAllAuths(client, schema) {
+    const res = await client
+        .query(`select * from ${schema}.auths`);
+    return res.rows;
+}

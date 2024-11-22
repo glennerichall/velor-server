@@ -11,6 +11,7 @@ import {
 } from "../database/auths.mjs";
 import {queryRaw} from "velor-database/database/queryRaw.mjs";
 import {conformAuth} from "../models/conform/conformAuth.mjs";
+import {conformUser} from "../models/conform/conformUser.mjs";
 
 const {
     expect,
@@ -39,7 +40,8 @@ describe('database users', () => {
         } = database;
 
         await clearAuths(database); // users are cascaded
-        auth.id = await insertAuth(client, schema, auth);
+        let {id} = await insertAuth(client, schema, auth);
+        auth.id = id;
     })
 
     it('should create user with auth', async ({database}) => {
@@ -64,7 +66,7 @@ describe('database users', () => {
 
         let {id} = await insertUser(client, schema, auth.id);
 
-        let user = conformAuth(await getPrimaryAuthByUserId(client, schema, id));
+        let user = conformUser(await getPrimaryAuthByUserId(client, schema, id));
 
         expect(user.id).to.eq(id);
         expect(user.profileId).to.eq(auth.profileId);

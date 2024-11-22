@@ -10,8 +10,8 @@ export async function getPrimaryAuthByUserId(client, schema, userId) {
                        a.lastname    as last_name,
                        a.firstname   as first_name,
                        a.avatar      as avatar,
-                       a.id          as id,
-                       users.id      as user_id
+                       a.id          as primary_auth_id,
+                       users.id      as id
                 from ${schema}.users
                          inner join ${schema}.auths a on a.id = users.primary_auth_id
                 where users.id = $1`
@@ -33,10 +33,10 @@ export async function getPrimaryAuthByProfile(client, schema, profileId, provide
                        a.lastname    as last_name,
                        a.firstname   as first_name,
                        a.avatar      as avatar,
-                       a.id          as id,
-                       u.id          as user_id
+                       a.id          as primary_auth_id,
+                       u.id          as id
                 from ${schema}.auths a
-                         left join ${schema}.users u on a.id = u.primary_auth_id
+                         inner join ${schema}.users u on a.id = u.primary_auth_id
                 where a.auth_id = $1
                   and a.provider = $2`
             , [profileId, provider]);
@@ -57,10 +57,10 @@ export async function getPrimaryAuthByAuthId(client, schema, authId) {
                        a.lastname    as last_name,
                        a.firstname   as first_name,
                        a.avatar      as avatar,
-                       a.id          as id,
-                       u.id          as user_id
+                       a.id          as primary_auth_id,
+                       u.id          as id
                 from ${schema}.users u
-                         right join ${schema}.auths a on a.id = u.primary_auth_id
+                         inner join ${schema}.auths a on a.id = u.primary_auth_id
                 where a.id = $1`
             , [authId]);
     if (res.rows.length === 1) {
@@ -280,4 +280,11 @@ export async function getUserRolesByUserId(client, schema, userId) {
                          inner join ${schema}.users u on u.id = ur.user
                 where u.id = $1`, [userId]);
     return res.rows;
+}
+
+export async function countUsers(client, schema) {
+    const res = await client
+        .query(`select count(*)
+                from ${schema}.users`);
+    return Number.parseInt(res.rows[0].count);
 }

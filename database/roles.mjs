@@ -11,7 +11,7 @@ export async function createRole(client, schema, name, description) {
     return res.rows[0];
 }
 
-export async function getRoleAclRulesByName(client, schema, roleId, ...categories) {
+export async function getRoleAclRulesByName(client, schema, roleName, ...categories) {
     if (categories.length === 0) {
         categories.push(ACL_CATEGORY_ANY);
     }
@@ -29,7 +29,7 @@ export async function getRoleAclRulesByName(client, schema, roleId, ...categorie
                   and (${schema}.acl.category = ANY ($2::text[]) or
                        '*' = ANY ($2::text[]) or
                        ${schema}.acl.category = '*')
-                order by ${schema}.acl.permission, ${schema}.acl.resource`, [roleId, categories]);
+                order by ${schema}.acl.permission, ${schema}.acl.resource`, [roleName, categories]);
     return res.rows;
 }
 

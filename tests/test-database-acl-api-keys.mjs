@@ -6,7 +6,7 @@ import {
 import {
     addAclRuleToApiKey,
     createApiKey,
-    getApiKeyAclRulesByValue,
+    getApiKeyAclRulesById,
 } from "../database/apiKeys.mjs";
 import {
     insertAclDenyRule,
@@ -61,7 +61,8 @@ describe('database api key acl', () => {
         let name = 'foo-bar';
         apiKey = await createApiKey(client, schema, name);
 
-        await addAclRuleToApiKey(client, schema, apiKey.id, 'rule1', 'rule2')
+        await addAclRuleToApiKey(client, schema, apiKey.id, 'rule1')
+        await addAclRuleToApiKey(client, schema, apiKey.id, 'rule2')
     })
 
     it('should assign acl to apikey', async ({database}) => {
@@ -70,7 +71,7 @@ describe('database api key acl', () => {
             schema
         } = database;
 
-        let acl = await getApiKeyAclRulesByValue(client, schema, apiKey.api_key);
+        let acl = await getApiKeyAclRulesById(client, schema, apiKey.id);
         expect(acl).to.have.length(2);
         expect(acl.map(x => x.name)).to.include('rule1');
         expect(acl.map(x => x.name)).to.include('rule2');

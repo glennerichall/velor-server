@@ -1,58 +1,74 @@
-import {getDataAcl} from "../application/services/dataServices.mjs";
-import {conformRule} from "./conform/conformRule.mjs";
 import {
-    isPristine,
-    saveInitialState
-} from "velor-utils/utils/objects.mjs";
+    getDataAcl,
+    getDataApiKeys,
+    getDataRoles,
+    getDataUsers
+} from "../application/services/dataServices.mjs";
+import {conformRule} from "./conform/conformRule.mjs";
+import {DAOPolicy,} from "./BaseDAO.mjs";
+import {
+    getApiKeyDAO,
+    getRoleDAO,
+    getUserDAO
+} from "../application/services/serverServices.mjs";
 
 const ruleSym = Symbol("rule");
 
-export function isRule(rule) {
-    return rule && rule[ruleSym];
-}
+export class RuleDAO extends DAOPolicy({
+    conformVO: conformRule,
+    symbol: ruleSym
+}) {
 
-function makeRule(rule) {
-    rule[ruleSym] = true;
-    Object.defineProperty(rule, 'id', {
-        configurable: false,
-        writable: false,
-    });
-
-    rule = saveInitialState(rule);
-    return rule;
-}
-
-
-export class RuleDAO {
-    async load(query) {
-        if (isRule(query)) return query;
-
+    async selectOne(query) {
         let rule;
         if (query.id) {
             rule = await getDataAcl(this).getAclRuleById(query.id);
         } else if (query.name) {
             rule = await getDataAcl(this).getAclRuleByName(query.name);
         }
-        if (rule) {
-            rule = conformRule(rule);
-            rule = makeRule(rule);
-        }
-
         return rule;
     }
 
-    async canSave(data) {
-        let rule = await this.load(data);
-        return !isRule(rule) || !isPristine(rule);
+    async getRuleName(rule) {
+        if (rule?.name) {
+            return rule.name;
+        }
+        rule = await this.loadOne(rule);
+        return rule.name;
     }
 
-    async save(data) {
-        let rule = data;
-        if (await this.canSave(rule)) {
-            rule = await getDataAcl(this).insertAclRule(rule);
-            rule = conformRule(rule);
-            rule = makeRule(rule);
+    async selectMany(query) {
+        let rules;
+        if (query.id || query.name) {
+            let rule = await this.selectOne(query);
+            if (rule) {
+                rules = [];
+            } else {
+                rules = [rule];
+            }
+
+        } else if (query.role) {
+            let name = await getRoleDAO(this).getRoleName(query.role);
+            let categories = query.categories;
+            rules = await getDataRoles(this).getRoleAclRulesByName(name, ...categories);
+
+        } else if (query.apiKey) {
+            let apiKeyId = await getApiKeyDAO(this).loadId(query.apiKey);
+            let categories = query.categories;
+            rules = await getDataApiKeys(this).getApiKeyAclRulesById(apiKeyId, ...categories);
+
+        } else if (query.user) {
+            let userId = await getUserDAO(this).loadId(query.user);
+            let categories = query.categories;
+            rules = await getDataUsers(this).getUserAclRulesByUserId(userId, ...categories);
+
+        } else {
+            rules = await getDataAcl(this).getAllAclRules();
         }
-        return rule;
+        return rules;
+    }
+
+    async insertOne(data) {
+        return await getDataAcl(this).insertAclRule(data);
     }
 }

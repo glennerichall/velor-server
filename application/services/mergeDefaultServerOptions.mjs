@@ -3,9 +3,15 @@ import {serverFactories} from "./serverFactories.mjs";
 
 
 export function mergeDefaultServerOptions(options) {
+    let {
+        factories = {}
+    } = options;
     return mergeDefaultDatabaseOptions(
         {
-            factories: serverFactories,
-            ...options
+            ...options,
+            factories: {
+                ...factories,
+                ...serverFactories
+            },
         })
 }

@@ -1,12 +1,11 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
-import {
-    clearAcl
-} from "./fixtures/database-clear.mjs";
+import {clearAcl} from "./fixtures/database-clear.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {RuleDAO} from "../models/RuleDAO.mjs";
 import {getDataAcl} from "../application/services/dataServices.mjs";
 import {conformRule} from "../models/conform/conformRule.mjs";
+import {getRuleDAO} from "../application/services/serverServices.mjs";
 
 const {
     expect,
@@ -27,12 +26,15 @@ describe('Rule', () => {
         description: 'foo bar',
         method: 'POST',
         resource: '/sdfsdfsdf',
-    }
+    };
+
+    let rule;
 
     beforeEach(async ({services: s}) => {
         services = s;
         const database = getDatabase(services);
         await clearAcl(database);
+        rule = getRuleDAO(services);
     })
 
     async function readAclData() {
@@ -41,49 +43,24 @@ describe('Rule', () => {
         return rule;
     }
 
-    it('should map properties from data', async ({services}) => {
-        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
-        expect(rule.id).to.be.undefined;
-
-        expect(rule.name).to.equal(data.name);
-        expect(rule.category).to.equal(data.category);
-        expect(rule.permission).to.equal(data.permission);
-        expect(rule.description).to.equal(data.description);
-        expect(rule.method).to.equal(data.method);
-        expect(rule.resource).to.equal(data.resource);
+    it('should not load unsaved rule', async ({services}) => {
+        let loaded = await rule.loadOne({
+            name: data.name
+        });
+        expect(loaded).to.be.null;
     })
 
-    it('should not load not saved rule', async ({services}) => {
-        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
-        expect(rule.id).to.be.undefined;
-
-        await rule.load();
-
-        expect(rule.id).to.be.undefined;
-        expect(rule.name).to.equal(data.name);
-        expect(rule.category).to.equal(data.category);
-        expect(rule.permission).to.equal(data.permission);
-        expect(rule.description).to.equal(data.description);
-        expect(rule.method).to.equal(data.method);
-        expect(rule.resource).to.equal(data.resource);
-    })
-
-    it('should save rule', async ({services}) => {
-        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
-        expect(rule.id).to.be.undefined;
-
-        let saved = await rule.save();
-        expect(saved).to.be.true;
-
+    it('should save rule', async () => {
+        let saved = await rule.saveOne(data);
         let r = await readAclData();
 
-        expect(rule.id).to.eq(r.id);
-        expect(rule.name).to.equal(data.name);
-        expect(rule.category).to.equal(data.category);
-        expect(rule.permission).to.equal(data.permission);
-        expect(rule.description).to.equal(data.description);
-        expect(rule.method).to.equal(data.method);
-        expect(rule.resource).to.equal(data.resource);
+        expect(saved.id).to.eq(r.id);
+        expect(saved.name).to.equal(data.name);
+        expect(saved.category).to.equal(data.category);
+        expect(saved.permission).to.equal(data.permission);
+        expect(saved.description).to.equal(data.description);
+        expect(saved.method).to.equal(data.method);
+        expect(saved.resource).to.equal(data.resource);
 
         expect(r.name).to.equal(data.name);
         expect(r.category).to.equal(data.category);
@@ -94,73 +71,65 @@ describe('Rule', () => {
     })
 
     it('should load rule from id', async () => {
-        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
-        await rule.save();
-        let id = rule.id;
+        let saved = await rule.saveOne(data);
+        let id = saved.id;
 
-        rule = getServiceBinder(services).createInstance(RuleDAO, {id});
+        let loaded = await rule.loadOne({id});
 
-        expect(rule.name).to.be.undefined;
-        expect(rule.category).to.be.undefined;
-        expect(rule.permission).to.be.undefined;
-        expect(rule.description).to.be.undefined;
-        expect(rule.method).to.be.undefined;
-        expect(rule.resource).to.be.undefined;
-
-        await rule.load();
-
-        expect(rule.id).to.eq(id);
-        expect(rule.name).to.equal(data.name);
-        expect(rule.category).to.equal(data.category);
-        expect(rule.permission).to.equal(data.permission);
-        expect(rule.description).to.equal(data.description);
-        expect(rule.method).to.equal(data.method);
-        expect(rule.resource).to.equal(data.resource);
+        expect(loaded.id).to.eq(id);
+        expect(loaded.name).to.equal(data.name);
+        expect(loaded.category).to.equal(data.category);
+        expect(loaded.permission).to.equal(data.permission);
+        expect(loaded.description).to.equal(data.description);
+        expect(loaded.method).to.equal(data.method);
+        expect(loaded.resource).to.equal(data.resource);
 
     })
 
     it('should load rule from name', async () => {
-        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
-        await rule.save();
-        let id = rule.id;
+        let saved = await rule.saveOne(data);
+        let id = saved.id;
+        let loaded = await rule.loadOne({name: data.name});
 
-        rule = getServiceBinder(services).createInstance(RuleDAO, {name: data.name});
-
-        expect(rule.id).to.be.undefined;
-        expect(rule.category).to.be.undefined;
-        expect(rule.permission).to.be.undefined;
-        expect(rule.description).to.be.undefined;
-        expect(rule.method).to.be.undefined;
-        expect(rule.resource).to.be.undefined;
-
-        await rule.load();
-
-        expect(rule.name).to.equal(data.name);
-        expect(rule.category).to.equal(data.category);
-        expect(rule.id).to.eq(id);
-        expect(rule.permission).to.equal(data.permission);
-        expect(rule.description).to.equal(data.description);
-        expect(rule.method).to.equal(data.method);
-        expect(rule.resource).to.equal(data.resource);
+        expect(loaded.name).to.equal(data.name);
+        expect(loaded.category).to.equal(data.category);
+        expect(loaded.id).to.eq(id);
+        expect(loaded.permission).to.equal(data.permission);
+        expect(loaded.description).to.equal(data.description);
+        expect(loaded.method).to.equal(data.method);
+        expect(loaded.resource).to.equal(data.resource);
 
     })
 
     it('should not save twice', async () => {
-        let rule = getServiceBinder(services).createInstance(RuleDAO, data);
-        await rule.save();
-        let id = rule.id;
+        let saved = await rule.saveOne(data);
+        let id = saved.id;
 
-        rule = getServiceBinder(services).createInstance(RuleDAO, {name: data.name});
-        let saved = await rule.save();
-        expect(saved).to.be.false;
+        saved = await rule.saveOne(saved);
+        saved = await rule.saveOne(data);
 
-        expect(rule.name).to.equal(data.name);
-        expect(rule.category).to.equal(data.category);
-        expect(rule.id).to.eq(id);
-        expect(rule.permission).to.equal(data.permission);
-        expect(rule.description).to.equal(data.description);
-        expect(rule.method).to.equal(data.method);
-        expect(rule.resource).to.equal(data.resource);
+        let rules = await getDataAcl(services).getAllAclRules();
+        expect(rules).to.have.length(1);
+
+        expect(saved.name).to.equal(data.name);
+        expect(saved.category).to.equal(data.category);
+        expect(saved.id).to.eq(id);
+        expect(saved.permission).to.equal(data.permission);
+        expect(saved.description).to.equal(data.description);
+        expect(saved.method).to.equal(data.method);
+        expect(saved.resource).to.equal(data.resource);
+    })
+
+    it('should freeze rule', async () => {
+        let saved = await rule.saveOne(data);
+        expect(() => saved.id = 10).to.throw();
+        expect(() => saved.category = 10).to.throw();
+        expect(() => saved.name = "test").to.throw();
+        expect(() => saved.permission = "ALLOW").to.throw();
+        expect(() => saved.description = "test description").to.throw();
+        expect(() => saved.method = "GET").to.throw();
+        expect(() => saved.resource = "/testpath").to.throw();
+        expect(() => saved.newProp = 10).to.throw();
     })
 
 })

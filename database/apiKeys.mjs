@@ -53,13 +53,13 @@ export async function createApiKey(client, schema, name) {
     return res.rowCount === 1 ? res.rows[0] : null;
 }
 
-export async function addAclRuleToApiKey(client, schema, apiKeyId, ...aclNames) {
+export async function addAclRuleToApiKey(client, schema, apiKeyId, aclName) {
     const res = await client
         .query(`insert into ${schema}.api_keys_acl (api_key_id, acl_id)
                 select $2 as api_key_id, id as acl_id
                 from ${schema}.acl
-                where name = ANY($1)`,
-            [aclNames, apiKeyId]);
+                where name = $1`,
+            [aclName, apiKeyId]);
     return res.rowCount;
 }
 
@@ -89,28 +89,28 @@ export async function getApiKeyByPublicId(client, schema, publicId) {
     return res.rowCount === 1 ? res.rows[0] : null;
 }
 
-export async function getApiKeyAclRulesByValue(client, schema, apiKeyValue, ...categories) {
-    if (categories.length === 0) {
-        categories.push(ACL_CATEGORY_ANY);
-    }
-
-    const res = await client
-        .query(`select
-                    ${schema}.acl.id as id,
-                    ${schema}.acl.name as name,
-                    ${schema}.acl.resource as resource,
-                    ${schema}.acl.method as method,
-                    ${schema}.acl.permission as permission
-                from ${schema}.acl
-                         inner join ${schema}.api_keys_acl aka on ${schema}.acl.id = aka.acl_id
-                         inner join ${schema}.api_keys ak on aka.api_key_id = ak.id
-                where ak.public_id = right($1, 36)
-                    and ak.value = crypt(left($1, 36), ak.value)
-                    and (${schema}.acl.category = ANY($2::text[]) or '*' = ANY($2::text[]))
-                order by ${schema}.acl.permission, ${schema}.acl.resource`,
-            [apiKeyValue, categories]);
-    return res.rows;
-}
+// export async function getApiKeyAclRulesByValue(client, schema, apiKeyValue, ...categories) {
+//     if (categories.length === 0) {
+//         categories.push(ACL_CATEGORY_ANY);
+//     }
+//
+//     const res = await client
+//         .query(`select
+//                     ${schema}.acl.id as id,
+//                     ${schema}.acl.name as name,
+//                     ${schema}.acl.resource as resource,
+//                     ${schema}.acl.method as method,
+//                     ${schema}.acl.permission as permission
+//                 from ${schema}.acl
+//                          inner join ${schema}.api_keys_acl aka on ${schema}.acl.id = aka.acl_id
+//                          inner join ${schema}.api_keys ak on aka.api_key_id = ak.id
+//                 where ak.public_id = right($1, 36)
+//                     and ak.value = crypt(left($1, 36), ak.value)
+//                     and (${schema}.acl.category = ANY($2::text[]) or '*' = ANY($2::text[]))
+//                 order by ${schema}.acl.permission, ${schema}.acl.resource`,
+//             [apiKeyValue, categories]);
+//     return res.rows;
+// }
 
 export async function getApiKeyAclRulesById(client, schema, apiKeyId, ...categories) {
     if (categories.length === 0) {

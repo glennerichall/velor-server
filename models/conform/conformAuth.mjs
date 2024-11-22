@@ -10,6 +10,5 @@ export function conformAuth(auth) {
         profileId: auth.profileId ?? auth.profile_id ?? auth.profileid ?? auth.auth_id ?? auth.authid,
         email: auth.email,
         displayName: auth.displayName ?? auth.display_name ?? auth.displayname,
-        userId: auth.userId ?? auth.user_id ?? auth.userid,
     }
 }

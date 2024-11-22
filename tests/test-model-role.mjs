@@ -1,11 +1,13 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
-import {
-    clearRoles
-} from "./fixtures/database-clear.mjs";
+import {clearRoles} from "./fixtures/database-clear.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
-import {Role} from "../models/Role.mjs";
-import {getDataRoles} from "../application/services/dataServices.mjs";
+import {RoleDAO} from "../models/RoleDAO.mjs";
+import {
+    getDataAcl,
+    getDataRoles
+} from "../application/services/dataServices.mjs";
+import {getRuleDAO} from "../application/services/serverServices.mjs";
 
 const {
     expect,
@@ -18,110 +20,161 @@ const {
 
 
 describe('Role', () => {
-    let services;
+    let services, role;
 
     beforeEach(async ({services: s}) => {
         services = s;
         const database = getDatabase(services);
         await clearRoles(database);
-    })
-
-    it('should map properties from data', async ({services}) => {
-        let role = getServiceBinder(services).createInstance(Role, {
-            name: "role1",
-            description: "description 1",
-        });
-        expect(role.id).to.be.undefined;
-        expect(role.name).to.eq('role1');
-        expect(role.description).to.eq('description 1');
+        role = getServiceBinder(services).createInstance(RoleDAO)
     })
 
     it('should save role', async ({services}) => {
-        let role = getServiceBinder(services).createInstance(Role, {
+        let saved = await role.saveOne({
             name: "role1",
             description: "description 1",
         });
-        expect(role.id).to.be.undefined;
-        let saved = await role.save();
-        expect(saved).to.be.true;
 
         let data = await getDataRoles(services).getRoleByName('role1');
+
         expect(data).to.have.property('id');
         expect(data).to.have.property('name', 'role1');
         expect(data).to.have.property('description', 'description 1');
 
-        expect(role.id).to.eq(data.id);
-        expect(role.name).to.eq('role1');
-        expect(role.description).to.eq('description 1');
+        expect(saved.id).to.eq(data.id);
+        expect(saved.name).to.eq('role1');
+        expect(saved.description).to.eq('description 1');
     })
 
     it('should load role from role id', async ({services}) => {
-        let role = getServiceBinder(services).createInstance(Role, {
+        let saved = await role.saveOne({
             name: "role1",
             description: "description 1",
         });
-        await role.save();
-        let id = role.id;
+        let id = saved.id;
 
-        role = getServiceBinder(services).createInstance(Role, {
-            id
-        });
+        let loaded = await role.loadOne({id});
 
-        expect(role.id).to.eq(id);
-        expect(role.name).to.be.undefined;
-        expect(role.description).to.be.undefined;
-
-        await role.load();
-
-        expect(role.id).to.eq(id);
-        expect(role.name).to.eq('role1');
-        expect(role.description).to.eq('description 1');
+        expect(loaded.id).to.eq(id);
+        expect(loaded.name).to.eq('role1');
+        expect(loaded.description).to.eq('description 1');
     })
 
 
     it('should load role from role name', async ({services}) => {
-        let role = getServiceBinder(services).createInstance(Role, {
+        let saved = await role.saveOne({
             name: "role1",
             description: "description 1",
         });
-        await role.save();
-        let id = role.id;
+        let id = saved.id;
+        let loaded = await role.loadOne({name: 'role1'});
 
-        role = getServiceBinder(services).createInstance(Role, {
-            name: 'role1'
-        });
-
-        expect(role.id).to.be.undefined
-        expect(role.name).to.eq('role1');
-        expect(role.description).to.be.undefined;
-
-        await role.load();
-
-        expect(role.id).to.eq(id);
-        expect(role.name).to.eq('role1');
-        expect(role.description).to.eq('description 1');
+        expect(loaded.id).to.eq(id);
+        expect(loaded.name).to.eq('role1');
+        expect(loaded.description).to.eq('description 1');
     })
 
-    it('should not save if already saved', async ({services}) => {
-        let role = getServiceBinder(services).createInstance(Role, {
+    it('should not save twice', async ({services}) => {
+        let saved = await role.saveOne({
             name: "role1",
             description: "description 1",
         });
-        await role.save();
+        let id = saved.id;
 
-        role = getServiceBinder(services).createInstance(Role, {
-            name: 'role1'
+        await role.saveOne(saved);
+
+        saved = await role.saveOne({
+            name: "role1",
+            description: "description 1",
         });
 
-        let saved = await role.save();
-        expect(saved).to.be.false;
+        expect(saved.id).to.eq(id);
 
-        expect(role.name).to.eq('role1');
-        expect(role.description).to.eq('description 1');
+        let roles = await getDataRoles(services).getAllRoles();
+
+        expect(roles).to.have.length(1);
     })
 
-    it('should load rules', async () => {
+    it('should freeze role', async () => {
+        let saved = await role.saveOne({
+            name: "role1",
+            description: "description 1",
+        });
 
+        expect(Object.isFrozen(saved)).to.be.true;
     })
+
+    it('should add acl rules', async () => {
+        let saved = await role.saveOne({
+            name: "role1",
+            description: "description 1",
+        });
+
+        let rule1 = await getRuleDAO(services).saveOne({
+            name: 'qux',
+            category: 'baz',
+            permission: 'ALLOW',
+            description: 'quiz',
+            method: 'POST',
+            resource: '/sdfsdfsdf',
+        });
+
+        let rule2 = await getRuleDAO(services).saveOne({
+            name: 'foo',
+            category: 'baz',
+            permission: 'DENY',
+            description: 'foo bar',
+            method: 'POST',
+            resource: '/sdfsdfsdf',
+        });
+
+        await role.addAclRule(saved, {id: rule1.id});
+        await role.addAclRule(saved, {name: rule2.name});
+
+        let rules = await getDataRoles(services).getRoleAclRulesByName(saved.name);
+        expect(rules).to.have.length(2);
+
+        expect(rules.map(rule=>rule.id)).includes(rule1.id);
+        expect(rules.map(rule=>rule.id)).includes(rule2.id);
+
+        rules = await getDataAcl(services).getAllAclRules();
+        expect(rules).to.have.length(2);
+    })
+
+    it('should get acl rules', async () => {
+        let saved = await role.saveOne({
+            name: "role1",
+            description: "description 1",
+        });
+
+        let rule1 = await getRuleDAO(services).saveOne({
+            name: 'qux',
+            category: 'baz',
+            permission: 'ALLOW',
+            description: 'quiz',
+            method: 'POST',
+            resource: '/sdfsdfsdf',
+        });
+
+        let rule2 = await getRuleDAO(services).saveOne({
+            name: 'foo',
+            category: 'baz',
+            permission: 'DENY',
+            description: 'foo bar',
+            method: 'POST',
+            resource: '/sdfsdfsdf',
+        });
+
+        await role.addAclRule(saved, {id: rule1.id});
+        await role.addAclRule(saved, {name: rule2.name});
+
+        let rules = await role.getAclRules({id: saved.id});
+
+        expect(rules).to.have.length(2);
+        expect(rules.map(rule=>rule.id)).includes(rule1.id);
+        expect(rules.map(rule=>rule.id)).includes(rule2.id);
+    })
+
+
 
 })

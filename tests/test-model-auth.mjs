@@ -45,7 +45,7 @@ describe('Auth', () => {
         let data = await readAuthFromDatabase();
         expect(data).to.be.null;
 
-        let saved = await auth.save(profile);
+        let saved = await auth.saveOne(profile);
 
         expect(saved).to.not.eq(profile);
 
@@ -58,10 +58,10 @@ describe('Auth', () => {
 
     it('should load auth from database using profile', async () => {
         // save instance into db
-        await auth.save(profile);
+        await auth.saveOne(profile);
         let data = await readAuthFromDatabase(services);
 
-        let loaded = await auth.load({
+        let loaded = await auth.loadOne({
             profileId: profile.profileId,
             provider: profile.provider,
         });
@@ -82,9 +82,9 @@ describe('Auth', () => {
 
     it('should load auth from database using auth id', async () => {
         // save instance into db
-        await auth.save(profile);
+        await auth.saveOne(profile);
         let data = await readAuthFromDatabase(services);
-        let loaded = await auth.load({id: data.id});
+        let loaded = await auth.loadOne({id: data.id});
 
         expect(loaded).to.have.property('id', data.id);
         expect(loaded).to.have.property('profileId', profile.profileId);
@@ -97,16 +97,34 @@ describe('Auth', () => {
         expect(loaded).to.have.property('avatar', profile.avatar);
     })
 
-    it('should not save auth if already in database', async () => {
-        let saved = await auth.save(profile);
+    it('should not save auth twice', async () => {
+        let saved = await auth.saveOne(profile);
         expect(await auth.canSave(saved)).to.be.false;
-        saved = await auth.save(saved);
+        saved = await auth.saveOne(saved);
         expect(saved).to.eq(saved);
+    })
+
+    it('should not save auth if already in database', async () => {
+        let first = await auth.saveOne(profile);
+        let loaded = await auth.saveOne(profile);
+
+        let auths = await getDataAuths(services).getAllAuths();
+        expect(auths).to.have.length(1);
+
+        expect(loaded).to.have.property('id', first.id);
+        expect(loaded).to.have.property('profileId', profile.profileId);
+        expect(loaded).to.have.property('provider', profile.provider);
+        expect(loaded).to.have.property('email', profile.email);
+        expect(loaded).to.have.property('verified', profile.verified);
+        expect(loaded).to.have.property('displayName', profile.displayName);
+        expect(loaded).to.have.property('lastName', profile.lastName);
+        expect(loaded).to.have.property('firstName', profile.firstName);
+        expect(loaded).to.have.property('avatar', profile.avatar);
     })
 
     it('should set verified to true', async () => {
         // save instance into db
-        let saved = await auth.save(profile);
+        let saved = await auth.saveOne(profile);
 
         let data = await readAuthFromDatabase(services);
         expect(data).to.have.property('verified', false);
@@ -117,8 +135,19 @@ describe('Auth', () => {
 
         expect(data).to.have.property('verified', true);
         expect(data).to.have.property('id', saved.id);
-
-        expect(saved).to.have.property('verified', true);
         expect(verified).to.have.property('verified', true);
+    })
+
+    it('should not load unsaved auth', async () => {
+        let loaded = await auth.loadOne({
+            profileId: profile.profileId,
+            provider: profile.provider,
+        });
+        expect(loaded).to.be.null;
+    })
+
+    it('should freeze auth', async()=> {
+        let saved = await auth.saveOne(profile);
+        expect(Object.isFrozen(saved)).to.be.true;
     })
 })
