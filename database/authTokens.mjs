@@ -1,34 +1,75 @@
-export async function createToken(client, schema, authId, token) {
-    const res = await client
-        .query(`insert into ${schema}.auth_tokens (auth_id, expiration, value)
-                    values ($1, $2, $3)`,
-            [authId, token.expiration, token.value]);
-    return res.rowCount;
+import {getTableNames} from "../sql/defaultTableNames.mjs";
+
+export function getAuthTokensSql(schema, tableNames = {}) {
+    const {
+        authTokens
+    } = getTableNames(tableNames);
+
+    const createTokenSql = `
+        insert into ${schema}.${authTokens} (auth_id, expiration, value)
+        values ($1, $2, $3)
+    `;
+
+    const queryTokensForAuthSql = `
+        select *
+        from ${schema}.${authTokens}
+        where auth_id = $1
+    `;
+
+    const deleteTokenSql = `
+        delete
+        from ${schema}.${authTokens}
+        where id = $1
+    `;
+
+    const deleteTokensForUserSql = `
+        delete
+        from ${schema}.${authTokens}
+        where auth_id = $1
+    `;
+
+    return {
+        createTokenSql,
+        queryTokensForAuthSql,
+        deleteTokenSql,
+        deleteTokensForUserSql
+    };
+
 }
 
-export async function queryTokensForAuth(client, schema, authId) {
-    const res = await client
-        .query(`select *
-                    from ${schema}.auth_tokens
-                    where auth_id = $1`,
-            [authId]);
-    return res.rows;
-}
+export function composeAuthTokensDataAccess(schema, tableNames = {}) {
+    const {
+        createTokenSql,
+        queryTokensForAuthSql,
+        deleteTokenSql,
+        deleteTokensForUserSql
+    } = getAuthTokensSql(schema, tableNames);
 
-export async function deleteToken(client, schema, tokenId) {
-    const res = await client
-        .query(`delete
-                    from ${schema}.auth_tokens
-                    where id = $1`,
-            [tokenId]);
-    return res.rowCount;
-}
+    async function createToken(client, authId, token) {
+        const res = await client.query(createTokenSql, [authId, token.expiration, token.value]);
+        return res.rowCount;
+    }
 
-export async function deleteTokensForUser(client, schema, authId) {
-    const res = await client
-        .query(`delete
-                    from ${schema}.auth_tokens
-                    where auth_id = $1`,
-            [authId]);
-    return res.rowCount;
+    async function queryTokensForAuth(client, authId) {
+        const res = await client.query(queryTokensForAuthSql, [authId]);
+        return res.rows;
+    }
+
+    async function deleteToken(client, tokenId) {
+        const res = await client.query(deleteTokenSql, [tokenId]);
+        return res.rowCount;
+    }
+
+    async function deleteTokensForUser(client, authId) {
+        const res = await client.query(deleteTokensForUserSql, [authId]);
+        return res.rowCount;
+    }
+
+    return {
+        createToken,
+        queryTokensForAuth,
+        deleteToken,
+        deleteTokensForUser
+    };
+
 }

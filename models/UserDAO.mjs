@@ -3,6 +3,7 @@ import {DAOPolicy} from "./BaseDAO.mjs";
 import {
     getApiKeyDAO,
     getAuthDAO,
+    getPreferenceDAO,
     getRoleDAO,
     getRuleDAO
 } from "../application/services/serverServices.mjs";
@@ -72,5 +73,13 @@ export class UserDAO extends DAOPolicy({
 
     async getRoles(user) {
         return getRoleDAO(this).loadMany({user});
+    }
+
+    async getPreferences(user) {
+        return await getPreferenceDAO(this).loadMany({user});
+    }
+
+    async getPreference(user, name) {
+        return await getPreferenceDAO(this).loadOne({user, name});
     }
 }

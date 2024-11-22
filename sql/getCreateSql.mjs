@@ -1,28 +1,34 @@
 import {getFSAsync} from "velor-utils/utils/sysProvider.mjs";
 import path from "node:path";
+import {
+    getTableNames
+} from "./defaultTableNames.mjs";
 
 const __dirname = import.meta.dirname;
 
-export async function getCreateSql(schema, {
-    error = 'error',
-    access = 'access',
-    preferences = 'preferences',
-    migrations = 'migrations',
-    deployments = 'deployments',
-    auths = 'auths',
-    logins = 'logins',
-    users = 'users',
-    userAuths = 'user_auths',
-    roleAcl = 'role_acl',
-    userRole = 'user_role',
-    role = 'role',
-    acl = 'acl',
-    apiKeys = 'api_keys',
-    apiKeysAcl = 'api_keys_acl',
-    userApiKeys = 'users_api_keys',
-    authTokens = 'auth_tokens',
-    tokens = 'tokens',
-} = {}) {
+export async function getCreateSql(schema, tableNames = {}) {
+
+    const {
+        error,
+        access,
+        preferences,
+        migrations,
+        deployments,
+        auths,
+        logins,
+        users,
+        userAuths,
+        roleAcl,
+        userRole,
+        roles,
+        acl,
+        apiKeys,
+        apiKeysAcl,
+        userApiKeys,
+        authTokens,
+        tokens,
+    } = getTableNames(tableNames);
+
     let createSql = await getFSAsync().readFile(path.join(__dirname, 'createSql.sql'));
     return createSql.toString()
         .replaceAll('@{SCHEMA}', schema)
@@ -37,7 +43,7 @@ export async function getCreateSql(schema, {
         .replaceAll('@{TABLE_USER_AUTHS}', userAuths)
         .replaceAll('@{TABLE_ROLE_ACL}', roleAcl)
         .replaceAll('@{TABLE_USER_ROLE}', userRole)
-        .replaceAll('@{TABLE_ROLE}', role)
+        .replaceAll('@{TABLE_ROLE}', roles)
         .replaceAll('@{TABLE_ACL}', acl)
         .replaceAll('@{TABLE_API_KEYS}', apiKeys)
         .replaceAll('@{TABLE_API_KEYS_ACL}', apiKeysAcl)

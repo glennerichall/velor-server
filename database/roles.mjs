@@ -1,54 +1,121 @@
 import {ACL_CATEGORY_ANY} from "../auth/permissions.mjs";
+import {getTableNames} from "../sql/defaultTableNames.mjs";
 
-export async function getAllRoles(client, schema) {
-    const res = await client.query(`select * from ${schema}.role`);
-    return res.rows;
+export function getRolesSql(schema, tableNames = {}) {
+    const {
+        roles,
+        rolesAcl,
+        acl
+    } = getTableNames(tableNames);
+
+
+    const getAllRolesSql = `
+        select *
+        from ${schema}.${roles}
+    `;
+
+    const createRoleSql = `
+        INSERT INTO ${schema}.${roles} (name, description)
+        VALUES ($1, $2) RETURNING *
+    `;
+
+    const getRoleAclRulesByNameSql = `
+        select ${schema}.${acl}.id         as id,
+               ${schema}.${acl}.name       as name,
+               ${schema}.${acl}.resource   as resource,
+               ${schema}.${acl}.method     as method,
+               ${schema}.${acl}.permission as permission,
+               ${schema}.${acl}.category   as category
+        from ${schema}.${acl}
+                 inner join ${schema}.${rolesAcl} ra on ${schema}.${acl}.id = ra.acl
+                 inner join ${schema}.${roles} r on r.id = ra.role
+        where r.name = $1
+          and (${schema}.${acl}.category = ANY ($2::text[]) or
+               '*' = ANY ($2::text[]) or
+               ${schema}.${acl}.category = '*')
+        order by ${schema}.${acl}.permission, ${schema}.${acl}.resource
+    `;
+
+    const addAclRuleToRoleSql = `
+        insert into ${schema}.${rolesAcl} (role, acl)
+        values ((select id from ${schema}.${roles} where name = $1),
+                (select id from ${schema}.${acl} where name = $2))
+    `;
+
+    const getRoleByIdSql = `
+        select *
+        from ${schema}.${roles}
+        where id = $1
+    `;
+
+    const getRoleByNameSql = `
+        select *
+        from ${schema}.${roles}
+        where name = $1
+    `;
+
+
+    return {
+        getAllRolesSql,
+        createRoleSql,
+        getRoleAclRulesByNameSql,
+        addAclRuleToRoleSql,
+        getRoleByIdSql,
+        getRoleByNameSql
+    };
+
 }
 
-export async function createRole(client, schema, name, description) {
-    const res = await client.query(`INSERT INTO ${schema}.role (name, description)
-             VALUES ($1, $2) RETURNING *`, [name, description]);
-    return res.rows[0];
-}
+export function composeRolesDataAccess(schema, tableNames = {}) {
 
-export async function getRoleAclRulesByName(client, schema, roleName, ...categories) {
-    if (categories.length === 0) {
-        categories.push(ACL_CATEGORY_ANY);
+    const {
+        getAllRolesSql,
+        createRoleSql,
+        getRoleAclRulesByNameSql,
+        addAclRuleToRoleSql,
+        getRoleByIdSql,
+        getRoleByNameSql
+    } = getRolesSql(schema, tableNames);
+
+    async function getAllRoles(client) {
+        const res = await client.query(getAllRolesSql);
+        return res.rows;
     }
-    const res = await client
-        .query(`select ${schema}.acl.id         as id,
-                       ${schema}.acl.name       as name,
-                       ${schema}.acl.resource   as resource,
-                       ${schema}.acl.method     as method,
-                       ${schema}.acl.permission as permission,
-                       ${schema}.acl.category   as category
-                from ${schema}.acl
-                         inner join ${schema}.role_acl ra on ${schema}.acl.id = ra.acl
-                         inner join ${schema}.role r on r.id = ra.role
-                where r.name = $1
-                  and (${schema}.acl.category = ANY ($2::text[]) or
-                       '*' = ANY ($2::text[]) or
-                       ${schema}.acl.category = '*')
-                order by ${schema}.acl.permission, ${schema}.acl.resource`, [roleName, categories]);
-    return res.rows;
-}
 
-export async function addAclRuleToRole(client, schema, roleName, aclName) {
-    const res = await client.query(`insert into ${schema}.role_acl (role,acl)
-         values ((select id from ${schema}.role where name=$1),
-                 (select id from ${schema}.acl where name=$2))`,
-        [roleName, aclName]);
-    return res.rowCount;
-}
+    async function createRole(client, name, description) {
+        const res = await client.query(createRoleSql, [name, description]);
+        return res.rows[0];
+    }
 
-export async function getRoleById(client, schema, roleId) {
-    const res = await client.query(`select * from ${schema}.role 
-        where id = $1`, [roleId]);
-    return res.rowCount === 1 ? res.rows[0] : null;
-}
+    async function getRoleAclRulesByName(client, roleName, ...categories) {
+        if (categories.length === 0) {
+            categories.push(ACL_CATEGORY_ANY);
+        }
+        const res = await client.query(getRoleAclRulesByNameSql, [roleName, categories]);
+        return res.rows;
+    }
 
-export async function getRoleByName(client, schema, name) {
-    const res = await client.query(`select * from ${schema}.role 
-        where name = $1`, [name]);
-    return res.rowCount === 1 ? res.rows[0] : null;
+    export async function addAclRuleToRole(client, roleName, aclName) {
+        const res = await client.query(addAclRuleToRoleSql, [roleName, aclName]);
+        return res.rowCount;
+    }
+
+    export async function getRoleById(client, roleId) {
+        const res = await client.query(getRoleByIdSql, [roleId]);
+        return res.rowCount === 1 ? res.rows[0] : null;
+    }
+
+    export async function getRoleByName(client, name) {
+        const res = await client.query(getRoleByNameSql, [name]);
+        return res.rowCount === 1 ? res.rows[0] : null;
+    }
+
+    return {
+        getAllRoles,
+        createRole,
+        getRoleAclRulesByName,
+        addAclRuleToRole,
+        getRoleById,
+        getRoleByName
+    };
 }

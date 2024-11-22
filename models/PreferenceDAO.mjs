@@ -24,15 +24,24 @@ export class PreferenceDAO extends DAOPolicy({
         return await getDataPreferences(this).upsertPreference(name, userId, value);
     }
 
-    selectOne(query) {
-        super.selectOne(query);
+    async selectOne(query) {
+        let pref;
+        if (query.id) {
+            pref = await getDataPreferences(this).getPreferenceById(query.id);
+
+        } else if (query.name && query.user) {
+            let userId = await getUserDAO(this).loadId(query.user);
+            pref = await getDataPreferences(this).getPreferenceById(query.name, userId);
+        }
+        return pref;
     }
 
-    selectMany(query) {
-        super.selectMany(query);
-    }
-
-    insertMany(list) {
-        super.insertMany(list);
+    async selectMany(query) {
+        let prefs;
+        if(query.user) {
+            let userId = await getUserDAO(this).loadId(query.user);
+            prefs = await getDataPreferences(this).getPreferencesByUserId(userId);
+        }
+        return prefs;
     }
 }

@@ -1,12 +1,3 @@
-import * as access from './access.mjs';
-import * as acl from './acl.mjs';
-import * as apiKeys from './apiKeys.mjs';
-import * as authTokens from './authTokens.mjs';
-import * as users from './users.mjs';
-import * as auths from './auths.mjs';
-import * as roles from './roles.mjs';
-import * as preferences from './preferences.mjs';
-
 import {
     DATA_ACCESS,
     DATA_ACL,
