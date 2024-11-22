@@ -4,7 +4,7 @@ import {AuthDAO} from "../models/AuthDAO.mjs";
 import {getDataAuths} from "../application/services/dataServices.mjs";
 import {conformAuth} from "../models/conform/conformAuth.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
-import {clearAuths} from "./fixtures/database-clear.mjs";
+import {composeClearDataAccess} from "./fixtures/database-clear.mjs";
 
 const {
     expect,
@@ -32,6 +32,10 @@ describe('Auth', () => {
     beforeEach(async ({services: s}) => {
         services = s;
         const database = getDatabase(services);
+        const {schema} = database;
+        let {
+            clearAuths
+        } = composeClearDataAccess(schema);
         await clearAuths(database);
         auth = getServiceBinder(services).createInstance(AuthDAO);
     })
@@ -148,7 +152,7 @@ describe('Auth', () => {
         expect(loaded).to.be.null;
     })
 
-    it('should freeze auth', async()=> {
+    it('should freeze auth', async () => {
         let saved = await auth.saveOne(profile);
         expect(Object.isFrozen(saved)).to.be.true;
     })

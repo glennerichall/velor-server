@@ -56,7 +56,7 @@ export function getUsersSql(schema, tableNames = {}) {
                a.id          as primary_auth_id,
                u.id          as id
         from ${schema}.${users} u
-                 inner join ${schema}.auths a on a.id = u.primary_auth_id
+                 inner join ${schema}.${auths} a on a.id = u.primary_auth_id
         where a.id = $1
     `;
 

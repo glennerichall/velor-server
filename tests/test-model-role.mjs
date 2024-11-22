@@ -1,6 +1,5 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
-import {clearRoles} from "./fixtures/database-clear.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {RoleDAO} from "../models/RoleDAO.mjs";
 import {
@@ -8,6 +7,8 @@ import {
     getDataRoles
 } from "../application/services/dataServices.mjs";
 import {getRuleDAO} from "../application/services/serverServices.mjs";
+import {composeRolesDataAccess} from "../database/roles.mjs";
+import {composeClearDataAccess} from "./fixtures/database-clear.mjs";
 
 const {
     expect,
@@ -25,6 +26,9 @@ describe('Role', () => {
     beforeEach(async ({services: s}) => {
         services = s;
         const database = getDatabase(services);
+        const {
+            clearRoles
+        } = composeClearDataAccess(database.schema);
         await clearRoles(database);
         role = getServiceBinder(services).createInstance(RoleDAO)
     })

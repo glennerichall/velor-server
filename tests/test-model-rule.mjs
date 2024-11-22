@@ -3,6 +3,7 @@ import {getDatabase} from "velor-database/application/services/databaseServices.
 import {getDataAcl} from "../application/services/dataServices.mjs";
 import {conformRule} from "../models/conform/conformRule.mjs";
 import {getRuleDAO} from "../application/services/serverServices.mjs";
+import {composeClearDataAccess} from "./fixtures/database-clear.mjs";
 
 const {
     expect,
@@ -30,6 +31,7 @@ describe('Rule', () => {
     beforeEach(async ({services: s}) => {
         services = s;
         const database = getDatabase(services);
+        const {clearAcl} = composeClearDataAccess(database.schema);
         await clearAcl(database);
         rule = getRuleDAO(services);
     })

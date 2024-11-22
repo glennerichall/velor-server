@@ -1,11 +1,6 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
-import {
-    clearAuths,
-    clearRoles
-} from "./fixtures/database-clear.mjs";
+import {composeClearDataAccess} from "./fixtures/database-clear.mjs";
 import {getDatabase} from "velor-database/application/services/databaseServices.mjs";
-import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
-import {UserDAO} from "../models/UserDAO.mjs";
 import {getDataUsers} from "../application/services/dataServices.mjs";
 import {
     getAuthDAO,
@@ -40,6 +35,10 @@ describe('User', () => {
     beforeEach(async ({services: s}) => {
         services = s;
         const database = getDatabase(services);
+        const {
+            clearAuths,
+            clearRoles
+        } = composeClearDataAccess(database.schema);
         await clearAuths(database);
         await clearRoles(database);
 
