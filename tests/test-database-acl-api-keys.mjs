@@ -1,17 +1,6 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
-import {
-    clearAcl,
-    clearApiKeys
-} from "./fixtures/database-clear.mjs";
-import {
-    addAclRuleToApiKey,
-    createApiKey,
-    getApiKeyAclRulesById,
-} from "../database/apiKeys.mjs";
-import {
-    insertAclDenyRule,
-    insertAclGrantRule
-} from "../database/acl.mjs";
+import {composeApiKeysDataAccess} from "../database/apiKeys.mjs";
+import {composeAclDataAccess} from "../database/acl.mjs";
 
 const {
     expect,
@@ -25,16 +14,34 @@ const {
 describe('database api key acl', () => {
     let apiKey, rule1, rule2;
 
+    let addAclRuleToApiKey,
+        createApiKey,
+        getApiKeyAclRulesById;
+
+    let insertAclDenyRule,
+        insertAclGrantRule;
+
     beforeEach(async ({database}) => {
         const {
             client,
-            schema
+            schema,
+            clear
         } = database;
 
-        await clearAcl(database);
-        await clearApiKeys(database);
+        ({
+            addAclRuleToApiKey,
+            createApiKey,
+            getApiKeyAclRulesById
+        } = composeApiKeysDataAccess(schema));
 
-        rule1 = await insertAclGrantRule(client, schema, {
+        ({
+            insertAclDenyRule,
+            insertAclGrantRule
+        } = composeAclDataAccess(schema));
+
+        await clear();
+
+        rule1 = await insertAclGrantRule(client, {
             name: 'rule1',
             resource: '/foo/bar',
             method: 'GET',
@@ -42,7 +49,7 @@ describe('database api key acl', () => {
             description: 'baz qux'
         });
 
-        rule2 = await insertAclDenyRule(client, schema, {
+        rule2 = await insertAclDenyRule(client, {
             name: 'rule2',
             resource: '/foo/baz',
             method: 'GET',
@@ -50,7 +57,7 @@ describe('database api key acl', () => {
             description: 'biz baz buz'
         });
 
-        let rule3 = await insertAclDenyRule(client, schema, {
+        let rule3 = await insertAclDenyRule(client, {
             name: 'rule3',
             resource: '/sdfsdfsdf',
             method: 'GET',
@@ -59,10 +66,10 @@ describe('database api key acl', () => {
         });
 
         let name = 'foo-bar';
-        apiKey = await createApiKey(client, schema, name);
+        apiKey = await createApiKey(client, name);
 
-        await addAclRuleToApiKey(client, schema, apiKey.id, 'rule1')
-        await addAclRuleToApiKey(client, schema, apiKey.id, 'rule2')
+        await addAclRuleToApiKey(client, apiKey.id, 'rule1')
+        await addAclRuleToApiKey(client, apiKey.id, 'rule2')
     })
 
     it('should assign acl to apikey', async ({database}) => {
@@ -71,7 +78,7 @@ describe('database api key acl', () => {
             schema
         } = database;
 
-        let acl = await getApiKeyAclRulesById(client, schema, apiKey.id);
+        let acl = await getApiKeyAclRulesById(client, apiKey.id);
         expect(acl).to.have.length(2);
         expect(acl.map(x => x.name)).to.include('rule1');
         expect(acl.map(x => x.name)).to.include('rule2');

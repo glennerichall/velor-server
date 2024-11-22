@@ -95,17 +95,17 @@ export function composeRolesDataAccess(schema, tableNames = {}) {
         return res.rows;
     }
 
-    export async function addAclRuleToRole(client, roleName, aclName) {
+    async function addAclRuleToRole(client, roleName, aclName) {
         const res = await client.query(addAclRuleToRoleSql, [roleName, aclName]);
         return res.rowCount;
     }
 
-    export async function getRoleById(client, roleId) {
+    async function getRoleById(client, roleId) {
         const res = await client.query(getRoleByIdSql, [roleId]);
         return res.rowCount === 1 ? res.rows[0] : null;
     }
 
-    export async function getRoleByName(client, name) {
+    async function getRoleByName(client, name) {
         const res = await client.query(getRoleByNameSql, [name]);
         return res.rowCount === 1 ? res.rows[0] : null;
     }

@@ -18,8 +18,8 @@ export async function getCreateSql(schema, tableNames = {}) {
         logins,
         users,
         userAuths,
-        roleAcl,
-        userRole,
+        rolesAcl,
+        userRoles,
         roles,
         acl,
         apiKeys,
@@ -41,8 +41,8 @@ export async function getCreateSql(schema, tableNames = {}) {
         .replaceAll('@{TABLE_LOGINS}', logins)
         .replaceAll('@{TABLE_USERS}', users)
         .replaceAll('@{TABLE_USER_AUTHS}', userAuths)
-        .replaceAll('@{TABLE_ROLE_ACL}', roleAcl)
-        .replaceAll('@{TABLE_USER_ROLE}', userRole)
+        .replaceAll('@{TABLE_ROLE_ACL}', rolesAcl)
+        .replaceAll('@{TABLE_USER_ROLE}', userRoles)
         .replaceAll('@{TABLE_ROLE}', roles)
         .replaceAll('@{TABLE_ACL}', acl)
         .replaceAll('@{TABLE_API_KEYS}', apiKeys)

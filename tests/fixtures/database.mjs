@@ -1,4 +1,5 @@
 import {queryRaw} from "velor-database/database/queryRaw.mjs";
+import {composeClearDataAccess} from "./database-clear.mjs";
 
 export const database = [
     async ({databaseConnectionPool}, use, testInfo) => {
@@ -7,12 +8,17 @@ export const database = [
 
         let client = await pool.acquireClient();
 
+        let {clearDatabase} = composeClearDataAccess(schema);
+
         try {
-            await use({
+            let database = {
                 schema,
                 client,
+                clear: () => clearDatabase(database),
                 queryRaw: (...args) => queryRaw(client, ...args)
-            });
+            };
+
+            await use(database);
 
         } finally {
             client.release();

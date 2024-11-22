@@ -10,7 +10,6 @@ import {
     s_userDAO,
 } from "./serverServiceKeys.mjs";
 import {s_databaseStatements} from "velor-database/application/services/databaseServiceKeys.mjs";
-import {statements} from "../../database/statements.mjs";
 import {createServerInstance} from "../factories/createServerInstance.mjs";
 import express from "express";
 import {Emitter} from "velor-utils/utils/Emitter.mjs";
@@ -20,9 +19,10 @@ import {AuthDAO} from "../../models/AuthDAO.mjs";
 import {ApiKeyDAO} from "../../models/ApiKeyDAO.mjs";
 import {UserDAO} from "../../models/UserDAO.mjs";
 import {PreferenceDAO} from "../../models/PreferenceDAO.mjs";
+import {createStatementsInstance} from "../factories/createStatementsInstance.mjs";
 
 export const serverFactories = {
-    [s_databaseStatements]: () => statements,
+    [s_databaseStatements]: createStatementsInstance,
     [s_server]: createServerInstance,
     [s_expressApp]: () => express(),
     [s_emitter]: Emitter,

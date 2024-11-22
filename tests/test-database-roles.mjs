@@ -1,9 +1,5 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
-import {clearRoles} from "./fixtures/database-clear.mjs";
-import {
-    createRole,
-    getAllRoles
-} from "../database/roles.mjs";
+import {composeRolesDataAccess} from "../database/roles.mjs";
 
 const {
     expect,
@@ -15,16 +11,25 @@ const {
 } = setupTestContext();
 
 describe('database roles', () => {
+    let createRole,
+        getAllRoles;
+
     beforeEach(async ({database}) => {
         const {
             client,
-            schema
+            schema,
+            clear
         } = database;
 
-        await clearRoles(database);
+        await clear();
 
-        await createRole(client, schema, 'god', 'God mode');
-        await createRole(client, schema, 'power', 'Power user');
+        ({
+            createRole,
+            getAllRoles
+        } = composeRolesDataAccess(schema));
+
+        await createRole(client, 'god', 'God mode');
+        await createRole(client, 'power', 'Power user');
     })
 
     it('should create role', async ({database}) => {
@@ -44,12 +49,11 @@ describe('database roles', () => {
     it('should not create duplicate roles', async ({database}) => {
         const {
             client,
-            schema
         } = database;
 
         let error;
         try {
-            await createRole(client, schema, 'god', 'There is only one');
+            await createRole(client, 'god', 'There is only one');
         } catch (e) {
             error = e;
         }

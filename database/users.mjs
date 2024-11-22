@@ -3,7 +3,12 @@ import {getTableNames} from "../sql/defaultTableNames.mjs";
 
 export function getUsersSql(schema, tableNames = {}) {
     const {
-        users
+        users,
+        acl,
+        rolesAcl,
+        roles,
+        userRoles,
+        auths,
     } = getTableNames(tableNames);
 
     const getPrimaryAuthByUserIdSql = `
@@ -16,10 +21,10 @@ export function getUsersSql(schema, tableNames = {}) {
                a.firstname   as first_name,
                a.avatar      as avatar,
                a.id          as primary_auth_id,
-               users.id      as id
-        from ${schema}.${users}
-                 inner join ${schema}.auths a on a.id = users.primary_auth_id
-        where users.id = $1
+               u.id          as id
+        from ${schema}.${users} u
+                 inner join ${schema}.${auths} a on a.id = u.primary_auth_id
+        where u.id = $1
     `;
 
     const getPrimaryAuthByProfileSql = `
@@ -33,7 +38,7 @@ export function getUsersSql(schema, tableNames = {}) {
                a.avatar      as avatar,
                a.id          as primary_auth_id,
                u.id          as id
-        from ${schema}.auths a
+        from ${schema}.${auths} a
                  inner join ${schema}.${users} u on a.id = u.primary_auth_id
         where a.auth_id = $1
           and a.provider = $2
@@ -95,8 +100,8 @@ export function getUsersSql(schema, tableNames = {}) {
     `;
 
     const grantUserRoleByUserIdSql = `
-        insert into ${schema}.user_role (role, "user")
-        values ((select id from ${schema}.role where name = $1),
+        insert into ${schema}.${userRoles} (role, "user")
+        values ((select id from ${schema}.${roles} where name = $1),
                 $2)
     `;
 
@@ -112,11 +117,11 @@ export function getUsersSql(schema, tableNames = {}) {
 
     const revokeUserRoleByProfileSql = `
         delete
-        from ${schema}.user_role
-        where role in (select id from ${schema}.role where name = $1)
-          and "user" in (select users.id
-                         from ${schema}.${users}
-                                  inner join ${schema}.auths a on a.id = users.primary_auth_id
+        from ${schema}.${userRoles}
+        where role in (select id from ${schema}.${roles} where name = $1)
+          and "user" in (select u.id
+                         from ${schema}.${users} u
+                                  inner join ${schema}.${auths} a on a.id = u.primary_auth_id
                          where a.auth_id = $2
                            and a.provider = $3)
     `;
@@ -129,10 +134,23 @@ export function getUsersSql(schema, tableNames = {}) {
     `;
 
     const getUserAclRulesByUserIdSql = `
-        select *
-        from ${schema}.user_acl_rules
-        where user_id = $1
-          and category = any ($2)
+        select
+            a.id            as id,
+            a.name          as name,
+            a.resource      as resource,
+            a.method        as method,
+            a.permission    as permission,
+            a.category      as category
+        from ${schema}.${acl} a
+                 inner join ${schema}.${rolesAcl} ra on a.id = ra.acl
+                 inner join ${schema}.${roles} r on r.id = ra.role
+                 inner join ${schema}.${userRoles} ur on r.id = ur.role
+                 inner join ${schema}.${users} u on u.id = ur.user
+        where u.id = $1
+            and (a.category = ANY($2::text[]) or 
+                    '*' = ANY($2::text[]) or
+                    a.category = '*')
+        order by a.permission, a.resource
     `;
 
     const deleteApiKeyByUserSql = `
@@ -196,8 +214,8 @@ export function getUsersSql(schema, tableNames = {}) {
         select r.id          as id,
                r.name        as name,
                r.description as description
-        from ${schema}.role r
-                 inner join ${schema}.user_role ur on r.id = ur.role
+        from ${schema}.${roles} r
+                 inner join ${schema}.${userRoles} ur on r.id = ur.role
                  inner join ${schema}.${users} u on u.id = ur.user
         where u.id = $1
     `;
@@ -252,64 +270,64 @@ export function composeUsersDataAccess(schema, tableNames = {}) {
     } = getUsersSql(schema, tableNames);
 
 
-    export async function getPrimaryAuthByUserId(client, userId) {
+    async function getPrimaryAuthByUserId(client, userId) {
         const res = await client
             .query(getPrimaryAuthByUserIdSql, [userId]);
         return res.rows.length === 1 ? res.rows[0] : null;
     }
 
-    export async function getPrimaryAuthByProfile(client, profileId, provider) {
+    async function getPrimaryAuthByProfile(client, profileId, provider) {
         const res = await client.query(getPrimaryAuthByProfileSql, [profileId, provider]);
         return res.rows.length === 1 ? res.rows[0] : null;
     }
 
-    export async function getPrimaryAuthByAuthId(client, authId) {
+    async function getPrimaryAuthByAuthId(client, authId) {
         const res = await client.query(getPrimaryAuthByAuthIdSql, [authId]);
         return res.rows.length === 1 ? res.rows[0] : null;
     }
 
-    export async function queryByLastFingerprint(client, fp) {
+    async function queryByLastFingerprint(client, fp) {
         const res = await client.query(queryByLastFingerprintSql, [fp]);
         return res.rows.length === 1 ? res.rows[0].user_id : null;
     }
 
-    export async function insertUser(client, authId) {
+    async function insertUser(client, authId) {
         const res = await client.query(insertUserSql, [authId,]);
         return res.rowCount === 1 ? res.rows[0] : null;
     }
 
-    export async function queryForLastLogin(client, userId) {
+    async function queryForLastLogin(client, userId) {
         const res = await client.query(queryForLastLoginSql, [userId]);
         return res.rows;
     }
 
-    export async function insertLoginEvent(client, fingerprint, auth_id, ip, type = 'login') {
+    async function insertLoginEvent(client, fingerprint, auth_id, ip, type = 'login') {
         const res = await client.query(insertLoginEventSql, [fingerprint, auth_id, ip, type]);
         return res.rowCount === 1;
     }
 
-    export async function grantUserRoleByProfile(client, profileId, provider, roleName) {
+    async function grantUserRoleByProfile(client, profileId, provider, roleName) {
         await client.query(grantUserRoleByProfileSql, [roleName, profileId, provider]);
     }
 
-    export async function grantUserRoleByUserId(client, userId, roleName) {
+    async function grantUserRoleByUserId(client, userId, roleName) {
         await client.query(grantUserRoleByUserIdSql, [roleName, userId]);
     }
 
-    export async function getUserIdByApiKey(client, apiKeyValue) {
+    async function getUserIdByApiKey(client, apiKeyValue) {
         const result = await client.query(getUserIdByApiKeySql, [apiKeyValue]);
         return result.rowCount === 1 ? result.rows[0] : null;
     }
 
-    export async function revokeUserRoleByProfile(client, authName, provider, roleName) {
+    async function revokeUserRoleByProfile(client, authName, provider, roleName) {
         await client.query(revokeUserRoleByProfileSql, [roleName, authName, provider]);
     }
 
-    export async function revokeUserRoleByUserId(client, userId, roleName) {
+    async function revokeUserRoleByUserId(client, userId, roleName) {
         await client.query(revokeUserRoleByUserIdSql, [roleName, userId]);
     }
 
-    export async function getUserAclRulesByUserId(client, userId, ...categories) {
+    async function getUserAclRulesByUserId(client, userId, ...categories) {
         if (categories.length === 0) {
             categories.push(ACL_CATEGORY_ANY);
         }
@@ -317,42 +335,42 @@ export function composeUsersDataAccess(schema, tableNames = {}) {
         return res.rows;
     }
 
-    export async function deleteApiKeyByUser(client, publicId, userId) {
+    async function deleteApiKeyByUser(client, publicId, userId) {
         const res = await client.query(deleteApiKeyByUserSql, [userId, publicId]);
         return res.rowCount === 1 ? res.rows[0] : null;
     }
 
-    export async function addApiKeyOwner(client, apiKeyId, userId) {
+    async function addApiKeyOwner(client, apiKeyId, userId) {
         const res = await client.query(addApiKeyOwnerSql, [apiKeyId, userId]);
         return res.rowCount === 1;
     }
 
-    export async function queryApiKeyByAuth(client, authId, provider) {
+    async function queryApiKeyByAuth(client, authId, provider) {
         const res = await client.query(queryApiKeyByAuthSql, [authId, provider]);
         return res.rows;
     }
 
-    export async function queryApiKeyByUser(client, id, userId) {
+    async function queryApiKeyByUser(client, id, userId) {
         const res = await client.query(queryApiKeyByUserSql, [userId, id]);
         return res.rowCount === 1 ? res.rows[0] : null;
     }
 
-    export async function queryApiKeyForValueByUser(client, value, userId) {
+    async function queryApiKeyForValueByUser(client, value, userId) {
         const res = await client.query(queryApiKeyForValueByUserSql, [userId, value]);
         return res.rowCount === 1 ? res.rows[0] : null;
     }
 
-    export async function getUserApiKeysByUserId(client, userId) {
+    async function getUserApiKeysByUserId(client, userId) {
         const res = await client.query(getUserApiKeysByUserIdSql, [userId]);
         return res.rows;
     }
 
-    export async function getUserRolesByUserId(client, userId) {
+    async function getUserRolesByUserId(client, userId) {
         const res = await client.query(getUserRolesByUserIdSql, [userId]);
         return res.rows;
     }
 
-    export async function countUsers(client) {
+    async function countUsers(client) {
         const res = await client.query(countUsersSql);
         return Number.parseInt(res.rows[0].count);
     }

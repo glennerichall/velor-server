@@ -1,61 +1,104 @@
 import {getLogger} from "velor-services/injection/services.mjs";
+import {getTableNames} from "../../sql/defaultTableNames.mjs";
 
-export async function clearAcl(database) {
-    let {schema} = database;
-    await database.queryRaw(`delete from ${schema}.auths where provider != 'system'`);
-    getLogger(database).debug('cleared database: acl');
-}
+export function getClearDatabaseSql(schema, tableNames = {}) {
+    const {
+        auths,
+        acl,
+        preferences,
+        access,
+        roles,
+        apiKeys,
+        userApiKeys,
+        tokens,
+        users,
+    } = getTableNames(tableNames);
 
-export async function clearAuths(database) {
-    let {schema} = database;
-    await database.queryRaw(`delete from ${schema}.auths where provider != 'system'`); // it's all cascaded
-    getLogger(database).debug('cleared database: auths');
-}
+    const clearAclSql = `delete from ${schema}.${acl} where true`;
 
-export async function clearPreferences(database) {
-    let {schema} = database;
-    await database.queryRaw(`delete from ${schema}.preferences where true`);
-    getLogger(database).debug('cleared database: preferences');
-}
+    const clearAuthsSql = `delete from ${schema}.${auths} where provider != 'system'`;
 
-export async function clearRoles(database) {
-    let {schema} = database;
-    await database.queryRaw(`delete from ${schema}.role where true`);
-    getLogger(database).debug('cleared database: role');
-}
+    const clearPreferencesSql = `delete from ${schema}.${preferences} where true`;
 
-export async function clearAccessLog(database) {
-    let {schema} = database;
-    await database.queryRaw(`delete from ${schema}.access where true`);
-    getLogger(database).debug('cleared database: access log');
-}
+    const clearRolesSql = `delete from ${schema}.${roles} where true`;
 
-export async function clearApiKeys(database) {
-    let {schema} = database;
-    await database.queryRaw(`delete from ${schema}.api_keys
-                    where id not in (
+    const clearAccessLogSql = `delete from ${schema}.${access} where true`;
+
+    const clearApiKeysSql = `delete from ${schema}.${apiKeys} where id not in (
                         select api_key_id as id
-                        from ${schema}.users_api_keys
-                        where users_api_keys.user_id in (
-                            select users.id
-                            from ${schema}.users,
-                               ${schema}.auths
-                            where auths.id = users.primary_auth_id
-                            and auths.provider = 'system'))`
-    );
-    getLogger(database).debug('cleared database: api keys');
+                        from ${schema}.${userApiKeys} uak
+                        where uak.user_id in (
+                            select u.id
+                            from ${schema}.${users} u,
+                                ${schema}.${auths} a
+                            where a.id = u.primary_auth_id
+                            and a.provider = 'system'))`;
 
+    const clearTokensSql = `delete from ${schema}.${tokens} where true`;
+
+
+    return {
+        clearAclSql,
+        clearAuthsSql,
+        clearPreferencesSql,
+        clearRolesSql,
+        clearAccessLogSql,
+        clearApiKeysSql,
+        clearTokensSql
+    };
 }
 
-export async function clearTokens(database) {
-    let {schema} = database;
-    await database.queryRaw(`delete from ${schema}.tokens where true`);
-    getLogger(database).debug('cleared database: tokens');
+export function composeClearDataAccess(schema, tableNames = {}) {
 
-}
+    const {
+        clearAclSql,
+        clearAuthsSql,
+        clearPreferencesSql,
+        clearRolesSql,
+        clearAccessLogSql,
+        clearApiKeysSql,
+        clearTokensSql
+    } = getClearDatabaseSql(schema, tableNames);
 
-export async function clearDatabase(database) {
-    return await Promise.all([
+    async function clearAcl(database) {
+        await database.queryRaw(clearAclSql);
+        getLogger(database).debug('cleared database: acl');
+    }
+
+    async function clearAuths(database) {
+        await database.queryRaw(clearAuthsSql);
+        getLogger(database).debug('cleared database: auths');
+    }
+
+    async function clearPreferences(database) {
+        await database.queryRaw(clearPreferencesSql);
+        getLogger(database).debug('cleared database: preferences');
+    }
+
+    async function clearRoles(database) {
+        await database.queryRaw(clearRolesSql);
+        getLogger(database).debug('cleared database: role');
+    }
+
+    async function clearAccessLog(database) {
+        await database.queryRaw(clearAccessLogSql);
+        getLogger(database).debug('cleared database: access log');
+    }
+
+    async function clearApiKeys(database) {
+        await database.queryRaw(clearApiKeysSql);
+        getLogger(database).debug('cleared database: api keys');
+
+    }
+
+    async function clearTokens(database) {
+        await database.queryRaw(clearTokensSql);
+        getLogger(database).debug('cleared database: tokens');
+
+    }
+
+    async function clearDatabase(database) {
+        return await Promise.all([
             clearApiKeys(database),
             clearAccessLog(database),
             clearPreferences(database),
@@ -63,4 +106,17 @@ export async function clearDatabase(database) {
             clearAcl(database),
             clearTokens(database),
         ]);
+    }
+
+
+    return {
+        clearAcl,
+        clearAuths,
+        clearPreferences,
+        clearRoles,
+        clearAccessLog,
+        clearApiKeys,
+        clearTokens,
+        clearDatabase,
+    };
 }

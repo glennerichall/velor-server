@@ -29,7 +29,7 @@ export function getAuthsSql(schema, tableNames = {}) {
                firstname   as first_name,
                avatar,
                id
-        from ${schema}.auths
+        from ${schema}.${auths}
         where auth_id = $1
           and provider = $2
     `;
@@ -81,7 +81,7 @@ export function composeAuthsDataAccess(schema, tableNames = {}) {
         return res.rows.length === 1 ? res.rows[0] : null;
     }
 
-    export async function insertAuth(client, {
+    async function insertAuth(client, {
         profileId,
         provider,
         email,
@@ -104,12 +104,12 @@ export function composeAuthsDataAccess(schema, tableNames = {}) {
         return res.rows[0];
     }
 
-    export async function setUserVerifiedEmail(client, authId) {
+    async function setUserVerifiedEmail(client, authId) {
         const res = await client.query(setUserVerifiedEmailSql, [authId]);
         return res.rows.length === 1 ? res.rows[0] : null;
     }
 
-    export async function getAllAuths(client) {
+    async function getAllAuths(client) {
         const res = await client.query(getAllAuthsSql);
         return res.rows;
     }

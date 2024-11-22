@@ -9,7 +9,7 @@ export const defaultTableNames = {
     users: 'users',
     userAuths: 'user_auths',
     rolesAcl: 'role_acl',
-    userRole: 'user_role',
+    userRoles: 'user_role',
     roles: 'role',
     acl: 'acl',
     apiKeys: 'api_keys',

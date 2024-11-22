@@ -61,7 +61,7 @@ export function getApiKeysSql(schema, tableNames = {}) {
     const addAclRuleToApiKeySql = `
         insert into ${schema}.${apiKeysAcl} (api_key_id, acl_id)
         select $2 as api_key_id, id as acl_id
-        from ${schema}.acl
+        from ${schema}.${acl}
         where name = $1`;
 
     // @formatter:off
@@ -96,7 +96,7 @@ export function getApiKeysSql(schema, tableNames = {}) {
                  inner join ${schema}.${apiKeys} ak on aka.api_key_id = ak.id
         where ak.id = $1
             and a.category = ANY ($2::text[])
-           or '*' = ANY ($2::text[]) )
+           or '*' = ANY ($2::text[])
         order by a.permission, a.resource
     `;
 

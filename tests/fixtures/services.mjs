@@ -6,7 +6,7 @@ import {
     s_databaseStatements,
     s_poolManager
 } from "velor-database/application/services/databaseServiceKeys.mjs";
-import {statements} from "../../database/statements.mjs";
+import {composeStatements} from "../../database/composeStatements.mjs";
 import {s_logger} from "velor-services/injection/serviceKeys.mjs";
 import {noOpLogger} from "velor-utils/utils/noOpLogger.mjs";
 
@@ -25,7 +25,7 @@ export const services = [
             {
                 factories: {
                     [s_poolManager]: () => pool,
-                    [s_databaseStatements]: () => statements,
+                    [s_databaseStatements]: () => composeStatements,
                     [s_logger]: ()=> noOpLogger
                 },
                 env: {

@@ -1,12 +1,9 @@
 import {
     ACL_DENY,
     ACL_GRANT,
-    insertAclDenyRule,
-    insertAclGrantRule,
-    getAllAclRules
+    composeAclDataAccess,
 } from "../database/acl.mjs";
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
-import {clearAcl} from "./fixtures/database-clear.mjs";
 
 const {
     expect,
@@ -18,9 +15,22 @@ const {
 
 
 describe('database acl', () => {
+    let statements;
+    let insertAclGrantRule;
+    let insertAclDenyRule;
+    let getAllAclRules;
 
     beforeEach(async ({database}) => {
-        await clearAcl(database);
+        const {schema, clear} = database;
+
+        await clear();
+        statements = composeAclDataAccess(schema);
+
+        ({
+            insertAclGrantRule,
+            insertAclDenyRule,
+            getAllAclRules,
+        } = statements);
     })
 
     it('should query all acl', async ({database}) => {
@@ -29,7 +39,7 @@ describe('database acl', () => {
             schema
         } = database;
 
-        let rule1 = await insertAclGrantRule(client, schema, {
+        let rule1 = await insertAclGrantRule(client, {
             name: 'rule1',
             resource: '/foo/bar',
             method: 'GET',
@@ -37,7 +47,7 @@ describe('database acl', () => {
             description: 'baz qux'
         });
 
-        let rule2 = await insertAclDenyRule(client, schema, {
+        let rule2 = await insertAclDenyRule(client, {
             name: 'rule2',
             resource: '/foo/baz',
             method: 'GET',
@@ -46,7 +56,7 @@ describe('database acl', () => {
         });
 
 
-        const acl = await getAllAclRules(client, schema);
+        const acl = await getAllAclRules(client);
         expect(acl).to.have.length(2);
 
         expect(acl[0]).to.have.property('name', 'rule1');
