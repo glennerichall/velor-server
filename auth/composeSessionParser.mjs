@@ -1,6 +1,8 @@
 import cookieSession from "cookie-session";
 import {
-    getEnvValue
+    getEnvValue,
+    isProduction,
+    isStaging
 } from "velor-services/injection/baseServices.mjs";
 import {
     SAME_SITE,
@@ -18,7 +20,7 @@ export const composeSessionParser = services => {
             getEnvValue(services, SESSION_SECRET2),
         ],
         expires: new Date(now.getFullYear() + 100, now.getMonth(), now.getDate()),
-        sameSite: getEnvValue(services, SAME_SITE),
-        secure: true,
+        // sameSite: getEnvValue(services, SAME_SITE) ?? "strict",
+        secure: isProduction(services) || isStaging(services),
     });
 };

@@ -1,6 +1,6 @@
 import {queryRaw} from "velor-database/database/queryRaw.mjs";
 import {PoolManager} from "velor-database/database/PoolManager.mjs";
-import {getCreateSql} from "../../sql/getCreateSql.mjs";
+import {getCreateSql} from "../../installation/getCreateSql.mjs";
 
 let pool;
 let createSql;

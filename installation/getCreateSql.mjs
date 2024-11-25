@@ -1,8 +1,6 @@
 import {getFSAsync} from "velor-utils/utils/sysProvider.mjs";
 import path from "node:path";
-import {
-    getTableNames
-} from "./defaultTableNames.mjs";
+import {getTableNames} from "./defaultTableNames.mjs";
 
 const __dirname = import.meta.dirname;
 
@@ -29,7 +27,9 @@ export async function getCreateSql(schema, tableNames = {}) {
         tokens,
     } = getTableNames(tableNames);
 
-    let createSql = await getFSAsync().readFile(path.join(__dirname, 'createSql.sql'));
+    let createSql = await getFSAsync().readFile(path.join(__dirname,
+        'sql', 'createSql.sql'));
+
     return createSql.toString()
         .replaceAll('@{SCHEMA}', schema)
         .replaceAll('@{TABLE_DEPLOYMENTS}', deployments)

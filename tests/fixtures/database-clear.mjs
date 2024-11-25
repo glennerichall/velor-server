@@ -1,5 +1,5 @@
 import {getLogger} from "velor-services/injection/services.mjs";
-import {getTableNames} from "../../sql/defaultTableNames.mjs";
+import {getTableNames} from "../../installation/defaultTableNames.mjs";
 
 export function getClearDatabaseSql(schema, tableNames = {}) {
     const {

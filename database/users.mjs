@@ -1,5 +1,5 @@
 import {ACL_CATEGORY_ANY} from "../auth/permissions.mjs";
-import {getTableNames} from "../sql/defaultTableNames.mjs";
+import {getTableNames} from "../installation/defaultTableNames.mjs";
 
 export function getUsersSql(schema, tableNames = {}) {
     const {
@@ -90,17 +90,17 @@ export function getUsersSql(schema, tableNames = {}) {
     `;
 
     const grantUserRoleByProfileSql = `
-        insert into ${schema}.user_role (role, "user")
-        values ((select id from ${schema}.role where name = $1),
-                (select users.id
-                 from ${schema}.${users}
-                          inner join ${schema}.auths a on a.id = users.primary_auth_id
+        insert into ${schema}.${userRoles} (role_id, user_id)
+        values ((select id from ${schema}.${roles} where name = $1),
+                (select u.id
+                 from ${schema}.${users} u
+                          inner join ${schema}.${auths} a on a.id = u.primary_auth_id
                  where a.auth_id = $2
                    and a.provider = $3))
     `;
 
     const grantUserRoleByUserIdSql = `
-        insert into ${schema}.${userRoles} (role, "user")
+        insert into ${schema}.${userRoles} (role_id, user_id)
         values ((select id from ${schema}.${roles} where name = $1),
                 $2)
     `;
@@ -118,8 +118,8 @@ export function getUsersSql(schema, tableNames = {}) {
     const revokeUserRoleByProfileSql = `
         delete
         from ${schema}.${userRoles}
-        where role in (select id from ${schema}.${roles} where name = $1)
-          and "user" in (select u.id
+        where role_id in (select id from ${schema}.${roles} where name = $1)
+          and user_id in (select u.id
                          from ${schema}.${users} u
                                   inner join ${schema}.${auths} a on a.id = u.primary_auth_id
                          where a.auth_id = $2
@@ -128,9 +128,9 @@ export function getUsersSql(schema, tableNames = {}) {
 
     const revokeUserRoleByUserIdSql = `
         delete
-        from ${schema}.user_role
-        where role in (select id from ${schema}.role where name = $1)
-          and "user" in $2)
+        from ${schema}.${userRoles}
+        where role_id in (select id from ${schema}.${roles} where name = $1)
+          and user_id in $2)
     `;
 
     const getUserAclRulesByUserIdSql = `
@@ -215,8 +215,8 @@ export function getUsersSql(schema, tableNames = {}) {
                r.name        as name,
                r.description as description
         from ${schema}.${roles} r
-                 inner join ${schema}.${userRoles} ur on r.id = ur.role
-                 inner join ${schema}.${users} u on u.id = ur.user
+                 inner join ${schema}.${userRoles} ur on r.id = ur.role_id
+                 inner join ${schema}.${users} u on u.id = ur.user_id
         where u.id = $1
     `;
 

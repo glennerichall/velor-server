@@ -1,5 +1,5 @@
 import {ACL_CATEGORY_ANY} from "../auth/permissions.mjs";
-import {getTableNames} from "../sql/defaultTableNames.mjs";
+import {getTableNames} from "../installation/defaultTableNames.mjs";
 
 export function getRolesSql(schema, tableNames = {}) {
     const {

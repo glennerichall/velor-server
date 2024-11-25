@@ -4,14 +4,17 @@ import {chainHandlers} from "../../core/chainHandlers.mjs";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
 import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 import {URL_LOGIN_SUCCESS} from "velor-contrib/contrib/urls.mjs";
+import os from "os";
 
 function composeOnProfileReceivedTokenAdapter(onProfileReceived, token) {
     return (req, done) => {
         if (req.get('Authorization') === token) {
+            const currentUser = os.userInfo().username;
+
             onProfileReceived(req, null, null, {
-                id: 'DevOps',
+                id: 'Token',
                 email: 'zupfe@velor.ca',
-                displayName: 'DevOps',
+                displayName: currentUser,
             }, done);
         } else {
             done(new Error('Invalid token'));

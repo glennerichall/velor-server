@@ -5,7 +5,8 @@ import {queryRaw} from "velor-database/database/queryRaw.mjs";
 import {conformAuth} from "../models/conform/conformAuth.mjs";
 import {conformUser} from "../models/conform/conformUser.mjs";
 import {composeClearDataAccess} from "./fixtures/database-clear.mjs";
-import {getTableNames} from "../sql/defaultTableNames.mjs";
+import {getTableNames} from "../installation/defaultTableNames.mjs";
+import {composeRolesDataAccess} from "../database/roles.mjs";
 
 const {
     expect,
@@ -27,12 +28,16 @@ describe('database users', () => {
         firstName: "Mi",
     };
 
-    let getPrimaryAuthByProfile,
+    let grantUserRoleByUserId,
+        getUserRolesByUserId,
+        getPrimaryAuthByProfile,
         getPrimaryAuthByUserId,
         insertUser;
 
     let insertAuth,
         setUserVerifiedEmail;
+
+    let createRole;
 
     beforeEach(async ({database}) => {
         const {
@@ -44,6 +49,8 @@ describe('database users', () => {
         await clear();
 
         ({
+            grantUserRoleByUserId,
+            getUserRolesByUserId,
             getPrimaryAuthByProfile,
             getPrimaryAuthByUserId,
             insertUser
@@ -53,6 +60,8 @@ describe('database users', () => {
             insertAuth,
             setUserVerifiedEmail
         } = composeAuthsDataAccess(schema));
+
+        ({createRole} = composeRolesDataAccess(schema));
 
         let {id} = await insertAuth(client, auth);
         auth.id = id;
@@ -128,5 +137,44 @@ describe('database users', () => {
 
         let found = await queryRaw(client, `select * from ${schema}.${users} where id = $1`, [inserted.id]);
         expect(found).to.have.length(0);
+    })
+
+    it('should grand role to user', async ({database}) => {
+        const {
+            client,
+        } = database;
+
+        let role = await createRole(client, {
+            name: 'normal',
+            description: 'Normal user with limited rights'
+        });
+
+        let user = await insertUser(client, auth.id);
+        await grantUserRoleByUserId(client, user.id, role.name);
+
+        let roles = await getUserRolesByUserId(client, user.id);
+        expect(roles).to.have.length(1);
+    })
+
+    it('should fail to grant unknown role', async ({database}) => {
+        const {
+            client,
+        } = database;
+
+        await createRole(client, {
+            name: 'normal',
+            description: 'Normal user with limited rights'
+        });
+
+        let user = await insertUser(client, auth.id);
+
+        let error
+        try {
+            await grantUserRoleByUserId(client, user.id, 'dummy');
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error).to.be.an.instanceOf(Error);
     })
 })

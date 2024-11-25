@@ -2,6 +2,7 @@ import {
     s_apiKeyDAO,
     s_authDAO,
     s_emitter,
+    s_eventQueue,
     s_expressApp,
     s_preferenceDAO,
     s_roleDAO,
@@ -20,12 +21,14 @@ import {ApiKeyDAO} from "../../models/ApiKeyDAO.mjs";
 import {UserDAO} from "../../models/UserDAO.mjs";
 import {PreferenceDAO} from "../../models/PreferenceDAO.mjs";
 import {createStatementsInstance} from "../factories/createStatementsInstance.mjs";
+import {createEventQueueInstance} from "../factories/createEventQueueInstance.mjs";
 
 export const serverFactories = {
     [s_databaseStatements]: createStatementsInstance,
     [s_server]: createServerInstance,
     [s_expressApp]: () => express(),
     [s_emitter]: Emitter,
+    [s_eventQueue]: createEventQueueInstance,
     [s_roleDAO]: RoleDAO,
     [s_ruleDAO]: RuleDAO,
     [s_authDAO]: AuthDAO,

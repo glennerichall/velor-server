@@ -63,6 +63,10 @@ export class UserDAO extends DAOPolicy({
         return user;
     }
 
+    async countUsers() {
+        return await getDataUsers(this).countUsers();
+    }
+
     async getApiKeys(user) {
         return await getApiKeyDAO(this).loadMany({user});
     }

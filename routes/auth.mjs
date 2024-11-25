@@ -76,7 +76,7 @@ export function createAuthConfiguration(services, providers) {
             name: URL_LOGOUT,
             path: '/logout',
             post: [
-                validateSession,
+                // validateSession,
                 verifyAuthentication,
                 verifyCsrfToken,
                 logout

@@ -1,4 +1,4 @@
-import {getTableNames} from "../sql/defaultTableNames.mjs";
+import {getTableNames} from "../installation/defaultTableNames.mjs";
 
 export function getAuthsSql(schema, tableNames = {}) {
     const {

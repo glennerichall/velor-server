@@ -4,7 +4,11 @@ import {AUTH_TOKEN_SECRET} from "../application/services/serverEnvKeys.mjs";
 import {createRouterBuilder} from "../core/createRouterBuilder.mjs";
 import {createAuthConfiguration} from "../routes/auth.mjs";
 import request from 'supertest';
-import {getExpressApp} from "../application/services/serverServices.mjs";
+import {
+    getExpressApp,
+    getRoleDAO,
+    getUserDAO
+} from "../application/services/serverServices.mjs";
 import {setupExpressApp} from "../initialization/setupExpressApp.mjs";
 import {getTokenLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
@@ -50,14 +54,17 @@ describe('login', function () {
 
         // setup must be called after routes have been mounted
         await setupExpressApp(services);
+
+        // create normal role
+        await getRoleDAO(services).saveOne({name: 'normal'});
     })
 
-    function loginWithToken(services) {
+    function loginWithToken(services, token) {
         let urls = getFullHostUrls(services);
         let application = getExpressApp(services);
         return request(application)
             .get(getTokenLoginUrl(urls))
-            .set('Authorization', getEnvValue(services, AUTH_TOKEN_SECRET));
+            .set('Authorization', token ?? getEnvValue(services, AUTH_TOKEN_SECRET));
     }
 
     test.describe('login', () => {
@@ -71,54 +78,35 @@ describe('login', function () {
 
         test('should have normal role', async () => {
             await loginWithToken(services);
-            const profile = await getProfileManager(context).getProfile();
-            expect(profile).to.have.property('roles');
-            expect(profile.roles).to.have.length(1);
-            expect(profile.roles[0]).to.eq('normal');
+            const roles = await getUserDAO(services).getRoles({
+                profileId: 'Token',
+                provider: 'token'
+            });
+            expect(roles).to.have.length(1);
+            expect(roles[0].name).to.eq('normal');
         })
 
         // test('should not login without session', async () => {
-        //     await context.request()
-        //         .get(urls[URL_LOGIN].replace(':provider', GOOGLE))
-        //         .expect(403);
+        //     let urls = getFullHostUrls(services);
+        //     let application = getExpressApp(services);
+        //     request(application)
+        //         .get(getTokenLoginUrl(urls))
+        //         .set('Authorization', getEnvValue(services, AUTH_TOKEN_SECRET));
         // })
 
-        //
-        // test('should not login with bad token credentials', async () => {
-        //     await context.newSession()
-        //         .request()
-        //         .get(urls[URL_LOGIN].replace(':provider', 'token'))
-        //         .set('Authorization', 'toto')
-        //         .expect(401);
-        // })
-        //
-        //
-        // test('should not create user twice', async () => {
-        //     let session = await context.newSession().login();
-        //     let sessionUser = await session.getUser();
-        //
-        //     // the session will not be mutated (ie test keeps the login cookie)
-        //     // since in the session helper, every action creates
-        //     // a new instance of session helper.
-        //     await session.request()
-        //         .post(urls[URL_LOGOUT])
-        //         .expect(200);
-        //
-        //     // effectively logout
-        //     session = await session.logout();
-        //
-        //     expect(await session.getUser()).to.be.null;
-        //
-        //     // session should not be authenticated
-        //     await session.request()
-        //         .get(urls[URL_PROFILE])
-        //         .expect(401);
-        //
-        //     // logging out should not delete the user
-        //     const user = await database.users.queryForUserById(sessionUser.id);
-        //     expect(user).to.not.be.null;
-        // })
-        //
+        test('should not login with bad token credentials', async () => {
+            await loginWithToken(services, 'bad token')
+                .expect(401);
+        })
+
+        test('should not create user twice', async () => {
+            await loginWithToken(services);
+            await loginWithToken(services);
+
+            let count = await getUserDAO(services).countUsers();
+            expect(count).to.eq(1);
+        })
+
         // test("should not send mail with magic link without session", async () => {
         //     const url = urls[URL_LOGIN].replace(':provider', MAGIC_LINK);
         //     await context.request()
@@ -126,34 +114,34 @@ describe('login', function () {
         //         .send({email: 'johndoe@dead.com'})
         //         .expect(403);
         // })
-        //
-        // test("should send mail with magic link", async () => {
-        //     let called = false;
-        //
-        //     let session = await context.newSession();
-        //
-        //     const promise = onMagiclinkReceived(async (url, msg) => {
-        //         expect(msg).to.have.property('from', 'zupfe@velor.ca');
-        //         expect(msg).to.have.property('to', 'johndoe@dead.com');
-        //         expect(msg).to.have.property('subject', 'ZupFe sign-in');
-        //         expect(msg).to.have.property('text');
-        //         expect(msg.text).to.include('Your request id is');
-        //         expect(msg.text).to.include('Link can only be used once and will expire in 10 minutes');
-        //         expect(msg.text).to.include(`${env.ZUPFE_AUTH_CALLBACK_BASE_URL}/api/v1/auth/redirect/magiclink?token=`);
-        //         called = true;
-        //     });
-        //
-        //     const url = urls[URL_LOGIN].replace(':provider', MAGIC_LINK);
-        //     await session
-        //         .request()
-        //         .get(url)
-        //         .send({email: 'johndoe@dead.com'});
-        //
-        //     await promise;
-        //
-        //     expect(called).to.be.true;
-        // })
-        //
+
+        test("should send mail with magic link", async () => {
+            let called = false;
+
+            let session = await context.newSession();
+
+            const promise = onMagiclinkReceived(async (url, msg) => {
+                expect(msg).to.have.property('from', 'zupfe@velor.ca');
+                expect(msg).to.have.property('to', 'johndoe@dead.com');
+                expect(msg).to.have.property('subject', 'ZupFe sign-in');
+                expect(msg).to.have.property('text');
+                expect(msg.text).to.include('Your request id is');
+                expect(msg.text).to.include('Link can only be used once and will expire in 10 minutes');
+                expect(msg.text).to.include(`${env.ZUPFE_AUTH_CALLBACK_BASE_URL}/api/v1/auth/redirect/magiclink?token=`);
+                called = true;
+            });
+
+            const url = urls[URL_LOGIN].replace(':provider', MAGIC_LINK);
+            await session
+                .request()
+                .get(url)
+                .send({email: 'johndoe@dead.com'});
+
+            await promise;
+
+            expect(called).to.be.true;
+        })
+
         // test("should set email verified magiclink", async () => {
         //     const email = 'johndoe@dead.com';
         //

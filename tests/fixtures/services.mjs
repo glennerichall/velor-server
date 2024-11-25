@@ -1,5 +1,9 @@
 import {mergeDefaultServerOptions} from "../../application/services/mergeDefaultServerOptions.mjs";
-import {AUTH_TOKEN_SECRET} from "../../application/services/serverEnvKeys.mjs";
+import {
+    AUTH_TOKEN_SECRET,
+    SESSION_SECRET1,
+    SESSION_SECRET2
+} from "../../application/services/serverEnvKeys.mjs";
 import {DATABASE_SCHEMA} from "velor-database/application/services/databaseEnvKeys.mjs";
 import {createAppServicesInstance} from "velor-services/injection/ServicesContext.mjs";
 import {
@@ -30,7 +34,9 @@ export const services = [
                 },
                 env: {
                     [AUTH_TOKEN_SECRET]: 'a-secret-token',
-                    [DATABASE_SCHEMA]: schema
+                    [DATABASE_SCHEMA]: schema,
+                    [SESSION_SECRET1]: 'session-secret-1',
+                    [SESSION_SECRET2]: 'session-secret-2',
                 }
             });
         let services = createAppServicesInstance(options);

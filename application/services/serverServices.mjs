@@ -3,6 +3,7 @@ import {
     s_apiKeyDAO,
     s_authDAO,
     s_emitter,
+    s_eventQueue,
     s_expressApp,
     s_mailer,
     s_messageFactory,
@@ -19,6 +20,10 @@ export function getMessageFactory(services) {
 
 export function getEmitter(services) {
     return getProvider(services)[s_emitter]();
+}
+
+export function getEventQueue(services) {
+    return getProvider(services)[s_eventQueue]();
 }
 
 export function getMailer(services) {

@@ -1,6 +1,6 @@
 import {
     getTableNames
-} from "../sql/defaultTableNames.mjs";
+} from "../installation/defaultTableNames.mjs";
 
 export const ACL_GRANT = 'grant';
 export const ACL_DENY = 'deny';
