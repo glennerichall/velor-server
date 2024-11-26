@@ -15,6 +15,7 @@ import {setupExpressApp} from "../../initialization/setupExpressApp.mjs";
 
 import {composeCookieParser} from "../../auth/composeCookieParser.mjs";
 import {composeCsrfProtection} from "../../auth/composeCsrfProtection.mjs";
+import {composeAuth} from "../../auth/composeAuth.mjs";
 
 export const rest =
     async ({services, request}, use, testInfo) => {
@@ -25,12 +26,11 @@ export const rest =
         };
 
         let application = getExpressApp(services);
-        const authConfigs = createAuthConfiguration(services, providers);
-        let auth = createRouterBuilder().configure(authConfigs).done();
+        let auth = composeAuth(services, providers);
 
         let session = composeSessionParser(services);
         let cookies = composeCookieParser(services);
-        let csrf = composeCsrfProtection(services);
+        let {csrfProtection, csrf} = composeCsrfProtection(services);
 
 
         application
@@ -40,9 +40,14 @@ export const rest =
             .use(passport.initialize())
             .use(passport.session())
             .use(cookies)
-            .use(csrf)
+            .use(csrfProtection)
 
-            .use('/auth', auth);
+            .use('/csrf', csrf)
+            .use('/auth', auth)
+
+            .post('/validate-csrf', (req, res) => {
+                res.sendStatus(200);
+            });
 
         // setup must be called after routes have been mounted
         await setupExpressApp(services);

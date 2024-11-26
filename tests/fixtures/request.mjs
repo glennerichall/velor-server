@@ -4,6 +4,7 @@ import {getTokenLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {getEnvValue} from "velor-services/injection/baseServices.mjs";
 import {AUTH_TOKEN_SECRET} from "../../application/services/serverEnvKeys.mjs";
 import supertest from "supertest";
+import {URL_CSRF} from "velor-contrib/contrib/urls.mjs";
 
 
 export const request =
@@ -19,13 +20,26 @@ export const request =
                 const eqIndex = cookiePart.indexOf('=');
                 const key = cookiePart.substring(0, eqIndex);
                 const value = cookiePart.substring(eqIndex + 1);
-                parsedCookies[key.toLowerCase()] = value;
+                parsedCookies[key] = value;
             });
             return parsedCookies;
         }
 
-        function readCsrfToken(response) {
-            return response.header['x-csrf-token'];
+        function setCookies(req, cookies) {
+            if (cookies) {
+                let header = Object.keys(cookies)
+                    .map(key => `${key}=${cookies[key]}`)
+                    .join(';');
+                req = req.set('cookie', header);
+            }
+            return req;
+        }
+
+        function setCsrfToken(req, csrf) {
+            if (csrf) {
+                return req.set('x-csrf-token', csrf);
+            }
+            return req;
         }
 
         function applyContext(req, context = {}) {
@@ -34,13 +48,8 @@ export const request =
                 csrf
             } = context;
 
-            if (cookies) {
-                let header = Object.keys(cookies)
-                    .map(key => `${key}=${cookies[key]}`)
-                    .join(';');
-                req = req.set('cookie', header);
-                req = req.set('x-csrf-token', csrf);
-            }
+            req = setCookies(req, cookies);
+            req = setCsrfToken(req, csrf);
 
             // capture the request response
             const originalEnd = req.end.bind(req);
@@ -53,8 +62,9 @@ export const request =
                         // save the cookies
                         context.cookies = parseCookies(response);
 
-                        // save the current csrf token
-                        context.csrf = readCsrfToken(response);
+                        if (response.body?.csrfToken) {
+                            context.csrf = response.body.csrfToken;
+                        }
                     }
                     response.context = context;
                     callback(err, response);
@@ -69,6 +79,8 @@ export const request =
                 get: (target, prop, receiver) => {
                     return (...args) => {
                         const req = supertest(application)[prop](...args);
+                        req.setCookies = cookies => setCookies(req, cookies);
+                        req.setCsrfToken = csrf => setCsrfToken(req, csrf);
                         return applyContext(req, context);
                     }
                 }
@@ -85,7 +97,7 @@ export const request =
         }
 
         request.loginWithToken = loginWithToken;
-        request.clearCookies = () => delete context.cookies;
+        request.clearCookies = (context) => delete context.cookies;
 
         await use(request);
     }
