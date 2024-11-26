@@ -10,19 +10,7 @@ import {
     AUTH_MAGIC_LINK,
     AUTH_TOKEN
 } from "velor-contrib/contrib/authProviders.mjs";
-import {
-    decryptText,
-    encryptText
-} from "velor-utils/utils/encryption.mjs";
-
-export function serializeUser(user) {
-    return encryptText(JSON.stringify(user));
-}
-
-export function deserializeUser(data) {
-    return JSON.parse(decryptText(data));
-}
-
+import {getUserSerializer} from "../../application/services/serverServices.mjs";
 
 export function createStrategies(services, providers) {
 
@@ -61,12 +49,13 @@ export function createStrategies(services, providers) {
                 token.token);
     }
 
+    const userSerializer = getUserSerializer(services);
     passport.serializeUser(async (user, done) => {
-        done(null, serializeUser(user));
+        done(null, userSerializer.serialize(user));
     });
 
     passport.deserializeUser(async (user, done) => {
-        done(null, deserializeUser(user));
+        done(null, userSerializer.deserialize(user));
     })
 
     return strategies;

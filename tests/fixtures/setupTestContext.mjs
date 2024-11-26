@@ -4,6 +4,7 @@ import {configs} from "./configs.mjs";
 import {databaseConnectionPool} from "./databaseConnectionPool.mjs";
 import {services} from "./services.mjs";
 import {request} from "./request.mjs";
+import {rest} from "./rest.mjs";
 
 export function setupTestContext() {
     return setupTest({
@@ -11,6 +12,7 @@ export function setupTestContext() {
         configs,
         databaseConnectionPool,
         services,
-        request
+        request,
+        rest
     });
 }

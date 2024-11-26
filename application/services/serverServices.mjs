@@ -12,6 +12,7 @@ import {
     s_ruleDAO,
     s_server,
     s_userDAO,
+    s_userSerializer,
 } from "./serverServiceKeys.mjs";
 
 export function getMessageFactory(services) {
@@ -60,4 +61,8 @@ export function getAuthDAO(services) {
 
 export function getPreferenceDAO(services) {
     return getProvider(services)[s_preferenceDAO]();
+}
+
+export function getUserSerializer(services) {
+    return getProvider(services)[s_userSerializer]();
 }

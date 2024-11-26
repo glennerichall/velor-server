@@ -20,8 +20,10 @@
     "supertest": "^7.0.0"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
+    "csrf-csrf": "^3.1.0",
     "csrf-sync": "^4.0.3",
     "ejs": "^3.1.10",
     "express": "^4.21.1",

@@ -7,3 +7,7 @@ export const SESSION_SECRET1 = 'SESSION_SECRET1';
 export const SESSION_SECRET2 = 'SESSION_SECRET2';
 export const SAME_SITE = 'SAME_SITE';
 export const ALLOW_CORS = 'ALLOW_CORS';
+export const USER_ENCRYPT_KEY = 'USER_ENCRYPT_KEY';
+export const USER_ENCRYPT_IV = 'USER_ENCRYPT_IV';
+export const COOKIE_SECRET = 'COOKIE_SECRET';
+export const CSRF_SECRET = 'CSRF_SECRET';

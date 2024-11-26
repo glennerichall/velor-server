@@ -5,13 +5,12 @@ import {
     isStaging
 } from "velor-services/injection/baseServices.mjs";
 import {
-    SAME_SITE,
     SESSION_SECRET1,
     SESSION_SECRET2
 } from "../application/services/serverEnvKeys.mjs";
 
 
-export const composeSessionParser = services => {
+export function composeSessionParser(services) {
     let now = new Date();
     return cookieSession({
         name: 'session',
@@ -23,4 +22,4 @@ export const composeSessionParser = services => {
         // sameSite: getEnvValue(services, SAME_SITE) ?? "strict",
         secure: isProduction(services) || isStaging(services),
     });
-};
+}

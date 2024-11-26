@@ -29,6 +29,14 @@ export function getRequestInfo(req) {
     return getRequest(req).requestDetails;
 }
 
+export function getSessionId(req) {
+    return getSession(req).id;
+}
+
+export function getSession(req) {
+    return getRequest(req).session;
+}
+
 export function getFullHostUrl(req) {
     const fullHostUrls = getEnvValue(req, FULL_HOST_URLS);
     const backendUrl = getEnvValue(req, BACKEND_URL);

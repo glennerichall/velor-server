@@ -18,7 +18,6 @@ import {
     URL_LOGIN_SUCCESS,
     URL_LOGOUT
 } from "velor-contrib/contrib/urls.mjs";
-import passport from "passport";
 import {EVENT_USER_LOGIN} from "../application/services/serverEventKeys.mjs";
 
 const {
@@ -31,43 +30,15 @@ const {
 } = setupTestContext();
 
 describe('login', function () {
-    let services, application, session;
+    let services, application;
     let request, loginWithToken;
 
-    beforeEach(async ({services: s, request: r}) => {
-        services = s;
-        request = r;
-
-        ({loginWithToken} = request);
-
-        let providers = {
-            [AUTH_TOKEN]: {
-                token: getEnvValue(services, AUTH_TOKEN_SECRET),
-            }
-        };
-
-        application = getExpressApp(services);
-        const configuration = createAuthConfiguration(services, providers);
-        let router = createRouterBuilder().configure(configuration).done();
-
-        let session = composeSessionParser(services);
-
-        application
-            // .use(cors({credentials: true, origin: true}))
-            .use(session)
-            .use(patchPassport)
-            .use(passport.initialize())
-            .use(passport.session())
-            .use('/auth', router);
-
-        // setup must be called after routes have been mounted
-        await setupExpressApp(services);
-
-        // create normal role
-        await getRoleDAO(services).saveOne({name: 'normal'});
-
-        // initialize event queue
-        getEventQueue(services);
+    beforeEach(async ({rest}) => {
+        ({
+            services,
+            request,
+            loginWithToken
+        } = rest);
     })
 
 

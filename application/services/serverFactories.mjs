@@ -9,6 +9,7 @@ import {
     s_ruleDAO,
     s_server,
     s_userDAO,
+    s_userSerializer,
 } from "./serverServiceKeys.mjs";
 import {s_databaseStatements} from "velor-database/application/services/databaseServiceKeys.mjs";
 import {createServerInstance} from "../factories/createServerInstance.mjs";
@@ -22,6 +23,7 @@ import {UserDAO} from "../../models/UserDAO.mjs";
 import {PreferenceDAO} from "../../models/PreferenceDAO.mjs";
 import {createStatementsInstance} from "../factories/createStatementsInstance.mjs";
 import {createEventQueueInstance} from "../factories/createEventQueueInstance.mjs";
+import {createUserSerializerInstance} from "../factories/createUserSerializerInstance.mjs";
 
 export const serverFactories = {
     [s_databaseStatements]: createStatementsInstance,
@@ -35,4 +37,5 @@ export const serverFactories = {
     [s_apiKeyDAO]: ApiKeyDAO,
     [s_userDAO]: UserDAO,
     [s_preferenceDAO]: PreferenceDAO,
+    [s_userSerializer]: createUserSerializerInstance,
 }
