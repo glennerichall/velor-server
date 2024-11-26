@@ -4,7 +4,6 @@ import {getTokenLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {getEnvValue} from "velor-services/injection/baseServices.mjs";
 import {AUTH_TOKEN_SECRET} from "../../application/services/serverEnvKeys.mjs";
 import supertest from "supertest";
-import {URL_CSRF} from "velor-contrib/contrib/urls.mjs";
 
 
 export const request =
@@ -25,6 +24,14 @@ export const request =
             return parsedCookies;
         }
 
+        function parseCsrf(response) {
+            let csrf;
+            if (response.body?.csrfToken) {
+                csrf = response.body.csrfToken
+            }
+            return csrf;
+        }
+
         function setCookies(req, cookies) {
             if (cookies) {
                 let header = Object.keys(cookies)
@@ -42,6 +49,19 @@ export const request =
             return req;
         }
 
+        function parseResponse(response) {
+            let cookies, csrf;
+            if (response) {
+                cookies = parseCookies(response);
+                csrf = parseCsrf(response);
+            }
+            response.context = {
+                cookies,
+                csrf
+            };
+            return response;
+        }
+
         function applyContext(req, context = {}) {
             let {
                 cookies,
@@ -56,17 +76,7 @@ export const request =
 
             req.end = callback =>
                 originalEnd((err, response) => {
-                    if (response) {
-                        // mutate the current context with request response
-
-                        // save the cookies
-                        context.cookies = parseCookies(response);
-
-                        if (response.body?.csrfToken) {
-                            context.csrf = response.body.csrfToken;
-                        }
-                    }
-                    response.context = context;
+                    response = parseResponse(response);
                     callback(err, response);
                 });
 

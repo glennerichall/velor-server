@@ -82,4 +82,31 @@ describe('csrf', function () {
             .expect(403);
     })
 
+    it('should set error code', async () => {
+        await request()
+            .post('/validate-csrf')
+            .expect(403)
+            .expect({
+                message: 'invalid csrf token',
+                code: 'E_BAD_CSRF_TOKEN'
+            });
+    })
+
+    it('should get a new csrf token', async()=> {
+        let urls = getFullHostUrls(services);
+        const {context: ctx1} = await request()
+            .get(urls[URL_CSRF])
+            .expect(200);
+
+        const {context: ctx2} = await request(ctx1)
+            .get(urls[URL_CSRF])
+            .expect(200);
+
+        await request(ctx2)
+            .post('/validate-csrf')
+            .expect(200);
+
+        expect(ctx2.csrf).to.not.eq(ctx1.csrf);
+    })
+
 })
