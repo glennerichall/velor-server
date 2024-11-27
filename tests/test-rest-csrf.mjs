@@ -13,19 +13,8 @@ const {
 
 
 describe('csrf', function () {
-    let services,
-        request,
-        loginWithToken;
 
-    beforeEach(async ({rest}) => {
-        ({
-            services,
-            request,
-            loginWithToken
-        } = rest);
-    })
-
-    it('should get a csrf token', async () => {
+    it('should get a csrf token', async ({services, request}) => {
         let urls = getFullHostUrls(services);
         const response = await request()
             .get(urls[URL_CSRF])
@@ -38,7 +27,7 @@ describe('csrf', function () {
         expect(response.body.csrfToken).to.equal(csrfCookie.split('%')[0]);
     })
 
-    it('should validate csrf token', async () => {
+    it('should validate csrf token', async ({services, request}) => {
         let urls = getFullHostUrls(services);
         const {context: {cookies}, body: {csrfToken}} = await request()
             .get(urls[URL_CSRF])
@@ -51,7 +40,7 @@ describe('csrf', function () {
             .expect(200);
     })
 
-    it('should have request test submit cookies and csrf token', async () => {
+    it('should have request test submit cookies and csrf token', async ({services, request}) => {
         let urls = getFullHostUrls(services);
         const {context} = await request()
             .get(urls[URL_CSRF])
@@ -62,7 +51,7 @@ describe('csrf', function () {
             .expect(200);
     })
 
-    it('should protect from invalid csrf token', async () => {
+    it('should protect from invalid csrf token', async ({services, request}) => {
         let urls = getFullHostUrls(services);
         let {context: {cookies}, body: {csrfToken}} = await request()
             .get(urls[URL_CSRF])
@@ -82,7 +71,7 @@ describe('csrf', function () {
             .expect(403);
     })
 
-    it('should set error code', async () => {
+    it('should set error code', async ({request}) => {
         await request()
             .post('/validate-csrf')
             .expect(403)
@@ -92,7 +81,7 @@ describe('csrf', function () {
             });
     })
 
-    it('should get a new csrf token', async()=> {
+    it('should get a new csrf token', async({services, request})=> {
         let urls = getFullHostUrls(services);
         const {context: ctx1} = await request()
             .get(urls[URL_CSRF])

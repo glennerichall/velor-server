@@ -1,13 +1,9 @@
 import {getExpressApp} from "../../application/services/serverServices.mjs";
-import {getFullHostUrls} from "../../application/services/requestServices.mjs";
-import {getTokenLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
-import {getEnvValue} from "velor-services/injection/baseServices.mjs";
-import {AUTH_TOKEN_SECRET} from "../../application/services/serverEnvKeys.mjs";
 import supertest from "supertest";
 
 
 export const request =
-    async ({services}, use) => {
+    async ({services, rest}, use) => {
 
         function parseCookies(response) {
             const rawCookies = response.header['set-cookie'];
@@ -49,11 +45,14 @@ export const request =
             return req;
         }
 
-        function parseResponse(response) {
+        function parseResponse(response, context) {
             let cookies, csrf;
             if (response) {
-                cookies = parseCookies(response);
-                csrf = parseCsrf(response);
+                cookies = {
+                    ...context?.cookies,
+                    ...parseCookies(response)
+                };
+                csrf = parseCsrf(response) ?? context?.csrf;
             }
             response.context = {
                 cookies,
@@ -63,22 +62,46 @@ export const request =
         }
 
         function applyContext(req, context = {}) {
-            let {
-                cookies,
-                csrf
-            } = context;
 
-            req = setCookies(req, cookies);
-            req = setCsrfToken(req, csrf);
+            const setContext = (req, ctx) => {
+                let {
+                    cookies,
+                    csrf
+                } = ctx;
 
-            // capture the request response
-            const originalEnd = req.end.bind(req);
+                setCookies(req, cookies);
+                setCsrfToken(req, csrf);
+            };
 
-            req.end = callback =>
-                originalEnd((err, response) => {
-                    response = parseResponse(response);
-                    callback(err, response);
-                });
+            if (context instanceof Promise) {
+                // the context is still not received from a previous request
+                // just wait until it is received. When its received, since we
+                // have hijacked the current request promise resolving, we set
+                // the received context to the current request headers and then
+                // we resolve the request promise using the original then method.
+                let originalThen = req.then.bind(req);
+                req.then = async (resolve, reject) => {
+                    let ctx = await context;
+                    setContext(req, ctx);
+                    originalThen(response => {
+                        parseResponse(response, ctx);
+                        resolve(response);
+                    }, reject);
+                }
+            } else {
+                // If context is not a promise, directly set it into the req
+                setContext(req, context);
+
+                // capture the request response by hijacking the end
+                // method of the stream
+                const originalEnd = req.end.bind(req);
+                req.end = callback =>
+                    originalEnd((err, response) => {
+                        response = parseResponse(response, context);
+                        callback(err, response);
+                    });
+            }
+
 
             return req;
         }
@@ -96,18 +119,6 @@ export const request =
                 }
             });
         }
-
-
-        function loginWithToken(token) {
-            let urls = getFullHostUrls(services);
-            token = token ?? getEnvValue(services, AUTH_TOKEN_SECRET)
-            return request()
-                .get(getTokenLoginUrl(urls))
-                .set('Authorization', token);
-        }
-
-        request.loginWithToken = loginWithToken;
-        request.clearCookies = (context) => delete context.cookies;
 
         await use(request);
     }

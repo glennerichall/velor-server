@@ -11,7 +11,6 @@ import {
 
 import {
     verifyAuthentication,
-    verifyCsrfToken
 } from "../auth/verification.mjs";
 
 import {composeRenderLoginFailure} from "../passport/composition/composeRenderLoginFailure.mjs";
@@ -73,25 +72,18 @@ export function createAuthConfiguration(services, providers) {
         // },
 
         {
-            name: URL_LOGOUT,
-            path: '/logout',
-            post: [
-                // validateSession,
-                verifyAuthentication,
-                verifyCsrfToken,
-                logout
-            ]
-        },
-
-        {
             // The user initiates the authentication process
             // If it is not redirected to a federated authenticator by the login strategy
             // then it will be considered authenticated and logged in, unless an error is thrown.
             name: URL_LOGIN,
-            path: '/login/:provider',
-            get: [
+            path: '/session',
+            post: [
                 getAuthStrategy,
                 initiateAuth
+            ],
+            delete: [
+                verifyAuthentication,
+                logout
             ]
         },
 
@@ -101,8 +93,7 @@ export function createAuthConfiguration(services, providers) {
             path: '/redirect/:provider',
             get: [
                 getAuthStrategy,
-                authenticate,
-                login
+                authenticate
             ]
         }
     ];

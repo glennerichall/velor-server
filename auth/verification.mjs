@@ -1,6 +1,5 @@
 import {
     isAuthenticated,
-    isCsrfTokenValid,
     isSessionValid,
     isSessionValidAndAuthenticated
 } from "./predicates.mjs";
@@ -24,5 +23,3 @@ export const verifyAuthentication = verify(isAuthenticated, 401);
 export const verifySession = verify(isSessionValid, 401);
 
 export const verifyUnAuthentication = verify(notAsync(isAuthenticated));
-
-export const verifyCsrfToken = verify(isCsrfTokenValid, 401);
