@@ -17,6 +17,7 @@ import {setupExpressApp} from "../../initialization/setupExpressApp.mjs";
 import {composeCookieParser} from "../../auth/composeCookieParser.mjs";
 import {composeCsrfProtection} from "../../auth/composeCsrfProtection.mjs";
 import {composeAuth} from "../../auth/composeAuth.mjs";
+import express from "express";
 
 export const rest =
     async ({services}, use, testInfo) => {
@@ -39,6 +40,8 @@ export const rest =
 
         application
             // .use(cors({credentials: true, origin: true}))
+            .use(express.json())
+            .use(express.text())
             .use(session)
             .use(patchPassport)
             .use(passport.initialize())

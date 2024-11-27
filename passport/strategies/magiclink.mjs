@@ -46,14 +46,13 @@ export class MagicLinkStrategy {
 
         const mailer = getMailer(this);
         const urls = getFullHostUrls(this);
-        const callbackURL = urls[URL_PASSPORT_CALLBACK];
+        const callbackURL = urls[URL_PASSPORT_CALLBACK].replace(':provider', AUTH_MAGIC_LINK);
         const loginSuccessURL = urls[URL_LOGIN_SUCCESS];
         const loginFailureURL = urls[URL_LOGIN_FAILURE];
 
         this.#strategy = new MagicLink.Strategy(
             config,
-            composeSendTokenByEmail(callbackURL.replace(':provider', AUTH_MAGIC_LINK),
-                mailer.sendMail.bind(mailer)),
+            composeSendTokenByEmail(callbackURL, mailer.sendMail.bind(mailer)),
             composeOnProfileReceivedMagicLinkAdapter(
                 composeOnProfileReceived(this, AUTH_MAGIC_LINK)
             ));

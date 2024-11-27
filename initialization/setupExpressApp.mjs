@@ -19,7 +19,4 @@ export async function setupExpressApp(services) {
     // capture the server close method to stop all other services
     observeServerClose(services);
 
-    // since the routes are now mounted, we have access to all urls.
-    // we can now initialize all auth strategies with callback urls
-
 }

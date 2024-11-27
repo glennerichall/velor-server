@@ -1,6 +1,9 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getFullHostUrls} from "../application/services/requestServices.mjs";
 import {getMagicLInkLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
+import {getAuthDAO} from "../application/services/serverServices.mjs";
+import {services} from "./fixtures/services.mjs";
+import {AUTH_MAGIC_LINK} from "velor-contrib/contrib/authProviders.mjs";
 
 
 const {
@@ -14,6 +17,11 @@ const {
 
 describe('login with magic link', function () {
 
+
+    beforeEach(async ({database}) => {
+        const {clear} = database;
+        await clear();
+    })
 
     // test("should not send mail with magic link without session", async () => {
     //     const url = urls[URL_LOGIN].replace(':provider', MAGIC_LINK);
@@ -33,8 +41,7 @@ describe('login with magic link', function () {
             expect(msg).to.have.property('text');
             expect(msg.text).to.include('Your request id is');
             expect(msg.text).to.include('Link can only be used once and will expire in 10 minutes');
-            // expect(msg.text).to.include(`${env.ZUPFE_AUTH_CALLBACK_BASE_URL}/api/v1/auth/redirect/magiclink?token=`);
-
+            expect(msg.text).to.include(`/redirect/magiclink?token=`);
             called = true;
         });
 
@@ -47,30 +54,34 @@ describe('login with magic link', function () {
             .send({email: 'johndoe@dead.com'})
             .expect(201);
 
-        // await promise;
-
-        // expect(called).to.be.true;
+        await promise;
+        expect(called).to.be.true;
     })
 
-    // test("should set email verified magiclink", async () => {
-    //     const email = 'johndoe@dead.com';
-    //
-    //     const rows = await database.queryRaw(`select * from ${database.schema}.auths where auth_id=$1`, [email]);
-    //     expect(rows).to.have.length(0);
-    //
-    //     await context.newSession()
-    //         .loginWithMagicLink(email, async (url, msg, accept) => {
-    //             await accept();
-    //             const rows = await database.queryRaw(`select * from ${database.schema}.auths where auth_id=$1`, [email]);
-    //             expect(rows).to.have.length(1);
-    //             const auth = rows[0];
-    //             expect(auth).to.have.property('email', email);
-    //             expect(auth).to.have.property('verified', true);
-    //             expect(auth).to.have.property('displayname', 'johndoe');
-    //             expect(auth).to.have.property('provider', 'magiclink');
-    //             expect(auth).to.have.property('active', true);
-    //         })
-    // })
+    test("should set email verified magiclink", async ({services, api}) => {
+        const email = 'johndoe@dead.com';
+
+        const rows = await getAuthDAO(services).loadOne({
+            provider: AUTH_MAGIC_LINK,
+            profileId: email
+        })
+        expect(rows).to.be.null;
+
+        await api.loginWithMagicLink(email, async (url, msg, accept) => {
+            await accept();
+            const rows = await getAuthDAO(services).loadOne({
+                provider: AUTH_MAGIC_LINK,
+                profileId: email
+            });
+            expect(rows).to.have.length(1);
+            const auth = rows[0];
+            expect(auth).to.have.property('email', email);
+            expect(auth).to.have.property('verified', true);
+            expect(auth).to.have.property('displayname', 'johndoe');
+            expect(auth).to.have.property('provider', 'magiclink');
+            expect(auth).to.have.property('active', true);
+        });
+    })
     //
     // test("should not login if ws session is closed", async () => {
     //

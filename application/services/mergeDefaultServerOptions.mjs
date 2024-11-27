@@ -2,7 +2,7 @@ import {mergeDefaultDatabaseOptions} from "velor-database/application/services/m
 import {serverFactories} from "./serverFactories.mjs";
 
 
-export function mergeDefaultServerOptions(options) {
+export function mergeDefaultServerOptions(options = {}) {
     let {
         factories = {}
     } = options;
@@ -10,8 +10,8 @@ export function mergeDefaultServerOptions(options) {
         {
             ...options,
             factories: {
+                ...serverFactories,
                 ...factories,
-                ...serverFactories
             },
         })
 }

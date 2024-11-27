@@ -10,7 +10,7 @@ export function composeMagicLinkInitiator(passport) {
 
     const replyRequestId = (req, res) => {
         const requestId = req.requestId;
-        res.status(200).json({requestId});
+        res.status(201).json({requestId});
     };
 
     return chainHandlers(

@@ -26,6 +26,11 @@ const {
 
 describe('login with token', function () {
 
+    beforeEach(async ({database}) => {
+        const {clear} = database;
+        await clear();
+    })
+
     test.describe('login', () => {
 
         test('should login with token credentials', async ({services, api}) => {

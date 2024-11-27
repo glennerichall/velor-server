@@ -13,7 +13,7 @@ ${callbackURL}?token=${token}&ws=${req.session.dx}
 
 Link can only be used once and will expire in ${configs.ttl / 60} minutes
 `;
-        const email = user.loginAuth.email;
+        const email = user.email;
         const ok = await sendMail(email, 'ZupFe sign-in', content);
         if (!ok) {
             throw new Error('Unable to send mail');
