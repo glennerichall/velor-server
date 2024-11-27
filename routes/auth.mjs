@@ -5,7 +5,6 @@ import {
     URL_LOGIN,
     URL_LOGIN_FAILURE,
     URL_LOGIN_SUCCESS,
-    URL_LOGOUT,
     URL_PASSPORT_CALLBACK
 } from "velor-contrib/contrib/urls.mjs";
 
@@ -22,7 +21,6 @@ import {initiateAuth} from "../passport/middlewares/initiateAuth.mjs";
 import {authenticate} from "../passport/middlewares/authenticate.mjs";
 import {createStrategies} from "../passport/strategies/createStrategies.mjs";
 import {logout} from "../passport/handlers/logout.mjs";
-import {login} from "../passport/handlers/login.mjs";
 
 
 export function createAuthConfiguration(services, providers) {

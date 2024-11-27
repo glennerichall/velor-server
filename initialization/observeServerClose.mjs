@@ -13,7 +13,7 @@ import {
 } from "../application/services/serverServices.mjs";
 import {EVENT_SERVER_CLOSED} from "../application/services/serverEventKeys.mjs";
 
-export function observerServerClose(services) {
+export function observeServerClose(services) {
 
     const server = getServer(services);
     const env = getEnvironment(services);

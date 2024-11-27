@@ -4,6 +4,8 @@ import {
     s_emitter,
     s_eventQueue,
     s_expressApp,
+    s_mailer,
+    s_mailerTransport,
     s_preferenceDAO,
     s_roleDAO,
     s_ruleDAO,
@@ -24,6 +26,10 @@ import {PreferenceDAO} from "../../models/PreferenceDAO.mjs";
 import {createStatementsInstance} from "../factories/createStatementsInstance.mjs";
 import {createEventQueueInstance} from "../factories/createEventQueueInstance.mjs";
 import {createUserSerializerInstance} from "../factories/createUserSerializerInstance.mjs";
+import {createMailerInstance} from "../factories/createMailerInstance.mjs";
+import {createMailerTransportInstance} from "../factories/createMailerTransportInstance.mjs";
+import {s_clientProvider} from "velor-distribution/application/services/distributionServiceKeys.mjs";
+import {ClientProviderPubSub} from "velor-distribution/distribution/ClientProviderPubSub.mjs";
 
 export const serverFactories = {
     [s_databaseStatements]: createStatementsInstance,
@@ -38,4 +44,7 @@ export const serverFactories = {
     [s_userDAO]: UserDAO,
     [s_preferenceDAO]: PreferenceDAO,
     [s_userSerializer]: createUserSerializerInstance,
+    [s_mailer]: createMailerInstance,
+    [s_mailerTransport]: createMailerTransportInstance,
+    [s_clientProvider]: ClientProviderPubSub
 }

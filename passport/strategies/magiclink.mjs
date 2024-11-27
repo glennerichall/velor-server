@@ -10,6 +10,12 @@ import {composeMagicLinkAuthenticator} from "./magiclink/composeMagicLinkAuthent
 import {composeLoginFromXHR} from "./magiclink/composeLoginFromXHR.mjs";
 import {getDataAuthTokens} from "../../application/services/dataServices.mjs";
 import {getMailer} from "../../application/services/serverServices.mjs";
+import {getFullHostUrls} from "../../application/services/requestServices.mjs";
+import {
+    URL_LOGIN_FAILURE,
+    URL_LOGIN_SUCCESS,
+    URL_PASSPORT_CALLBACK
+} from "velor-contrib/contrib/urls.mjs";
 
 
 export class MagicLinkStrategy {
@@ -24,12 +30,10 @@ export class MagicLinkStrategy {
         this.#secret = secret;
     }
 
-    get initialized() {
-        return !!this.#strategy;
-    }
+    #prepare() {
 
-    initialize(callbackURL, loginSuccessURL,
-               loginFailureURL) {
+        if (this.#strategy) return;
+
         const config = {
             secret: this.#secret,
             userFields: ['email'],
@@ -41,10 +45,15 @@ export class MagicLinkStrategy {
         };
 
         const mailer = getMailer(this);
+        const urls = getFullHostUrls(this);
+        const callbackURL = urls[URL_PASSPORT_CALLBACK];
+        const loginSuccessURL = urls[URL_LOGIN_SUCCESS];
+        const loginFailureURL = urls[URL_LOGIN_FAILURE];
 
         this.#strategy = new MagicLink.Strategy(
             config,
-            composeSendTokenByEmail(callbackURL.replace(':provider', AUTH_MAGIC_LINK), mailer.sendMail.bind(mailer)),
+            composeSendTokenByEmail(callbackURL.replace(':provider', AUTH_MAGIC_LINK),
+                mailer.sendMail.bind(mailer)),
             composeOnProfileReceivedMagicLinkAdapter(
                 composeOnProfileReceived(this, AUTH_MAGIC_LINK)
             ));
@@ -62,10 +71,12 @@ export class MagicLinkStrategy {
     }
 
     initiate(req, res, next) {
+        this.#prepare();
         return this.#initiator(req, res, next);
     }
 
     authenticate(req, res, next) {
+        this.#prepare();
         return this.#authenticator(req, res, next);
     }
 }

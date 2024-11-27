@@ -24,7 +24,7 @@ const {
     it,
 } = setupTestContext();
 
-describe('login', function () {
+describe('login with token', function () {
 
     test.describe('login', () => {
 
@@ -83,6 +83,9 @@ describe('login', function () {
             expect(user).to.deep.eq(saved);
         })
 
+    })
+
+    describe('logout', () => {
         test('should not logout if not logged in', async ({services, request}) => {
             const urls = getFullHostUrls(services);
             let {context} = await request()

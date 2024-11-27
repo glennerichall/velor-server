@@ -56,7 +56,9 @@ export function createStrategies(services, providers) {
 
     passport.deserializeUser(async (user, done) => {
         done(null, userSerializer.deserialize(user));
-    })
+    });
+
+
 
     return strategies;
 }

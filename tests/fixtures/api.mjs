@@ -6,10 +6,31 @@ import {
     URL_CSRF,
     URL_LOGIN
 } from "velor-contrib/contrib/urls.mjs";
+import {mailEmitter} from "./mailerTransport.mjs";
 
 
 export const api =
     async ({services, request, rest}, use) => {
+
+
+        function onMagicLinkMailReceived(listener) {
+            return new Promise((resolve, reject) => {
+                mailEmitter.once('sendMail', async msg => {
+                    try {
+                        // this url will be called by fetch directly
+                        const match = msg.text.match(/(?<url>https?:\/\/[\w-]+(\.[\w-]+)?(:\d+)?(\/\S*)?)/g)
+                        const url = match[1];
+
+                        if (listener instanceof Function) {
+                            await listener(url, msg);
+                        }
+                        resolve(url, msg);
+                    } catch (e) {
+                        reject(e);
+                    }
+                })
+            });
+        }
 
         function loginWithToken({token, context} = {}) {
             let urls = getFullHostUrls(services);
@@ -37,6 +58,7 @@ export const api =
         await use({
             loginWithToken,
             logout,
-            getCsrfToken
+            getCsrfToken,
+            onMagicLinkMailReceived
         });
     }

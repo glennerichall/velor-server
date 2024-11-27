@@ -60,10 +60,6 @@ export class TokenStrategy {
         this.#initiator = composeInitiator(passport);
     }
 
-    get initialized() {
-        return !!this.#strategy;
-    }
-
     initialize() {
         this.#strategy = new Custom.Strategy(
             composeOnProfileReceivedTokenAdapter(

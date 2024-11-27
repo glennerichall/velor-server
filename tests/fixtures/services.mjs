@@ -17,6 +17,10 @@ import {composeStatements} from "../../database/composeStatements.mjs";
 import {s_logger} from "velor-services/injection/serviceKeys.mjs";
 import {noOpLogger} from "velor-utils/utils/noOpLogger.mjs";
 import crypto from "crypto";
+import {s_mailerTransport} from "../../application/services/serverServiceKeys.mjs";
+import {
+    mailerTransport
+} from "./mailerTransport.mjs";
 
 export const services = [
     async ({configs, databaseConnectionPool}, use, testInfo) => {
@@ -34,7 +38,8 @@ export const services = [
                 factories: {
                     [s_poolManager]: () => pool,
                     [s_databaseStatements]: () => composeStatements,
-                    [s_logger]: () => noOpLogger
+                    [s_logger]: () => noOpLogger,
+                    [s_mailerTransport]: ()=> mailerTransport
                 },
                 env: {
                     [CSRF_SECRET]: 'double-submit-csrf-secret',
