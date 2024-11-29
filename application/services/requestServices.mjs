@@ -4,7 +4,6 @@ import {
     getProvider,
     isDevelopment
 } from "velor-services/injection/baseServices.mjs";
-import {ServicesContext} from "velor-services/injection/ServicesContext.mjs";
 import {forRequestSession} from "../../distribution/matchingRules.mjs";
 import {getClientProvider} from "velor-distribution/application/services/distributionServices.mjs";
 import {
@@ -12,13 +11,9 @@ import {
     FULL_HOST_URLS
 } from "./serverEnvKeys.mjs";
 
-export function getRequest(services) {
-    if (services instanceof ServicesContext) {
-        return getProvider(services).request();
-    }
-    return services;
+export function getRequest(request) {
+    return getProvider(request).request();
 }
-
 
 export function getUrls(req) {
     const {endpoints} = getConstants(req);

@@ -37,9 +37,7 @@ export const api =
                 if (message.isCommand && message.command === RPC_REQUIRE_LOGIN) {
 
                     // 5 - The frontend makes the call from within its session.
-                    const response = await this.request()
-                        .get(url)
-                        .then(response => (session.update(response), response));
+                    const response = await this.request().get(url);
 
                     // 6 - If the calls succeeds, the frontend replies to the rpc call
                     //     made through the ws.
@@ -54,7 +52,7 @@ export const api =
             };
         }
 
-        function loginWithMagicLink(email, onMessage) {
+        async function loginWithMagicLink(email, onMessage) {
             const linkPromise = onMagicLinkMailReceived(async (url, msg) => {
 
                 // 2 - The email is received with url in message body (here in tests, the url parameter)
@@ -83,7 +81,7 @@ export const api =
 
             // 1 - A request is made to backend to send an email with magic link
             const requestPromise = sendMagicLink(email);
-            const [response] = Promise.all([requestPromise, linkPromise]);
+            const [response] = await Promise.all([requestPromise, linkPromise]);
             return response;
         }
 

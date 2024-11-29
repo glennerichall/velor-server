@@ -2,7 +2,6 @@ import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getFullHostUrls} from "../application/services/requestServices.mjs";
 import {getMagicLInkLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {getAuthDAO} from "../application/services/serverServices.mjs";
-import {services} from "./fixtures/services.mjs";
 import {AUTH_MAGIC_LINK} from "velor-contrib/contrib/authProviders.mjs";
 
 

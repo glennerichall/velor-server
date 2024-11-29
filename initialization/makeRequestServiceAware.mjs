@@ -1,16 +1,15 @@
 import {ENV_TEST} from "velor-utils/env.mjs";
 import {getEnvironment,} from "velor-services/injection/baseServices.mjs";
-import {SCOPE_REQUEST} from "velor-services/injection/ServicesContext.mjs";
+import {
+    cloneWithScope,
+    getInstanceBinder,
+    SCOPE_REQUEST
+} from "velor-services/injection/ServicesContext.mjs";
 import {getExpressApp} from "../application/services/serverServices.mjs";
 
 export function createRequestContext(services, request) {
-    return services.clone({
-        scopes: {
-            [SCOPE_REQUEST]: {
-                request
-            }
-        }
-    });
+    getInstanceBinder(request).setInstance(request, 'request');
+    return cloneWithScope(services, SCOPE_REQUEST);
 }
 
 export function makeRequestServiceAware(services) {

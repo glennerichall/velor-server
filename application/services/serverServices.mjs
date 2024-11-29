@@ -5,6 +5,7 @@ import {
     s_emitter,
     s_eventQueue,
     s_expressApp,
+    s_magicLinkEncryption,
     s_mailer,
     s_messageFactory,
     s_preferenceDAO,
@@ -65,4 +66,8 @@ export function getPreferenceDAO(services) {
 
 export function getUserSerializer(services) {
     return getProvider(services)[s_userSerializer]();
+}
+
+export function getMagicLinkEncryption(services) {
+    return getProvider(services)[s_magicLinkEncryption]();
 }
