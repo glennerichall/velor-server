@@ -16,16 +16,19 @@ import {getMessageBuilder} from "velor-distribution/application/services/distrib
 export const api =
     async ({services, request, rest}, use) => {
 
+        function keepContext(response) {
+            return response.context;
+        }
+
         function sendMagicLink(email) {
             const urls = getFullHostUrls(services);
             const url = getMagicLInkLoginUrl(urls);
-            const context = getCsrfToken();
+            const context = getCsrfToken().then(keepContext);
 
             return request(context)
                 .post(url)
                 .send({email})
-                .expect(201)
-                .then(response => response.context);
+                .expect(201);
         }
 
         function handleWebSocketMessage(websocket, url) {

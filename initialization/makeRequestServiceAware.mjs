@@ -3,13 +3,14 @@ import {getEnvironment,} from "velor-services/injection/baseServices.mjs";
 import {
     cloneWithScope,
     getInstanceBinder,
+    getServiceBinder,
     SCOPE_REQUEST
 } from "velor-services/injection/ServicesContext.mjs";
 import {getExpressApp} from "../application/services/serverServices.mjs";
 
 export function createRequestContext(services, request) {
-    getInstanceBinder(request).setInstance(request, 'request');
-    return cloneWithScope(services, SCOPE_REQUEST);
+    getInstanceBinder(request).setInstance(request, 'request')
+    getServiceBinder(request).addScope(request, SCOPE_REQUEST);
 }
 
 export function makeRequestServiceAware(services) {
