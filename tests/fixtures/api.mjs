@@ -1,110 +1,122 @@
 import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 import {getEnvValue} from "velor-services/injection/baseServices.mjs";
-import {AUTH_TOKEN_SECRET} from "../../application/services/serverEnvKeys.mjs";
 import {
-    getMagicLInkLoginUrl,
+    AUTH_TOKEN_SECRET,
+    COOKIE_SECRETS
+} from "../../application/services/serverEnvKeys.mjs";
+import {
+    getMagicLinkLoginUrl,
     getTokenLoginUrl
 } from "velor-contrib/contrib/getUrl.mjs";
 import {
     URL_CSRF,
-    URL_LOGIN
+    URL_LOGIN,
+    URL_LOGIN_SUCCESS
 } from "velor-contrib/contrib/urls.mjs";
 import {mailEmitter} from "./mailerTransport.mjs";
-import {getMessageBuilder} from "velor-distribution/application/services/distributionServices.mjs";
-
+import {
+    getClientProvider,
+    getMessageBuilder
+} from "velor-distribution/application/services/distributionServices.mjs";
+import {EventQueue} from "../../core/EventQueue.mjs";
+import {identOp} from "velor-utils/utils/functional.mjs";
+import {RPC_REQUIRE_LOGIN} from "velor-contrib/api/rpc.mjs";
+import {Emitter} from "velor-utils/utils/Emitter.mjs";
+import {getChannelForWsId} from "../../distribution/channels.mjs";
+import {sign} from 'cookie-signature';
 
 export const api =
     async ({services, request, rest}, use) => {
+
+        // simulate a connection to websocket
+        let websocket = new Emitter({async: true});
+        websocket.send = async function (data) {
+            this.emit('message', data);
+        };
+
+        const mailerEventQueue = new EventQueue(mailEmitter);
+        const webSocketEventQueue = new EventQueue(websocket);
+
+        mailerEventQueue.initialize();
+        webSocketEventQueue.initialize();
 
         function keepContext(response) {
             return response.context;
         }
 
-        function sendMagicLink(email) {
-            const urls = getFullHostUrls(services);
-            const url = getMagicLInkLoginUrl(urls);
-            const context = getCsrfToken().then(keepContext);
+        async function loginWithMagicLink(email) {
+            // 1 - A request is made to backend to send an email with magic link
 
-            return request(context)
-                .post(url)
+            // we first need a csrf token
+            const urls = getFullHostUrls(services);
+            const magicLinkLoginUrl = getMagicLinkLoginUrl(urls);
+            const {context} = await getCsrfToken().expect(200);
+
+            // we then need to connect to websocket
+            // stub a websocket connection
+            let wsId = 'a-ws-id-should-be-unique-and-crypto-random';
+            await getClientProvider(services).subscribe(websocket, getChannelForWsId(wsId));
+
+            // on the upgrade, we received the websocket id
+            context.cookies.ws = 's:' + sign(wsId, getEnvValue(services, COOKIE_SECRETS));
+
+            // do the request to send a magic link
+            await request(context)
+                .post(magicLinkLoginUrl)
                 .send({email})
                 .expect(201);
+
+            // 2 - The email is received with url in message body (here in tests, the url parameter)
+            const {url: urlInMagicLink} = await waitOnMagicLink();
+
+            // 3- We click on the link received in the magic link email
+            // from another browser, with no context.
+            // Calling #then triggers the request to be sent by supertest.
+            // The promise does not resolve until websocket replies 200.
+            let emailLinkPromise = request().get(urlInMagicLink)
+                .expect(302)
+                .expect('location', urls[URL_LOGIN_SUCCESS])
+                .then(identOp);
+
+            // 4 - After receiving the email url request in 3, Backend will ask
+            // browser through ws to make the login call using fetch,
+            // so it can send back the session cookie to the browser.
+            let data = await webSocketEventQueue.waitDequeue('message');
+
+            // unpack websocket data
+            // data = fromWsData(data);
+            let message = getMessageBuilder(services).unpack(data);
+
+            if (message.isCommand && message.command === RPC_REQUIRE_LOGIN) {
+
+                // 5 - The frontend makes the call from within its session.
+                const response = await request(context).get(url);
+
+                // 6 - If the calls succeeds, the frontend replies to the rpc call
+                // made through the ws.
+                let status = response.status;
+                if (response.status === 302) {
+                    status = 200;
+                }
+                let reply = getMessageBuilder(services).newReply(message, {status});
+                websocket.send(reply.buffer);
+            }
+
+            // 7 - The request from the email is redirected to login success page.
+            await emailLinkPromise;
         }
 
-        function handleWebSocketMessage(websocket, url) {
-            return async data => {
-                data = fromWsData(data);
+        async function waitOnMagicLink() {
+            let [msg] = await mailerEventQueue.waitDequeue('sendMail');
 
-                let message = getMessageBuilder(services).unpack(data);
+            // this url will be called by fetch directly
+            const match = msg.text.match(/(?<url>(https?:\/)?\/[\w-]+(\.[\w-]+)?(:\d+)?(\/\S*)?)/g)
+            const url = match[match.length - 1];
 
-                if (message.isCommand && message.command === RPC_REQUIRE_LOGIN) {
-
-                    // 5 - The frontend makes the call from within its session.
-                    const response = await this.request().get(url);
-
-                    // 6 - If the calls succeeds, the frontend replies to the rpc call
-                    //     made through the ws.
-                    let status = response.status;
-                    if (response.status === 302) {
-                        status = 200;
-                    }
-
-                    let reply = getMessageBuilder(services).newReply(message, {status});
-                    websocket.send(reply.buffer);
-                }
+            return {
+                url,
+                msg
             };
-        }
-
-        async function loginWithMagicLink(email, onMessage) {
-            const linkPromise = onMagicLinkMailReceived(async (url, msg) => {
-
-                // 2 - The email is received with url in message body (here in tests, the url parameter)
-
-
-                // 4 - After receiving the email url request, Backend will ask frontend through ws to make the login call
-                //     so it can send back the session cookie to the browser. Register a RPC handler to make the login call
-                //     from the frontend and reply the result to backend.
-                websocket.on('message', handleWebSocketMessage(websocket, url));
-
-                // 3.1 - The url in the link will be called by fetching directly (no session) since it may be called
-                //     from within another browser or even another computer.
-                const accept = () => request().get(url);
-
-                // 3.2 - We wait that the backend receives and responds from the url call
-                let response;
-                if (onMessage instanceof Function) {
-                    response = await onMessage(url, msg, accept, this);
-                } else {
-                    response = await accept();
-                }
-                // 7 - The request from the email is redirected to login success page.
-                return response;
-            });
-
-
-            // 1 - A request is made to backend to send an email with magic link
-            const requestPromise = sendMagicLink(email);
-            const [response] = await Promise.all([requestPromise, linkPromise]);
-            return response;
-        }
-
-        function onMagicLinkMailReceived(listener) {
-            return new Promise((resolve, reject) => {
-                mailEmitter.once('sendMail', async msg => {
-                    try {
-                        // this url will be called by fetch directly
-                        const match = msg.text.match(/(?<url>https?:\/\/[\w-]+(\.[\w-]+)?(:\d+)?(\/\S*)?)/g)
-                        const url = match[1];
-
-                        if (listener instanceof Function) {
-                            await listener(url, msg);
-                        }
-                        resolve(url, msg);
-                    } catch (e) {
-                        reject(e);
-                    }
-                })
-            });
         }
 
         function loginWithToken({token, context} = {}) {
@@ -134,7 +146,7 @@ export const api =
             loginWithToken,
             logout,
             getCsrfToken,
-            onMagicLinkMailReceived,
+            waitOnMagicLink,
             loginWithMagicLink
         });
     }

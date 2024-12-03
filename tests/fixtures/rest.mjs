@@ -18,6 +18,9 @@ import {composeCookieParser} from "../../auth/composeCookieParser.mjs";
 import {composeCsrfProtection} from "../../auth/composeCsrfProtection.mjs";
 import {composeAuth} from "../../auth/composeAuth.mjs";
 import express from "express";
+import {composeRequestScope} from "../../routes/composeRequestScope.mjs";
+import flash from "connect-flash";
+import {wsIdFromCookies} from "../../session/wsIdFromCookies.mjs";
 
 export const rest =
     async ({services}, use, testInfo) => {
@@ -36,22 +39,30 @@ export const rest =
         let session = composeSessionParser(services);
         let cookies = composeCookieParser(services);
         let {csrfProtection, csrf} = composeCsrfProtection(services);
-
+        let requestScope = composeRequestScope(services);
 
         application
+            .use(requestScope)
             // .use(cors({credentials: true, origin: true}))
             .use(express.json())
             .use(express.text())
+
             .use(session)
             .use(patchPassport)
             .use(passport.initialize())
             .use(passport.session())
+
+            // cookies must be declared after session
             .use(cookies)
+            // these must be declared after cookies
+            .use(wsIdFromCookies)
+            .use(flash())
             .use(csrfProtection)
 
             .use('/csrf', csrf)
             .use('/auth', auth)
 
+            // this is only for tests
             .post('/validate-csrf', (req, res) => {
                 res.sendStatus(200);
             });

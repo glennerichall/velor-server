@@ -2,11 +2,11 @@ import {mergeDefaultServerOptions} from "../../application/services/mergeDefault
 import {
     AUTH_EMAIL_USER,
     AUTH_TOKEN_SECRET,
-    CSRF_SECRET,
+    COOKIE_SECRETS,
+    CSRF_SECRETS,
     MAGIC_LINK_ENCRYPT_IV,
     MAGIC_LINK_ENCRYPT_KEY,
-    SESSION_SECRET1,
-    SESSION_SECRET2,
+    SESSION_SECRETS,
     USER_ENCRYPT_IV,
     USER_ENCRYPT_KEY
 } from "../../application/services/serverEnvKeys.mjs";
@@ -19,7 +19,7 @@ import crypto from "crypto";
 import {s_mailerTransport} from "../../application/services/serverServiceKeys.mjs";
 import {mailerTransport} from "./mailerTransport.mjs";
 import {s_clientProvider} from "velor-distribution/application/services/distributionServiceKeys.mjs";
-import {clientProvider} from "./clientProvider.mjs";
+import {ClientTrackerPubSub} from "velor-distribution/distribution/ClientTrackerPubSub.mjs";
 
 export const services =
     async ({configs, databaseConnectionPool}, use, testInfo) => {
@@ -38,15 +38,15 @@ export const services =
                     [s_poolManager]: () => pool,
                     [s_logger]: () => noOpLogger,
                     [s_mailerTransport]: () => mailerTransport,
-                    [s_clientProvider]: () => clientProvider,
+                    [s_clientProvider]: ClientTrackerPubSub,
                 },
                 env: {
-                    [CSRF_SECRET]: 'double-submit-csrf-secret',
+                    [CSRF_SECRETS]: 'double-submit-csrf-secret1;double-submit-csrf-secret2',
                     [AUTH_TOKEN_SECRET]: 'a-secret-token',
                     [AUTH_EMAIL_USER]: 'zupfe@velor.ca',
                     [DATABASE_SCHEMA]: schema,
-                    [SESSION_SECRET1]: 'session-secret-1',
-                    [SESSION_SECRET2]: 'session-secret-2',
+                    [SESSION_SECRETS]: 'session-secret-1;session-secret-2;session-secret-3',
+                    [COOKIE_SECRETS]: 'cookie-secret-1;cookie-secret-2;cookie-secret-3',
                     [USER_ENCRYPT_KEY]: crypto.randomBytes(32).toString('hex'),
                     [USER_ENCRYPT_IV]: crypto.randomBytes(16).toString('hex'),
                     [MAGIC_LINK_ENCRYPT_KEY]: crypto.randomBytes(32).toString('hex'),

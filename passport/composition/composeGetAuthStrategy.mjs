@@ -1,7 +1,7 @@
 export function composeGetAuthStrategy(strategies) {
 
     return (req, res, next) => {
-        let provider = req.query.provider;
+        let provider = req.query.provider ?? req.params.provider; // query for initiate, params for callback
         let strategy = strategies[provider];
 
         if (!strategy) {

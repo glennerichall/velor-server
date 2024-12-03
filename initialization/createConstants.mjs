@@ -1,6 +1,7 @@
 import {getExpressApp} from "../application/services/serverServices.mjs";
 import {getAppEndpoints} from "../core/getAppEndpoints.mjs";
 import {getConstants} from "velor-services/injection/baseServices.mjs";
+import {getServiceBuilder} from "velor-services/injection/ServicesContext.mjs";
 
 export function createConstants(services) {
     let expressApp = getExpressApp(services);
@@ -13,5 +14,5 @@ export function createConstants(services) {
             return prev;
         }, {});
 
-    getConstants(services).endpoints = endpoints;
+    getServiceBuilder(services).addConstants({endpoints});
 }

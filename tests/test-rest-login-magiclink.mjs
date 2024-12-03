@@ -1,6 +1,6 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {getFullHostUrls} from "../application/services/requestServices.mjs";
-import {getMagicLInkLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
+import {getMagicLinkLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {getAuthDAO} from "../application/services/serverServices.mjs";
 import {AUTH_MAGIC_LINK} from "velor-contrib/contrib/authProviders.mjs";
 
@@ -31,21 +31,8 @@ describe('login with magic link', function () {
     // })
 
     test("should send mail with magic link", async ({services, request, api}) => {
-        let called = false;
-
-        const promise = api.onMagicLinkMailReceived(async (url, msg) => {
-            expect(msg).to.have.property('from', 'zupfe@velor.ca');
-            expect(msg).to.have.property('to', 'johndoe@dead.com');
-            expect(msg).to.have.property('subject', 'ZupFe sign-in');
-            expect(msg).to.have.property('text');
-            expect(msg.text).to.include('Your request id is');
-            expect(msg.text).to.include('Link can only be used once and will expire in 10 minutes');
-            expect(msg.text).to.include(`/redirect/magiclink?token=`);
-            called = true;
-        });
-
         let urls = getFullHostUrls(services)
-        const url = getMagicLInkLoginUrl(urls);
+        const url = getMagicLinkLoginUrl(urls);
 
         const {context} = await api.getCsrfToken();
         await request(context)
@@ -53,33 +40,37 @@ describe('login with magic link', function () {
             .send({email: 'johndoe@dead.com'})
             .expect(201);
 
-        await promise;
-        expect(called).to.be.true;
+        const {msg} = await api.waitOnMagicLink();
+        expect(msg).to.have.property('from', 'zupfe@velor.ca');
+        expect(msg).to.have.property('to', 'johndoe@dead.com');
+        expect(msg).to.have.property('subject', 'ZupFe sign-in');
+        expect(msg).to.have.property('text');
+        expect(msg.text).to.include('Your request id is');
+        expect(msg.text).to.include('Link can only be used once and will expire in 10 minutes');
+        expect(msg.text).to.include(`/redirect/magiclink?token=`);
     })
 
     test("should set email verified magiclink", async ({services, api}) => {
         const email = 'johndoe@dead.com';
 
-        const rows = await getAuthDAO(services).loadOne({
+        let rows = await getAuthDAO(services).loadOne({
             provider: AUTH_MAGIC_LINK,
             profileId: email
         })
         expect(rows).to.be.null;
 
-        await api.loginWithMagicLink(email, async (url, msg, accept) => {
-            await accept();
-            const rows = await getAuthDAO(services).loadOne({
-                provider: AUTH_MAGIC_LINK,
-                profileId: email
-            });
-            expect(rows).to.have.length(1);
-            const auth = rows[0];
-            expect(auth).to.have.property('email', email);
-            expect(auth).to.have.property('verified', true);
-            expect(auth).to.have.property('displayname', 'johndoe');
-            expect(auth).to.have.property('provider', 'magiclink');
-            expect(auth).to.have.property('active', true);
+        await api.loginWithMagicLink(email);
+
+        let auth = await getAuthDAO(services).loadOne({
+            provider: AUTH_MAGIC_LINK,
+            profileId: email
         });
+
+        expect(auth).to.have.property('email', email);
+        expect(auth).to.have.property('verified', true);
+        expect(auth).to.have.property('displayname', 'johndoe');
+        expect(auth).to.have.property('provider', 'magiclink');
+        expect(auth).to.have.property('active', true);
     })
     //
     // test("should not login if ws session is closed", async () => {

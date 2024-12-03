@@ -7,13 +7,13 @@ import {EVENT_USER_LOGIN} from "../../application/services/serverEventKeys.mjs";
 import {conformProfile} from "../../models/conform/conformProfile.mjs";
 import {getLogger} from "velor-services/injection/services.mjs";
 
-export const composeOnProfileReceived = (services, provider) => {
-    const emitter = getEmitter(services);
-    const userDAO = getUserDAO(services);
-    const authDAO = getAuthDAO(services);
-    const logger = getLogger(services);
-
+export const composeOnProfileReceived = (provider) => {
     return async (req, tok1, tok2, profile, done) => {
+        const emitter = getEmitter(req);
+        const userDAO = getUserDAO(req);
+        const authDAO = getAuthDAO(req);
+        const logger = getLogger(req);
+
         try {
             let auth = conformProfile(profile, provider);
             auth = await authDAO.saveOne(auth);

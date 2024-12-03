@@ -1,10 +1,14 @@
 import {doubleCsrf} from "csrf-csrf";
 import {
     getEnvValue,
+    getEnvValueArray,
     isProduction,
     isStaging
 } from "velor-services/injection/baseServices.mjs";
-import {AUTH_TOKEN_SECRET} from "../application/services/serverEnvKeys.mjs";
+import {
+    AUTH_TOKEN_SECRET,
+    CSRF_SECRETS
+} from "../application/services/serverEnvKeys.mjs";
 import {getSessionId} from "../application/services/requestServices.mjs";
 import {createRouterBuilder} from "../core/createRouterBuilder.mjs";
 import {URL_CSRF} from "velor-contrib/contrib/urls.mjs";
@@ -16,7 +20,7 @@ export function composeCsrfProtection(services) {
         doubleCsrfProtection,
         generateToken
     } = doubleCsrf({
-        getSecret: () => getEnvValue(services, AUTH_TOKEN_SECRET),
+        getSecret: () => getEnvValueArray(services, CSRF_SECRETS),
         getSessionIdentifier: (req) => getSessionId(req),
         cookieOptions: {
             secure: isProduction(services) || isStaging(services),

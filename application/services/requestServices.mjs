@@ -28,6 +28,10 @@ export function getSessionId(req) {
     return getSession(req).id;
 }
 
+export function getWsId(req) {
+    return getRequest(req).wsId;
+}
+
 export function getSession(req) {
     return getRequest(req).session;
 }
