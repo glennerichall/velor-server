@@ -5,6 +5,7 @@ import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
 import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 import {URL_LOGIN_SUCCESS} from "velor-contrib/contrib/urls.mjs";
 import os from "os";
+import {StrategyBase} from "./StrategyBase.mjs";
 
 function composeOnProfileReceivedTokenAdapter(onProfileReceived, token) {
     return (req, done) => {
@@ -48,14 +49,14 @@ function composeInitiator(passport) {
     );
 }
 
-export class TokenStrategy {
-    #passport;
+export class TokenStrategy extends StrategyBase {
+
     #strategy;
     #initiator;
     #token;
 
     constructor(passport, token) {
-        this.#passport = passport;
+        super(passport);
         this.#token = token;
         this.#initiator = composeInitiator(passport);
     }
@@ -63,11 +64,11 @@ export class TokenStrategy {
     initialize() {
         this.#strategy = new Custom.Strategy(
             composeOnProfileReceivedTokenAdapter(
-                composeOnProfileReceived(this, AUTH_TOKEN),
+                composeOnProfileReceived(AUTH_TOKEN),
                 this.#token
             )
         );
-        this.#passport.use(AUTH_TOKEN, this.#strategy);
+        this.passport.use(AUTH_TOKEN, this.#strategy);
     }
 
     initiate(req, res, next) {

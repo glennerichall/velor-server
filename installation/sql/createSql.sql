@@ -96,8 +96,8 @@ create table if not exists "@{SCHEMA}".@{TABLE_USER_AUTHS}
 create table if not exists "@{SCHEMA}".@{TABLE_ROLE_ACL}
 (
 	"id" serial not null,
-	"role" integer not null,
-	"acl" integer not null,
+	"role_id" integer not null,
+	"acl_id" integer not null,
 	constraint role_acl_pkey
         primary key(id)
 );
@@ -258,12 +258,12 @@ alter table "@{SCHEMA}".@{TABLE_USERS}
 
 alter table "@{SCHEMA}".@{TABLE_ROLE_ACL}
     add constraint role_acl_acl_id_fk
-        foreign key ("acl") references "@{SCHEMA}".@{TABLE_ACL} ("id")
+        foreign key ("acl_id") references "@{SCHEMA}".@{TABLE_ACL} ("id")
             on delete cascade;
 
 alter table "@{SCHEMA}".@{TABLE_ROLE_ACL}
     add constraint role_acl_role_id_fk
-        foreign key ("role") references "@{SCHEMA}".@{TABLE_ROLE} ("id")
+        foreign key ("role_id") references "@{SCHEMA}".@{TABLE_ROLE} ("id")
             on delete cascade;
 
 alter table "@{SCHEMA}".@{TABLE_USER_AUTHS}

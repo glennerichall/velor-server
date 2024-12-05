@@ -99,6 +99,7 @@ export function composeClearDataAccess(schema, tableNames = {}) {
 
     async function clearDatabase(database) {
         return await Promise.all([
+            clearRoles(database),
             clearApiKeys(database),
             clearAccessLog(database),
             clearPreferences(database),

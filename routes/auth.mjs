@@ -15,8 +15,6 @@ import {
 import {composeRenderLoginFailure} from "../passport/composition/composeRenderLoginFailure.mjs";
 import {composeGetAuthStrategy} from "../passport/composition/composeGetAuthStrategy.mjs";
 import {composeRenderLoginSuccess} from "../passport/composition/composeRenderLoginSuccess.mjs";
-import {composePostConfirmEmail} from "../passport/composition/composePostConfirmEmail.mjs";
-import {composeConfirmEmailCallback} from "../passport/composition/composeConfirmEmailCallback.mjs";
 import {initiateAuth} from "../passport/middlewares/initiateAuth.mjs";
 import {authenticate} from "../passport/middlewares/authenticate.mjs";
 import {createStrategies} from "../passport/strategies/createStrategies.mjs";
@@ -43,31 +41,6 @@ export function createAuthConfiguration(services, providers) {
             path: '/login_failure',
             get: composeRenderLoginFailure(logo)
         },
-
-        // {
-        //     name: URL_CONFIRM_EMAIL,
-        //     path: '/email/confirm',
-        //     // sending an email confirmation with a link to GET /email/confirm
-        //     post: [
-        //         validateSession,
-        //         verifyAuthentication,
-        //         verifyCsrfToken,
-        //         composePostConfirmEmail(
-        //             email.sendEmail,
-        //             email.clientSecret,
-        //             email.redirectUrl,
-        //             user.getUser,
-        //             user.getProfile,
-        //             user.getLoginAuth
-        //         )
-        //     ],
-        //     // receiving the link from the confirmation email
-        //     get: composeConfirmEmailCallback(
-        //         email.clientSecret,
-        //         database.getTokens,
-        //         database.createToken
-        //     )
-        // },
 
         {
             // The user initiates the authentication process

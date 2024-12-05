@@ -27,8 +27,8 @@ export function getRolesSql(schema, tableNames = {}) {
                ${schema}.${acl}.permission as permission,
                ${schema}.${acl}.category   as category
         from ${schema}.${acl}
-                 inner join ${schema}.${rolesAcl} ra on ${schema}.${acl}.id = ra.acl
-                 inner join ${schema}.${roles} r on r.id = ra.role
+                 inner join ${schema}.${rolesAcl} ra on ${schema}.${acl}.id = ra.acl_id
+                 inner join ${schema}.${roles} r on r.id = ra.role_id
         where r.name = $1
           and (${schema}.${acl}.category = ANY ($2::text[]) or
                '*' = ANY ($2::text[]) or
@@ -37,7 +37,7 @@ export function getRolesSql(schema, tableNames = {}) {
     `;
 
     const addAclRuleToRoleSql = `
-        insert into ${schema}.${rolesAcl} (role, acl)
+        insert into ${schema}.${rolesAcl} (role_id, acl_id)
         values ((select id from ${schema}.${roles} where name = $1),
                 (select id from ${schema}.${acl} where name = $2))
     `;

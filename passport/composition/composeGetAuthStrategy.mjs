@@ -8,6 +8,7 @@ export function composeGetAuthStrategy(strategies) {
             return res.sendStatus(404);
         }
 
+        strategy.use();
         req.authStrategy = strategy;
 
         next();

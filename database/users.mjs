@@ -142,10 +142,10 @@ export function getUsersSql(schema, tableNames = {}) {
             a.permission    as permission,
             a.category      as category
         from ${schema}.${acl} a
-                 inner join ${schema}.${rolesAcl} ra on a.id = ra.acl
-                 inner join ${schema}.${roles} r on r.id = ra.role
-                 inner join ${schema}.${userRoles} ur on r.id = ur.role
-                 inner join ${schema}.${users} u on u.id = ur.user
+                 inner join ${schema}.${rolesAcl} ra on a.id = ra.acl_id
+                 inner join ${schema}.${roles} r on r.id = ra.role_id
+                 inner join ${schema}.${userRoles} ur on r.id = ur.role_id
+                 inner join ${schema}.${users} u on u.id = ur.user_id
         where u.id = $1
             and (a.category = ANY($2::text[]) or 
                     '*' = ANY($2::text[]) or

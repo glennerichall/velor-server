@@ -1,43 +1,25 @@
-import {GitHubStrategy} from "./github.mjs";
-import {GoogleStrategy} from "./google.mjs";
 import {TokenStrategy} from "./token.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import passport from 'passport';
 import {
-    AUTH_GITHUB,
-    AUTH_GOOGLE,
-    AUTH_MAGIC_LINK,
-    AUTH_TOKEN
+    AUTH_TOKEN,
+    AUTH_VELOR
 } from "velor-contrib/contrib/authProviders.mjs";
 import {getUserSerializer} from "../../application/services/serverServices.mjs";
+import {VelorStrategy} from "./velor.mjs";
 
 export function createStrategies(services, providers) {
 
-    let google = providers[AUTH_GOOGLE];
-    let github = providers[AUTH_GITHUB];
     let token = providers[AUTH_TOKEN];
+    let velor = providers[AUTH_VELOR];
 
     let strategies = {};
 
-    if (github) {
-        strategies[AUTH_GITHUB] =
-            getServiceBinder(services).createInstance(GitHubStrategy,
+    if (velor) {
+        strategies[AUTH_VELOR] =
+            getServiceBinder(services).createInstance(VelorStrategy,
                 passport,
-                github.clientID, github.clientSecret);
-    }
-
-    if (google) {
-        strategies[AUTH_GOOGLE] =
-            getServiceBinder(services).createInstance(GoogleStrategy,
-                passport,
-                google.clientID, google.clientSecret);
-    }
-
-    if(velor) {
-        strategies[AUTH_GOOGLE] =
-            getServiceBinder(services).createInstance(GoogleStrategy,
-                passport,
-                google.clientID, google.clientSecret);
+                velor.clientId, velor.clientSecret);
     }
 
     if (token) {
@@ -55,7 +37,6 @@ export function createStrategies(services, providers) {
     passport.deserializeUser(async (user, done) => {
         done(null, userSerializer.deserialize(user));
     });
-
 
 
     return strategies;

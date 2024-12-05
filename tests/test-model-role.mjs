@@ -7,7 +7,6 @@ import {
     getDataRoles
 } from "../application/services/dataServices.mjs";
 import {getRuleDAO} from "../application/services/serverServices.mjs";
-import {composeRolesDataAccess} from "../database/roles.mjs";
 import {composeClearDataAccess} from "./fixtures/database-clear.mjs";
 
 const {

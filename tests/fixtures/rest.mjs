@@ -1,5 +1,4 @@
 import {
-    AUTH_MAGIC_LINK,
     AUTH_TOKEN
 } from "velor-contrib/contrib/authProviders.mjs";
 import {getEnvValue} from "velor-services/injection/baseServices.mjs";
@@ -27,9 +26,6 @@ export const rest =
         let providers = {
             [AUTH_TOKEN]: {
                 token: getEnvValue(services, AUTH_TOKEN_SECRET),
-            },
-            [AUTH_MAGIC_LINK]: {
-                clientSecret: 'magic-link-client-secret'
             }
         };
 
