@@ -14,10 +14,6 @@ export class GoogleStrategy {
         this.#passport = passport;
     }
 
-    get initialized() {
-        return !!this.#strategy;
-    }
-
     initialize(callbackURL) {
         const configs = {
             clientID: this.#clientID,
