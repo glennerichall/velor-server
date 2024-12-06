@@ -1,6 +1,8 @@
+import {getLogger} from "velor-services/injection/services.mjs";
+
 export function composeGetAuthStrategy(strategies) {
 
-    return (req, res, next) => {
+    return async (req, res, next) => {
         let provider = req.query.provider ?? req.params.provider; // query for initiate, params for callback
         let strategy = strategies[provider];
 
@@ -8,7 +10,12 @@ export function composeGetAuthStrategy(strategies) {
             return res.sendStatus(404);
         }
 
-        strategy.use();
+        try {
+            await strategy.use();
+        } catch (e) {
+            getLogger(req).error('Unable to get auth strategy ' + e.message);
+            throw e;
+        }
         req.authStrategy = strategy;
 
         next();

@@ -2,8 +2,8 @@ import {TokenStrategy} from "./token.mjs";
 import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import passport from 'passport';
 import {
+    AUTH_OPENID,
     AUTH_TOKEN,
-    AUTH_VELOR
 } from "velor-contrib/contrib/authProviders.mjs";
 import {getUserSerializer} from "../../application/services/serverServices.mjs";
 import {VelorStrategy} from "./velor.mjs";
@@ -11,15 +11,15 @@ import {VelorStrategy} from "./velor.mjs";
 export function createStrategies(services, providers) {
 
     let token = providers[AUTH_TOKEN];
-    let velor = providers[AUTH_VELOR];
+    let openId = providers[AUTH_OPENID];
 
     let strategies = {};
 
-    if (velor) {
-        strategies[AUTH_VELOR] =
+    if (openId) {
+        strategies[AUTH_OPENID] =
             getServiceBinder(services).createInstance(VelorStrategy,
                 passport,
-                velor.clientId, velor.clientSecret);
+                openId.clientId, openId.clientSecret);
     }
 
     if (token) {

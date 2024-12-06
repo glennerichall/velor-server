@@ -19,6 +19,7 @@ import {initiateAuth} from "../passport/middlewares/initiateAuth.mjs";
 import {authenticate} from "../passport/middlewares/authenticate.mjs";
 import {createStrategies} from "../passport/strategies/createStrategies.mjs";
 import {logout} from "../passport/handlers/logout.mjs";
+import {composeCsrfProtection} from "../auth/composeCsrfProtection.mjs";
 
 
 export function createAuthConfiguration(services, providers) {
@@ -28,6 +29,9 @@ export function createAuthConfiguration(services, providers) {
 
     // strategy will be available from req.authStrategy
     const getAuthStrategy = composeGetAuthStrategy(strategies);
+    let {csrfProtection} = composeCsrfProtection(services, {
+        ignoredMethods: ['HEAD', 'OPTIONS']
+    })
 
     return [
         {
@@ -47,8 +51,9 @@ export function createAuthConfiguration(services, providers) {
             // If it is not redirected to a federated authenticator by the login strategy
             // then it will be considered authenticated and logged in, unless an error is thrown.
             name: URL_LOGIN,
-            path: '/session',
-            post: [
+            path: '/session/:provider',
+            get: [
+                csrfProtection,
                 getAuthStrategy,
                 initiateAuth
             ],

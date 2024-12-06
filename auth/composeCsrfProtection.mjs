@@ -15,7 +15,7 @@ import {URL_CSRF} from "velor-contrib/contrib/urls.mjs";
 import {chainHandlers} from "../core/chainHandlers.mjs";
 import {E_BAD_CSRF_TOKEN} from "velor-contrib/contrib/errors.mjs";
 
-export function composeCsrfProtection(services) {
+export function composeCsrfProtection(services, options = {}) {
     const {
         doubleCsrfProtection,
         generateToken
@@ -27,7 +27,8 @@ export function composeCsrfProtection(services) {
         },
         errorConfig: {
             code: E_BAD_CSRF_TOKEN
-        }
+        },
+        ...options
     });
 
     let csrfConfigs = [

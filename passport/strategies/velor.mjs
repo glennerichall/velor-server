@@ -2,10 +2,10 @@ import {Strategy} from 'openid-client/passport';
 import * as client from 'openid-client';
 import Url from "node:url";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
-import {AUTH_VELOR} from "velor-contrib/contrib/authProviders.mjs";
 import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 import {URL_PASSPORT_CALLBACK} from "velor-contrib/contrib/urls.mjs";
 import {StrategyBase} from "./StrategyBase.mjs";
+import {AUTH_OPENID} from "velor-contrib/contrib/authProviders.mjs";
 
 function composeOnProfileReceivedAdapter(onProfileReceived) {
     return (req, tokens, done) => {
@@ -14,7 +14,7 @@ function composeOnProfileReceivedAdapter(onProfileReceived) {
     };
 }
 
-export class VelorStrategy  extends StrategyBase{
+export class VelorStrategy extends StrategyBase {
     #strategy;
     #clientID;
     #clientSecret;
@@ -38,7 +38,7 @@ export class VelorStrategy  extends StrategyBase{
         );
 
         let scope = 'openid email profile';
-        let callbackURL = getFullHostUrls(this)[URL_PASSPORT_CALLBACK].replace(':provider', AUTH_VELOR);
+        let callbackURL = getFullHostUrls(this)[URL_PASSPORT_CALLBACK].replace(':provider', AUTH_OPENID);
 
         this.#strategy = new Strategy(
             {
@@ -48,15 +48,19 @@ export class VelorStrategy  extends StrategyBase{
                 callbackURL,
             },
             composeOnProfileReceivedAdapter(
-                composeOnProfileReceived(AUTH_VELOR)
+                composeOnProfileReceived(AUTH_OPENID)
             ),
         );
 
-        this.passport.use(AUTH_VELOR, this.#strategy);
+        this.#strategy.currentUrl = req => {
+            return new URL(`${req.protocol}://${req.host}:${req.socket.localPort}${req.originalUrl ?? req.url}`);
+        }
+
+        this.passport.use(AUTH_OPENID, this.#strategy);
     }
 
     initiate(req, res, next) {
-        return this.passport.authenticate(AUTH_VELOR,
+        return this.passport.authenticate(AUTH_OPENID,
             {
                 scope: 'openid email profile',
                 passReqToCallback: true,
@@ -64,7 +68,7 @@ export class VelorStrategy  extends StrategyBase{
     }
 
     authenticate(req, res, next) {
-        return this.passport.authenticate(AUTH_VELOR,
+        return this.passport.authenticate(AUTH_OPENID,
             {
                 failureFlash: true,
             })(req, res, next);

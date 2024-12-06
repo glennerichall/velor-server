@@ -4,8 +4,6 @@ import {
     AUTH_TOKEN_SECRET,
     COOKIE_SECRETS,
     CSRF_SECRETS,
-    MAGIC_LINK_ENCRYPT_IV,
-    MAGIC_LINK_ENCRYPT_KEY,
     SESSION_SECRETS,
     USER_ENCRYPT_IV,
     USER_ENCRYPT_KEY
@@ -20,6 +18,7 @@ import {s_mailerTransport} from "../../application/services/serverServiceKeys.mj
 import {mailerTransport} from "./mailerTransport.mjs";
 import {s_clientProvider} from "velor-distribution/application/services/distributionServiceKeys.mjs";
 import {ClientTrackerPubSub} from "velor-distribution/distribution/ClientTrackerPubSub.mjs";
+import {LOG_LEVEL} from "velor-distribution/application/services/distributionEnvKeys.mjs";
 
 export const services =
     async ({configs, databaseConnectionPool}, use, testInfo) => {
@@ -49,8 +48,8 @@ export const services =
                     [COOKIE_SECRETS]: 'cookie-secret-1;cookie-secret-2;cookie-secret-3',
                     [USER_ENCRYPT_KEY]: crypto.randomBytes(32).toString('hex'),
                     [USER_ENCRYPT_IV]: crypto.randomBytes(16).toString('hex'),
-                    [MAGIC_LINK_ENCRYPT_KEY]: crypto.randomBytes(32).toString('hex'),
-                    [MAGIC_LINK_ENCRYPT_IV]: crypto.randomBytes(16).toString('hex'),
+                    [LOG_LEVEL]: "debug",
+                    ...process.env
                 }
             });
         let services = createAppServicesInstance(options);

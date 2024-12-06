@@ -1,8 +1,13 @@
 import {
-    AUTH_TOKEN
+    AUTH_OPENID,
+    AUTH_TOKEN,
 } from "velor-contrib/contrib/authProviders.mjs";
 import {getEnvValue} from "velor-services/injection/baseServices.mjs";
-import {AUTH_TOKEN_SECRET} from "../../application/services/serverEnvKeys.mjs";
+import {
+    AUTH_OPENID_CLIENT_ID,
+    AUTH_OPENID_CLIENT_SECRET,
+    AUTH_TOKEN_SECRET
+} from "../../application/services/serverEnvKeys.mjs";
 import {
     getEventQueue,
     getExpressApp,
@@ -26,6 +31,10 @@ export const rest =
         let providers = {
             [AUTH_TOKEN]: {
                 token: getEnvValue(services, AUTH_TOKEN_SECRET),
+            },
+            [AUTH_OPENID]: {
+                clientId: getEnvValue(services, AUTH_OPENID_CLIENT_ID),
+                clientSecret: getEnvValue(services, AUTH_OPENID_CLIENT_SECRET),
             }
         };
 
@@ -37,7 +46,17 @@ export const rest =
         let {csrfProtection, csrf} = composeCsrfProtection(services);
         let requestScope = composeRequestScope(services);
 
+        let _beforeAll = (req, res, next) => next();
+        const beforeAll = (callback) => _beforeAll = callback;
+
+        let _afterAll = (req, res, next) => next();
+        const afterAll = (callback) => _afterAll = callback;
+
         application
+            .use((req, res, next) => {
+                _beforeAll(req, res, next);
+            })
+
             .use(requestScope)
             // .use(cors({credentials: true, origin: true}))
             .use(express.json())
@@ -61,7 +80,12 @@ export const rest =
             // this is only for tests
             .post('/validate-csrf', (req, res) => {
                 res.sendStatus(200);
-            });
+            })
+
+            .use((req, res, next) => {
+                _afterAll(req, res, next);
+            })
+        ;
 
         // setup must be called after routes have been mounted
         await setupExpressApp(services);
@@ -72,5 +96,8 @@ export const rest =
         // initialize event queue
         getEventQueue(services);
 
-        await use();
+        await use({
+            beforeAll,
+            afterAll
+        });
     }

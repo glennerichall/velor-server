@@ -31,7 +31,6 @@ import {createMailerInstance} from "../factories/createMailerInstance.mjs";
 import {createMailerTransportInstance} from "../factories/createMailerTransportInstance.mjs";
 import {s_clientProvider} from "velor-distribution/application/services/distributionServiceKeys.mjs";
 import {ClientProviderPubSub} from "velor-distribution/distribution/ClientProviderPubSub.mjs";
-import {createMagicLinkEncryptionInstance} from "../factories/createMagicLinkEncryptionInstance.mjs";
 
 export const serverFactories = {
     [s_databaseStatements]: createStatementsInstance,
@@ -49,5 +48,4 @@ export const serverFactories = {
     [s_mailer]: createMailerInstance,
     [s_mailerTransport]: createMailerTransportInstance,
     [s_clientProvider]: ClientProviderPubSub,
-    [s_magicLinkEncryption]: createMagicLinkEncryptionInstance,
 }
