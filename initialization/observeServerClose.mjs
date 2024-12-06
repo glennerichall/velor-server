@@ -1,29 +1,28 @@
 import {bindOnAfterMethods} from "velor-utils/utils/proxy.mjs";
-import {getEnvironment,} from "velor-services/injection/baseServices.mjs";
+import {
+    isDevelopment,
+    isTest,
+} from "velor-services/injection/baseServices.mjs";
 import {getLogger} from "velor-services/injection/services.mjs";
 import {getUuid} from "velor-services/injection/ServicesContext.mjs";
-import {
-    ENV_DEVELOPMENT,
-    ENV_TEST
-} from "velor-utils/env.mjs";
 import {getMessageQueue} from "velor-distribution/application/services/distributionServices.mjs";
 import {
     getEmitter,
-    getServer
+    getServer,
+    getWsConnectionManager
 } from "../application/services/serverServices.mjs";
 import {EVENT_SERVER_CLOSED} from "../application/services/serverEventKeys.mjs";
 
 export function observeServerClose(services) {
 
     const server = getServer(services);
-    const env = getEnvironment(services);
 
     // In production, server termination means process kill but in tests
     // server will be closed after each test and any pending connection will
     // prevent server to fully close. Keep track of socket connections and
     // simply destroy them on server close.
     const sockets = new Set();
-    if (env.NODE_ENV === ENV_DEVELOPMENT || env.NODE_ENV === ENV_TEST) {
+    if (isDevelopment(services) || isTest(services)) {
         server.on('connection', socket => {
             sockets.add(socket);
             socket.on('close', () => sockets.delete(socket));
@@ -42,12 +41,12 @@ export function observeServerClose(services) {
             logger.debug(`Closing server[${getUuid(server)}]`);
 
             const queue = getMessageQueue(services);
-            const socket = getWsClientManager(services);
+            const wsConnections = getWsConnectionManager(services);
             // const database = getDatabase(services);
 
             try {
                 await Promise.all([
-                    socket.close()
+                    wsConnections.close()
                         .then(() => logger.debug('Frontend socket server closed'))
                         .catch(e => logger.error('Error while closing frontend socket server: ' + e.message)),
                     queue.close()

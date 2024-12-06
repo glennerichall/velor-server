@@ -1,6 +1,6 @@
 {
-  "name": "velor-backend",
-  "version": "1.0.0",
+  "name": "velor-server",
+  "version": "1.0.2",
   "scripts": {
     "test": "npx playwright test"
   },
@@ -38,11 +38,13 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-magic-link": "^2.1.1",
     "querystring": "^0.2.1",
+    "rate-limiter-flexible": "^5.0.4",
     "velor-contrib": "github:glennerichall/velor-contrib",
     "velor-database": "github:glennerichall/velor-database",
     "velor-distribution": "github:glennerichall/velor-distribution",
     "velor-messaging": "github:glennerichall/velor-messaging",
     "velor-services": "github:glennerichall/velor-services",
-    "velor-utils": "github:glennerichall/velor-utils"
+    "velor-utils": "github:glennerichall/velor-utils",
+    "ws": "^8.18.0"
   }
 }

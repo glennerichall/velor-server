@@ -1,6 +1,5 @@
 import cookieSession from "cookie-session";
 import {
-    getEnvValue,
     getEnvValueArray,
     isProduction,
     isStaging

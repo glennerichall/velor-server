@@ -12,4 +12,6 @@ export const s_userDAO = "userDAO";
 export const s_authDAO = "authDAO";
 export const s_preferenceDAO = "preferenceDAO";
 export const s_userSerializer = "userSerializer";
-export const s_magicLinkEncryption = "magicLinkEncryption";
+export const s_wsConnectionManager = "wsConnectionManager";
+export const s_wsManagerProvider = "wsManagerProvider";
+export const s_rateLimiter = "rateLimiter";

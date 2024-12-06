@@ -19,7 +19,7 @@ import {initiateAuth} from "../passport/middlewares/initiateAuth.mjs";
 import {authenticate} from "../passport/middlewares/authenticate.mjs";
 import {createStrategies} from "../passport/strategies/createStrategies.mjs";
 import {logout} from "../passport/handlers/logout.mjs";
-import {composeCsrfProtection} from "../auth/composeCsrfProtection.mjs";
+import {composeCsrfProtection} from "../guards/composeCsrfProtection.mjs";
 
 
 export function createAuthConfiguration(services, providers) {

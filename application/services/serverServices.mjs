@@ -5,15 +5,17 @@ import {
     s_emitter,
     s_eventQueue,
     s_expressApp,
-    s_magicLinkEncryption,
     s_mailer,
     s_messageFactory,
     s_preferenceDAO,
+    s_rateLimiter,
     s_roleDAO,
     s_ruleDAO,
     s_server,
     s_userDAO,
     s_userSerializer,
+    s_wsConnectionManager,
+    s_wsManagerProvider,
 } from "./serverServiceKeys.mjs";
 
 export function getMessageFactory(services) {
@@ -68,6 +70,14 @@ export function getUserSerializer(services) {
     return getProvider(services)[s_userSerializer]();
 }
 
-export function getMagicLinkEncryption(services) {
-    return getProvider(services)[s_magicLinkEncryption]();
+export function getWsConnectionManager(services) {
+    return getProvider(services)[s_wsConnectionManager]();
+}
+
+export function getWsManagerProvider(services) {
+    return getProvider(services)[s_wsManagerProvider]();
+}
+
+export function getRateLimiter(services, configs) {
+    return getProvider(services)[s_rateLimiter](configs);
 }
