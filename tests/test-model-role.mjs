@@ -26,9 +26,11 @@ describe('Role', () => {
         services = s;
         const database = getDatabase(services);
         const {
-            clearRoles
+            clearRoles,
+            clearAcl
         } = composeClearDataAccess(database.schema);
         await clearRoles(database);
+        await clearAcl(database);
         role = getServiceBinder(services).createInstance(RoleDAO)
     })
 

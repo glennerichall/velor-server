@@ -25,7 +25,9 @@ describe('observeWsConnectionUpgrade', () => {
             wsServer, verifyClient,
             wsClient, services
         } = websocket);
-        clock =  sinon.useFakeTimers();
+        clock =  sinon.useFakeTimers({
+            shouldClearNativeTimers: true, // Automatically clear native timers
+        });
     })
 
     afterEach(async () => {
