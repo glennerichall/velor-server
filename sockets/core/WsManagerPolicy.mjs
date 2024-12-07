@@ -10,8 +10,8 @@ import {WebSocketServer} from "ws";
 export function WsManagerPolicy(policy = {}) {
 
     const {
-        createServer = () => new WebSocketServer(),
-        createClient = (...args) => new WsConnection(...args),
+        createWsServer = () => new WebSocketServer(),
+        createWsClient = (...args) => new WsConnection(...args),
         acceptMessage = async () => true,
         verifyClient = () => true
     } = policy;
@@ -26,7 +26,7 @@ export function WsManagerPolicy(policy = {}) {
             this.#clients = new Map();
         }
 
-        get isOpen() {
+        get isOpened() {
             return this.#server !== null;
         }
 
@@ -34,11 +34,12 @@ export function WsManagerPolicy(policy = {}) {
             return [...this.#clients.values()];
         }
 
-        handleUpgrade(request, wss, head) {
+        handleUpgrade(request, wsSocket, head) {
             if (this.#server) {
-                this.#server.handleUpgrade(request, wss, head, ws => {
-                    this.#server.emit('connection', ws, request);
-                });
+                this.#server.handleUpgrade(request, wsSocket, head,
+                    (wsClient) => {
+                        this.#server.emit('connection', wsClient, request);
+                    });
             }
         }
 
@@ -55,8 +56,8 @@ export function WsManagerPolicy(policy = {}) {
                 (client, message) => message.cmd === type);
         }
 
-        verifyClient(request, wss, head) {
-            return this.#server !== null && verifyClient(this, request, wss, head);
+        verifyClient(request, wsSocket, head) {
+            return this.#server !== null && verifyClient(this, request, wsSocket, head);
         }
 
         unpackMessage(wsClient, data) {
@@ -75,10 +76,10 @@ export function WsManagerPolicy(policy = {}) {
                 if (accepted) {
                     await this.onClientMessage(wsClient, message);
                 } else {
-                    getLogger(this).debug(
-                        ("message was discarded \n" +
-                            message.toString())
-                            .replaceAll('\n', '\n\t'));
+                    let info = message?.toString() ?? "unknown message";
+                    info = ("message was discarded \n" + info);
+                    info = info.replaceAll('\n', '\n\t');
+                    getLogger(this).debug(info);
                 }
             } catch (e) {
                 getLogger(this).error(e.message);
@@ -120,12 +121,12 @@ export function WsManagerPolicy(policy = {}) {
         open() {
             if (this.#server) return;
 
-            this.#server = createServer();
+            this.#server = createWsServer();
 
             this.#server.on('connection', (ws, req) => {
                 ws.on('close', () => ws.terminate());
 
-                let client = createClient(ws, req);
+                let client = createWsClient(ws, req);
                 this.appendClient(client);
                 this.onClientConnected(ws, req, client);
             });
@@ -136,9 +137,9 @@ export function WsManagerPolicy(policy = {}) {
         }
 
         async close() {
-            if (!this.isOpen) return;
+            if (!this.isOpened) return;
 
-            for (let [key, client] of this.#clients) {
+            for (let [_, client] of this.#clients) {
                 client.close();
             }
 

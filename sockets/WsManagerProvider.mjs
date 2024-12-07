@@ -10,7 +10,7 @@ export class WsManagerProvider {
     }
 
     getFromRequest(request) {
-        let path = new URL(request.url, 'http://example.com').pathname;
+        let path = new URL(request.originalUrl).pathname;
         return this.getFromPath(path);
     }
 

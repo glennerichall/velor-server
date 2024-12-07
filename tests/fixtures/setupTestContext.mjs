@@ -6,6 +6,7 @@ import {services} from "./services.mjs";
 import {request} from "./request.mjs";
 import {rest} from "./rest.mjs";
 import {api} from "./api.mjs";
+import {websocket} from "./websocket.mjs";
 
 export function setupTestContext() {
     return setupTest({
@@ -15,6 +16,7 @@ export function setupTestContext() {
         services,
         request,
         rest,
-        api
+        api,
+        websocket
     });
 }

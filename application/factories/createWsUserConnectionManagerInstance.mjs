@@ -4,12 +4,12 @@ import {WsUserConnection} from "../../sockets/frontend/WsUserConnection.mjs";
 import {WebSocketServer} from "ws";
 
 export function createWsUserConnectionManagerInstance(services) {
-    const createServer = new WebSocketServer({
+    const createWsServer = ()=> new WebSocketServer({
         clientTracking: true,
         noServer: true,
     });
 
-    const createClient = (ws, req) => getServiceBinder(services)
+    const createWsClient = (ws, req) => getServiceBinder(services)
         .createInstance(WsUserConnection,
             req.session.id,
             req.user?.id,
@@ -20,8 +20,8 @@ export function createWsUserConnectionManagerInstance(services) {
     const acceptMessage = () => false;
 
     const WsConnectionManager = WsManagerPolicy({
-        createServer,
-        createClient,
+        createWsServer,
+        createWsClient,
         acceptMessage,
     });
 
