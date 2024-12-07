@@ -58,6 +58,6 @@ export const serverFactories = {
     [s_wsManagerProvider]: WsManagerProvider,
     [s_rateLimiter]: {
         scope: SCOPE_PROTOTYPE,
-        factory: (configs) => new RateLimiterMemory(configs),
+        factory: (_, configs) => new RateLimiterMemory(configs),
     }
 }

@@ -15,7 +15,7 @@ export function wrapRateLimiterInMiddleware(limiter, getKey, pointsToConsume = 1
     }
 }
 
-export const limitByPathAndIp = req => req.path + "_" + req.ip;
+export const limitByPathAndIp = req => new URL(req.originalUrl).pathname + "_" + req.ip;
 export const limitByIp = req => req.ip;
 
 // export function createRateLimiterMiddleware(services, configs, getKey = limitByPathAndIp) {

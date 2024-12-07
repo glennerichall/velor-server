@@ -29,6 +29,7 @@ export const websocket = async ({}, use) => {
         headers: {
             'x-forwarded-for': 'localhost'
         },
+        ip: '127.0.0.1',
         originalUrl: 'https://localhost:3000/api?ignored=query'
     };
     wsSocket = {

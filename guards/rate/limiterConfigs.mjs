@@ -21,7 +21,7 @@ export const slowBruteByIPLimiter = {
     blockDuration: 60 * 60 * 24, // Block for 1 day,
 };
 
-// This limits 3 printer websocket connection attempts every 20 seconds.
+// This limits 3 websocket connection attempts every 20 seconds.
 export const socketConnectionUpgradeLimiter = {
     points: 3,
     keyPrefix: 'socket_upgrade_connection_fail',

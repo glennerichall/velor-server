@@ -8,7 +8,7 @@ export function composeGuardRequest(services) {
     return async (req, res, next) => {
         try {
             const key = limitByPathAndIp(req);
-            await rateLimiter.consume(key, 1);
+            await rateLimiter.consume(key);
             next();
         } catch (e) {
             return res.status(429).send("Too Many Requests");
