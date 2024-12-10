@@ -36,6 +36,17 @@ export function WsManagerPolicy(policy = {}) {
 
         handleUpgrade(request, wsSocket, head) {
             if (this.#server) {
+                // Set a cookie in the upgrade response
+                const setCookieHeader = `Set-Cookie: myCookie=myValue; Path=/; HttpOnly`;
+
+                wsSocket.write(
+                    `HTTP/1.1 101 WebSocket Protocol Handshake\r\n` +
+                    `Upgrade: websocket\r\n` +
+                    `Connection: Upgrade\r\n` +
+                    `${setCookieHeader}\r\n` +
+                    `\r\n`
+                );
+
                 this.#server.handleUpgrade(request, wsSocket, head,
                     (wsClient) => {
                         this.#server.emit('connection', wsClient, request);

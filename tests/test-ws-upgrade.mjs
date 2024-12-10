@@ -39,7 +39,7 @@ describe('observeWsConnectionUpgrade', () => {
         manager.close();
         expect(manager.isOpened).to.be.false;
         await onUpgrade(req, wsSocket, head);
-        expect(wsSocket.write).calledWith('HTTP/1.1 503 Unavailable\r\n\r\n');
+        expect(wsSocket.write).calledWith('HTTP/1.1 503 Service Unavailable\r\n\r\n');
     })
 
     it('should handle server upgrade', async () => {
@@ -155,5 +155,13 @@ describe('observeWsConnectionUpgrade', () => {
         })
     })
 
+
+    it('should guard with csrf', async()=>{
+        req.cookies = {};
+        await onUpgrade(req, wsSocket, head);
+        expect(wsSocket.write).calledWith(
+            "HTTP/1.1 403 Forbidden\r\nContent-Type: application/json\r\nContent-Length: 58\r\n\r\n{\"message\":\"invalid csrf token\",\"code\":\"E_BAD_CSRF_TOKEN\"}"
+        );
+    })
 
 });

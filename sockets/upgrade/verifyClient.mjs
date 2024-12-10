@@ -3,7 +3,7 @@ export async function verifyClient(req, res, next) {
     let response = await manager.verifyClient(req, wsSocket, head);
     if (response !== true) {
         let status = response.status ?? 401;
-        let message = response.message ?? 'Unauthorized';
+        let message = response.message;
         return res.status(status).send(message);
     }
     next();

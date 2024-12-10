@@ -1,7 +1,8 @@
 import {getLogger} from "velor-services/injection/services.mjs";
+import status from 'statuses';
 
 export function composeResponse(services) {
-    return wsSocket => {
+    return (wsSocket) => {
         return {
             status(code) {
                 this.code = code;
@@ -9,9 +10,27 @@ export function composeResponse(services) {
             },
 
             send(message) {
+                let contentType = 'text/plain';
+
+                if (typeof message === 'object') {
+                    message = JSON.stringify(message);
+                    contentType = 'application/json';
+                }
+
                 // manually respond a http message
                 getLogger(services).debug(`WSS connection refused with status[${this.code}] message: ${this.message}`);
-                wsSocket.write(`HTTP/1.1 ${this.code} ${message}\r\n\r\n`);
+
+                let httpMessage = `HTTP/1.1 ${this.code} ${status(this.code)}\r\n`;
+
+                if(message) {
+                    httpMessage += `Content-Type: ${contentType}\r\n` +
+                        `Content-Length: ${Buffer.byteLength(message)}\r\n\r\n` +
+                        message;
+                } else {
+                    httpMessage += "\r\n";
+                }
+
+                wsSocket.write(httpMessage);
                 wsSocket.destroy();
             }
         }

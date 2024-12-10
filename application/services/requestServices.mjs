@@ -25,7 +25,7 @@ export function getRequestInfo(req) {
 }
 
 export function getSessionId(req) {
-    return getSession(req).id;
+    return getSession(req)?.id ?? 'no-session';
 }
 
 export function getWsId(req) {

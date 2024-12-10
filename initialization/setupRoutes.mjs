@@ -1,4 +1,3 @@
-import {getExpressApp} from "../application/services/serverServices.mjs";
 import {composeAuth} from "../auth/composeAuth.mjs";
 import {composeSessionParser} from "../auth/composeSessionParser.mjs";
 import {composeCookieParser} from "../auth/composeCookieParser.mjs";
@@ -8,8 +7,8 @@ import {getAuthProvidersConfigs} from "./getAuthProvidersConfigs.mjs";
 import express from "express";
 import {patchPassport} from "../passport/middlewares/patchPassport.mjs";
 import passport from "passport";
-import {wsIdFromCookies} from "../session/wsIdFromCookies.mjs";
 import flash from "connect-flash";
+import {composeGetWsId} from "../sockets/upgrade/composeGetWsId.mjs";
 
 export function setupRoutes(services) {
     let providers = getAuthProvidersConfigs(services);
@@ -20,6 +19,7 @@ export function setupRoutes(services) {
     let cookies = composeCookieParser(services);
     let {csrfProtection, csrf} = composeCsrfProtection(services);
     let requestScope = composeRequestScope(services);
+    let {getWsId, createWsIdCookie} = composeGetWsId(services);
 
     return new express.Router()
         // create a request scope in services
@@ -42,11 +42,12 @@ export function setupRoutes(services) {
         .use(cookies)
 
         // these must be declared after cookies
-        .use(wsIdFromCookies)
+        .use(getWsId)
         .use(flash())
         .use(csrfProtection)
 
         // declare here all api routes
         .use('/api/v2/csrf', csrf)
+        .use('/api/v2/ws-id', createWsIdCookie)
         .use('/api/v2/auth', auth)
 }

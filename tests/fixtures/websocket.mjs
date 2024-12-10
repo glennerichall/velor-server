@@ -15,6 +15,8 @@ import {
     getWsManagerProvider
 } from "../../application/services/serverServices.mjs";
 import {observeWsConnectionUpgrade} from "../../initialization/observeWsConnectionUpgrade.mjs";
+import {createCsrfDirect} from "../contrib/createCsrfDirect.mjs";
+import {createWsIdDirect} from "../contrib/createWsIdDirect.mjs";
 
 export const websocket = async ({}, use) => {
     let services, events,
@@ -24,19 +26,6 @@ export const websocket = async ({}, use) => {
 
 
     events = new MapArray();
-
-    req = {
-        headers: {
-            'x-forwarded-for': 'localhost'
-        },
-        ip: '127.0.0.1',
-        originalUrl: 'https://localhost:3000/api?ignored=query'
-    };
-    wsSocket = {
-        write: sinon.stub(),
-        destroy: sinon.stub()
-    };
-    head = {};
 
     const serverFactory = () => {
         return {
@@ -97,6 +86,28 @@ export const websocket = async ({}, use) => {
 
     observeWsConnectionUpgrade(services);
     onUpgrade = events.get('upgrade')[0];
+
+    req = {
+        headers: {
+            'x-forwarded-for': 'localhost',
+        },
+        cookies: {},
+        signedCookies: {},
+        session: {
+            id: 'a-session-id',
+        },
+        ip: '127.0.0.1',
+        originalUrl: 'https://localhost:3000/api?ignored=query'
+    };
+
+    createCsrfDirect(services, req);
+    createWsIdDirect(services, req);
+
+    wsSocket = {
+        write: sinon.stub(),
+        destroy: sinon.stub(),
+    };
+    head = {};
 
     await use({
         services,

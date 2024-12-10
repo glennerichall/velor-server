@@ -1,14 +1,10 @@
 import {doubleCsrf} from "csrf-csrf";
 import {
-    getEnvValue,
     getEnvValueArray,
     isProduction,
     isStaging
 } from "velor-services/injection/baseServices.mjs";
-import {
-    AUTH_TOKEN_SECRET,
-    CSRF_SECRETS
-} from "../application/services/serverEnvKeys.mjs";
+import {CSRF_SECRETS} from "../application/services/serverEnvKeys.mjs";
 import {getSessionId} from "../application/services/requestServices.mjs";
 import {createRouterBuilder} from "../core/createRouterBuilder.mjs";
 import {URL_CSRF} from "velor-contrib/contrib/urls.mjs";
@@ -44,7 +40,13 @@ export function composeCsrfProtection(services, options = {}) {
 
     let csrf = createRouterBuilder().configure(csrfConfigs).done();
     let csrfProtection = chainHandlers(
-        doubleCsrfProtection,
+        (req, res, next) => {
+            try {
+                doubleCsrfProtection(req, res, next)
+            } catch (err) {
+                let sdfd = 'sdt'
+            }
+        },
         (err, req, res, next) => {
             res.status(err.statusCode).send(
                 {
@@ -56,6 +58,7 @@ export function composeCsrfProtection(services, options = {}) {
 
     return {
         csrfProtection,
-        csrf
+        csrf,
+        generateToken
     };
 }
