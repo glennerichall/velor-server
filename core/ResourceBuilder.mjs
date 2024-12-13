@@ -1,77 +1,92 @@
-// export const resourceBuilderPolicy = policy => {
-//
-//     return class {
-//         constructor() {
-//         }
-//
-//         addResource(dao, mapper) {
-//
-//         }
-//     };
-// }
-//
-// export function createResourceBuilder() {
-//     const ResourceBuilder = resourceBuilderPolicy();
-//     return new ResourceBuilder();
-// }
-
 import {getRouterBuilder} from "../application/services/serverServices.mjs";
 import {identOp} from "velor-utils/utils/functional.mjs";
+import {
+    getItemUrlName,
+    ITEM_PARAM
+} from "velor-api/api/api/ResourceApi.mjs";
+import {proceed} from "../guards/guardMiddleware.mjs";
 
 export const composeGetOne = (getDao, getQuery, mapper) => async (req, res) => {
     let query = getQuery(req, req.params.item);
     let item = await getDao(req).loadOne(query);
-    res.send(mapper(item));
+    res.send(mapper(item, query, req));
 };
 
 export const composeGetMany = (getDao, getQuery, mapper) => async (req, res) => {
     let query = getQuery(req);
     let items = await getDao(req).loadMany(query);
-    res.send(items.map(mapper));
+    items = items.map(item => mapper(item, query, req));
+    res.send(items);
 };
 
 export const composeDeleteOne = (getDao, getQuery, mapper) => async (req, res) => {
     let query = getQuery(req, req.params.item);
-    let result = await getDao(req).deleteOne(query);
-    res.send(mapper(result));
+    let item = await getDao(req).deleteOne(query);
+    res.send(mapper(item, query, req));
 };
 
 
 export const composeCreate = (getDao, getData, mapper) => async (req, res) => {
-    const data = getData(req.body);
-    let item = await getDao(req).create(data);
-    res.status(201).send(mapper(item));
+    const data = getData(req.body, req);
+    let item = await getDao(req).saveOne(data);
+    res.status(201).send(mapper(item, data, req));
 };
+
 
 export class ResourceBuilder {
 
     #routerBuilder;
     #name;
     #getDao;
+    #getItemData;
+    #itemQueryMapper;
+    #itemResponseMapper;
+    #guard;
 
-    constructor(getDao) {
-        this.#getDao = getDao;
+    constructor(configuration) {
+
+        const {
+            daoProvider,
+            name,
+            getItemData = identOp,
+            itemQueryMapper = identOp,
+            itemResponseMapper = identOp,
+            guard = proceed
+        } = configuration;
+
+        this.#getDao = daoProvider;
+        this.#name = name;
+        this.#itemQueryMapper = itemQueryMapper;
+        this.#itemResponseMapper = itemResponseMapper;
+        this.#getItemData = getItemData;
+        this.#guard = guard;
     }
 
     initialize() {
         this.#routerBuilder = getRouterBuilder(this);
+        this.use(this.#guard);
     }
 
-    guard(guard) {
+    use(middleware) {
+        this.#routerBuilder.use(middleware);
         return this;
     }
 
-    getOne(guard) {
-        let getOne = composeGetOne(this.#getDao, getQuery, mapper);
+    getOne(options = {}) {
+        let getOne = composeGetOne(this.#getDao,
+            this.#itemQueryMapper, this.#itemResponseMapper);
+
         this.#routerBuilder
-            .name(this.#name)
-            .get('/:item', getOne);
+            .name(getItemUrlName(this.#name))
+            .get(`/:${ITEM_PARAM}`, getOne);
 
         return this;
     }
 
-    getMany(guard) {
-        let getMany = composeGetMany(this.#getDao, getQuery, mapper);
+    getMany(options = {}) {
+        let getMany = composeGetMany(this.#getDao,
+            this.#itemQueryMapper, this.#itemResponseMapper);
+
         this.#routerBuilder
             .name(this.#name)
             .get('/', getMany);
@@ -79,22 +94,20 @@ export class ResourceBuilder {
         return this;
     }
 
-    delete(guard) {
-        let deleteOne = composeDeleteOne(this.#getDao, getQuery, mapper);
+    delete(options = {}) {
+        let deleteOne = composeDeleteOne(this.#getDao,
+            this.#itemQueryMapper, this.#itemResponseMapper);
+
         this.#routerBuilder
-            .name(this.#name)
+            .name(getItemUrlName(this.#name))
             .delete('/:item', deleteOne);
 
         return this;
     }
 
     create(options = {}) {
-        const {
-            mapper = identOp,
-            getData = identOp
-        } = options;
-
-        let create = composeCreate(this.#getDao, getData, mapper);
+        let create = composeCreate(this.#getDao,
+            this.#getItemData, this.#itemResponseMapper);
 
         this.#routerBuilder
             .name(this.#name)

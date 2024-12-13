@@ -42,6 +42,7 @@
     "rate-limiter-flexible": "^5.0.4",
     "sanitize-html": "^2.13.1",
     "statuses": "^2.0.1",
+    "velor-api": "github:glennerichall/velor-api",
     "velor-contrib": "github:glennerichall/velor-contrib",
     "velor-database": "github:glennerichall/velor-database",
     "velor-distribution": "github:glennerichall/velor-distribution",

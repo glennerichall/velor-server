@@ -11,12 +11,15 @@ import flash from "connect-flash";
 import {composeGetWsId} from "../sockets/upgrade/composeGetWsId.mjs";
 import {getRouterBuilder} from "../application/services/serverServices.mjs";
 import {composeApiKeys} from "../routes/apiKeys.mjs";
+import {composePreferences} from "../routes/preferences.mjs";
 
 export function setupRoutes(services) {
     let providers = getAuthProvidersConfigs(services);
 
     let auth = composeAuth(services, providers);
     // let apiKeys = composeApiKeys(services);
+
+    let preferences = composePreferences(services);
 
     let session = composeSessionParser(services);
     let cookies = composeCookieParser(services);
@@ -54,6 +57,7 @@ export function setupRoutes(services) {
         .use('/api/v2/csrf', csrf)
         .use('/api/v2/ws', createWsIdCookie)
         .use('/api/v2/auth', auth)
+        .use('/api/v2/preferences', preferences)
         // .use('/api/v2/api-keys', apiKeys)
 
         .done()

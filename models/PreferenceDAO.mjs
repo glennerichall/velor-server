@@ -15,12 +15,15 @@ export class PreferenceDAO extends DAOPolicy({
 }) {
 
     async insertOne(data) {
-        const {
+        let {
             user,
             name,
             value
         } = data;
         const userId = await getUserDAO(this).loadId(user);
+        if (typeof value !== "object") {
+            value = {value};
+        }
         return await getDataPreferences(this).upsertPreference(userId, name, value);
     }
 

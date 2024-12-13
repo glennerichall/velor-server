@@ -16,3 +16,4 @@ export const s_wsConnectionManager = "wsConnectionManager";
 export const s_wsManagerProvider = "wsManagerProvider";
 export const s_rateLimiter = "rateLimiter";
 export const s_routerBuilder = "routerBuilder";
+export const s_resourceBuilder = "resourceBuilder";

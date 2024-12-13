@@ -1,7 +1,13 @@
 import {getEmitter} from "../services/serverServices.mjs";
-import {EventQueue} from "../../core/EventQueue.mjs";
+import {EventQueue} from "velor-utils/utils/EventQueue.mjs";
+import {
+    EVENT_USER_LOGIN,
+    EVENT_USER_LOGOUT
+} from "../services/serverEventKeys.mjs";
 
 export function createEventQueueInstance(services) {
     const emitter = getEmitter(services);
-    return new EventQueue(emitter);
+    return new EventQueue(emitter)
+        .listen(EVENT_USER_LOGIN)
+        .listen(EVENT_USER_LOGOUT);
 }

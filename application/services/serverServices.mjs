@@ -9,6 +9,7 @@ import {
     s_messageFactory,
     s_preferenceDAO,
     s_rateLimiter,
+    s_resourceBuilder,
     s_roleDAO,
     s_routerBuilder,
     s_ruleDAO,
@@ -85,4 +86,8 @@ export function getRateLimiter(services, configs) {
 
 export function getRouterBuilder(services) {
     return getProvider(services)[s_routerBuilder]();
+}
+
+export function getResourceBuilder(services, configs) {
+    return getProvider(services)[s_resourceBuilder](configs);
 }
