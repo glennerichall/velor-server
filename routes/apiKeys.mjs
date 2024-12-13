@@ -103,10 +103,7 @@ export function composeApiKeys(services) {
         };
     }
 
-    return new ResourceBuilder(
-        {
-            getDao,
-        })
+    return new ResourceBuilder(getApiKeyDAO)
         .create(createGetData, {mapper: createMapResponse})
         .delete()
         .getMany()

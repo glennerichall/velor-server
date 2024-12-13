@@ -38,7 +38,7 @@ export const composeDeleteOne = (getDao, getQuery, mapper) => async (req, res) =
 
 
 export const composeCreate = (getDao, getData, mapper) => async (req, res) => {
-    const data = getData(req);
+    const data = getData(req.body);
     let item = await getDao(req).create(data);
     res.status(201).send(mapper(item));
 };
@@ -49,15 +49,19 @@ export class ResourceBuilder {
     #name;
     #getDao;
 
-    constructor(configs) {
-        this.#getDao = configs.getDao;
+    constructor(getDao) {
+        this.#getDao = getDao;
     }
 
     initialize() {
         this.#routerBuilder = getRouterBuilder(this);
     }
 
-    getOne(guards) {
+    guard(guard) {
+        return this;
+    }
+
+    getOne(guard) {
         let getOne = composeGetOne(this.#getDao, getQuery, mapper);
         this.#routerBuilder
             .name(this.#name)
@@ -66,7 +70,7 @@ export class ResourceBuilder {
         return this;
     }
 
-    getMany(guards) {
+    getMany(guard) {
         let getMany = composeGetMany(this.#getDao, getQuery, mapper);
         this.#routerBuilder
             .name(this.#name)
@@ -75,7 +79,7 @@ export class ResourceBuilder {
         return this;
     }
 
-    delete(guards) {
+    delete(guard) {
         let deleteOne = composeDeleteOne(this.#getDao, getQuery, mapper);
         this.#routerBuilder
             .name(this.#name)
@@ -84,10 +88,12 @@ export class ResourceBuilder {
         return this;
     }
 
-    create(getData, options = {}) {
+    create(options = {}) {
         const {
-            mapper = identOp
+            mapper = identOp,
+            getData = identOp
         } = options;
+
         let create = composeCreate(this.#getDao, getData, mapper);
 
         this.#routerBuilder
@@ -95,6 +101,13 @@ export class ResourceBuilder {
             .post('/', create);
 
         return this;
+    }
+
+    all() {
+        return this.create()
+            .delete()
+            .getMany()
+            .getOne();
     }
 
     done() {

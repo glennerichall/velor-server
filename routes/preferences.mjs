@@ -1,15 +1,16 @@
-import {ResourceBuilder} from "../core/ResourceBuilder.mjs";
 import {getPreferenceDAO} from "../application/services/serverServices.mjs";
+import {getUser} from "../application/services/requestServices.mjs";
 
 
 export function composePreferences(services) {
-    const getDao = req => getPreferenceDAO(services);
+    return getResourceBuilder(services)
+        .for(getPreferenceDAO, URL_PREFERENCES)
+        .guard(isLoggedIn)
+        .before(req => {
+            let user = getUser(req);
 
-    return new ResourceBuilder(
-        {
-            getDao,
         })
-        .create(createGetData, {mapper: createMapResponse})
+        .create()
         .delete()
         .getMany()
         .getOne()
