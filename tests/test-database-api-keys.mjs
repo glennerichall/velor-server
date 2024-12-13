@@ -22,13 +22,15 @@ describe('database api keys', () => {
     };
 
     let createApiKey,
+        deleteApiKeyByPublicId,
         getApiKeyByValue;
 
     beforeEach(async ({database}) => {
         let {schema} = database;
         ({
             createApiKey,
-            getApiKeyByValue
+            getApiKeyByValue,
+            deleteApiKeyByPublicId
         } = composeApiKeysDataAccess(schema));
     })
 
@@ -56,5 +58,22 @@ describe('database api keys', () => {
 
         expect(apiKey).to.have.property('name', apiKey.raw_uuid.substring(0, 3) +
             "..." + apiKey.raw_uuid.substring(apiKey.raw_uuid.length - 2));
+    })
+
+    it('should delete api key', async ({database}) => {
+        const {
+            client,
+        } = database;
+
+        let apiKey = await createApiKey(client);
+
+        let found = await getApiKeyByValue(client, apiKey.api_key);
+        expect(found.id).to.eq(apiKey.id);
+
+        await deleteApiKeyByPublicId(client, apiKey.publicId)
+
+        found = await getApiKeyByValue(client, apiKey.api_key);
+        expect(found).to.not.be.null;
+
     })
 })

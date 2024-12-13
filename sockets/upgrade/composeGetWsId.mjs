@@ -2,10 +2,12 @@ import {
     isProduction,
     isStaging
 } from "velor-services/injection/baseServices.mjs";
+import {getRouterBuilder} from "../../application/services/serverServices.mjs";
+import {URL_WS_ID} from "velor-contrib/contrib/urls.mjs";
 
 export function composeGetWsId(services, options = {}) {
     const {
-        cookieName = '__Host-psifi.ws-id'
+        cookieName = '__Host-psifi.x-ws-id'
     } = options;
 
     const getWsId = (req, res, next) => {
@@ -13,7 +15,7 @@ export function composeGetWsId(services, options = {}) {
         next();
     }
 
-    const createWsIdCookie = (req, res) => {
+    const setWsIdCookie = res => {
         const wsId = crypto.randomUUID();
         res.cookie(cookieName, wsId, {
                 signed: true,
@@ -21,10 +23,25 @@ export function composeGetWsId(services, options = {}) {
                 secure: isProduction(services) || isStaging(services),
             }
         );
+    }
+
+    const getWsIdCookie = (req, res) => {
+        setWsIdCookie(res);
         res.send();
     }
 
+    const wsConfigs = [
+        {
+            name: URL_WS_ID,
+            path: '/ws-id',
+            get: getWsIdCookie,
+        }
+    ]
+
+    let createWsIdCookie = getRouterBuilder(services).configure(wsConfigs).done();
+
     return {
+        setWsIdCookie,
         getWsId,
         createWsIdCookie
     }

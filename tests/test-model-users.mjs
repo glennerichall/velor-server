@@ -30,7 +30,7 @@ describe('User', () => {
         avatar: 'avatoar'
     };
 
-    let auth, services, user;
+    let auth, services, userDao;
 
     beforeEach(async ({services: s}) => {
         services = s;
@@ -49,7 +49,7 @@ describe('User', () => {
             description: 'Normal user with limited rights'
         });
 
-        user = getUserDAO(services);
+        userDao = getUserDAO(services);
     })
 
     async function readUserFromDatabase() {
@@ -58,7 +58,7 @@ describe('User', () => {
     }
 
     it('should not get primary auth if not saved', async () => {
-        let loaded = await user.loadOne({
+        let loaded = await userDao.loadOne({
             authId: auth.id
         });
         expect(loaded).to.be.null;
@@ -66,7 +66,7 @@ describe('User', () => {
 
 
     it('should save user to database when using auth', async ({services}) => {
-        let saved = await user.saveOne(auth);
+        let saved = await userDao.saveOne(auth);
         expect(saved).to.have.property('profileId', auth.profileId);
         expect(saved).to.have.property('provider', auth.provider);
         expect(saved).to.have.property('email', auth.email);
@@ -82,7 +82,7 @@ describe('User', () => {
     })
 
     it('should save user to database when using profile', async ({services}) => {
-        let saved = await user.saveOne({
+        let saved = await userDao.saveOne({
             profileId: auth.profileId,
             provider: auth.provider,
         });
@@ -102,7 +102,7 @@ describe('User', () => {
     })
 
     it('should save user to database when using auth id', async ({services}) => {
-        let saved = await user.saveOne({
+        let saved = await userDao.saveOne({
             authId: auth.id
         });
 
@@ -121,21 +121,21 @@ describe('User', () => {
     })
 
     it('should not save twice', async ({services}) => {
-        await user.saveOne({
+        await userDao.saveOne({
             authId: auth.id
         });
 
         let data = await getDataUsers(services).countUsers();
         expect(data).to.eq(1);
 
-        await user.saveOne({
+        await userDao.saveOne({
             authId: auth.id
         });
 
         data = await getDataUsers(services).countUsers();
         expect(data).to.eq(1);
 
-        await user.saveOne({
+        await userDao.saveOne({
             profileId: auth.profileId,
             provider: auth.provider,
         });
@@ -143,7 +143,7 @@ describe('User', () => {
         data = await getDataUsers(services).countUsers();
         expect(data).to.eq(1);
 
-        await user.saveOne(auth);
+        await userDao.saveOne(auth);
 
         data = await getDataUsers(services).countUsers();
         expect(data).to.eq(1);
@@ -151,9 +151,32 @@ describe('User', () => {
     })
 
     it('should grant normal role to user upon save', async () => {
-        let saved = await user.saveOne(auth);
-        let roles = await user.getRoles(saved);
+        let saved = await userDao.saveOne(auth);
+        let roles = await userDao.getRoles(saved);
         expect(roles).to.have.length(1)
         expect(roles[0].name).to.eq('normal');
+    })
+
+    it('should save preference', async () => {
+        let user = await userDao.saveOne(auth);
+        let pref = await userDao.setPreference(user, 'my-pref', {foo: 'bar'});
+        expect(pref.value).to.have.property('foo', 'bar');
+        expect(pref).to.have.property('name', 'my-pref');
+    })
+
+    it('should get preference', async () => {
+        let user = await userDao.saveOne(auth);
+        await userDao.setPreference(user, 'my-pref', {foo: 'bar'});
+        let pref = await userDao.getPreference(user, 'my-pref');
+        expect(pref.value).to.have.property('foo', 'bar');
+        expect(pref).to.have.property('name', 'my-pref');
+    })
+
+    it('should get preferences', async () => {
+        let user = await userDao.saveOne(auth);
+        await userDao.setPreference(user, 'my-pref1', {foo: 'bar'});
+        await userDao.setPreference(user, 'my-pref2', {foo: 'bar'});
+        let pref = await userDao.getPreferences(user);
+        expect(pref).to.have.length(2);
     })
 })

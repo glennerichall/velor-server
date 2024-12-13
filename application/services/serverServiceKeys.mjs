@@ -15,3 +15,4 @@ export const s_userSerializer = "userSerializer";
 export const s_wsConnectionManager = "wsConnectionManager";
 export const s_wsManagerProvider = "wsManagerProvider";
 export const s_rateLimiter = "rateLimiter";
+export const s_routerBuilder = "routerBuilder";

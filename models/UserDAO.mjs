@@ -86,4 +86,8 @@ export class UserDAO extends DAOPolicy({
     async getPreference(user, name) {
         return await getPreferenceDAO(this).loadOne({user, name});
     }
+
+    async setPreference(user, name, value) {
+        return await getPreferenceDAO(this).saveOne({user, name, value});
+    }
 }

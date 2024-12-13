@@ -9,6 +9,7 @@ import {
     s_preferenceDAO,
     s_rateLimiter,
     s_roleDAO,
+    s_routerBuilder,
     s_ruleDAO,
     s_server,
     s_userDAO,
@@ -37,6 +38,7 @@ import {createWsUserConnectionManagerInstance} from "../factories/createWsUserCo
 import {WsManagerProvider} from "../../sockets/WsManagerProvider.mjs";
 import {SCOPE_PROTOTYPE} from "velor-services/injection/ServicesContext.mjs";
 import {RateLimiterMemory} from "rate-limiter-flexible";
+import {createRouterBuilder} from "../../core/RouterBuilder.mjs";
 
 export const serverFactories = {
     [s_databaseStatements]: createStatementsInstance,
@@ -59,5 +61,9 @@ export const serverFactories = {
     [s_rateLimiter]: {
         scope: SCOPE_PROTOTYPE,
         factory: (_, configs) => new RateLimiterMemory(configs),
+    },
+    [s_routerBuilder]: {
+        scope: SCOPE_PROTOTYPE,
+        factory: createRouterBuilder
     }
 }

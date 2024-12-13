@@ -10,9 +10,13 @@ export function createWsIdDirect(services, req) {
         }
     }
 
-    composeGetWsId(services).createWsIdCookie(req, res);
-    req.cookies ={
+    composeGetWsId(services).setWsIdCookie(res);
+    req.cookies = {
         ...req.cookies,
         ...res._cookies
+    };
+
+    req.signedCookies = {
+        ...req.cookies,
     };
 }

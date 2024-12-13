@@ -1,6 +1,6 @@
 import sinon from "sinon";
 import {setupTestContext} from "velor-utils/test/setupTestContext.mjs";
-import {createRouterBuilder} from "../core/createRouterBuilder.mjs";
+import {createRouterBuilder} from "../core/RouterBuilder.mjs";
 import {identOp} from "velor-utils/utils/functional.mjs";
 import {isRouter} from "../core/isRouter.mjs";
 

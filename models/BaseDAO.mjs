@@ -94,8 +94,7 @@ const typeSym = Symbol('VO-Type');
 
 export const composeIsVO = symbol => (vo) => vo && vo[typeSym] === symbol;
 export const composeCanSaveIfNotVo = (isVo) => async (data) => !isVo(data)
-export const composeCanSaveIfModified = (isVo, isPristine) => async (data) => !isPristine(data);
-export const canSaveIfModified = composeCanSaveIfModified(isPristine);
+export const composeCanSaveIfModified = (isVo, isPristine) => async (data) => !isVo(data) || !isPristine(data);
 
 export const composeMakeFrozenVo = symbol => (vo) => {
     vo[typeSym] = symbol;
@@ -112,7 +111,7 @@ export const composeMakeSaveStateVo = symbol => (vo) => {
 export const composeMutablePolicy = symbol => {
     return {
         makeVO: composeMakeSaveStateVo(symbol),
-        canSave: canSaveIfModified,
+        canSave: composeCanSaveIfModified(composeIsVO(symbol), isPristine),
     };
 }
 
@@ -140,8 +139,8 @@ export const DAOPolicy = (policy = {}) => {
         }
 
         async canSave(data) {
-            data = await this.loadOne(data);
-            return canSave(data);
+            const vo = await this.loadOne(data);
+            return canSave(vo);
         }
     };
 }

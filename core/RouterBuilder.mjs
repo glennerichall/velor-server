@@ -1,15 +1,16 @@
 import express from "express";
 import {tryCatchAsyncHandler as defaultTryCatchAsyncHandler} from "./tryCatchAsyncHandler.mjs";
 
-const names = [];
-// use and options must be declared first
-let methods = ['use', 'options', 'get', 'post', 'put', 'delete'];
 
 export const routerBuilderPolicy = ({
                                         tryCatchAsyncHandler = defaultTryCatchAsyncHandler,
                                         newRouter = express.Router
-                                    }) =>
-    class RouterBuilder {
+                                    }) => {
+
+    // use and options must be declared first
+    let methods = ['use', 'options', 'get', 'post', 'put', 'delete'];
+
+    return class RouterBuilder {
 
         #router;
         #name;
@@ -67,7 +68,6 @@ export const routerBuilderPolicy = ({
 
         name(name) {
             this.#name = name;
-            names.push(name);
             return this;
         }
 
@@ -116,6 +116,7 @@ export const routerBuilderPolicy = ({
             return this.#router;
         }
     }
+}
 
 export function createRouterBuilder(args = {}) {
     const RouterBuilder = routerBuilderPolicy(args);

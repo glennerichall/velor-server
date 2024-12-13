@@ -10,6 +10,14 @@ export function getPreferencesSql(schema, tableNames = {}) {
         from ${schema}.${preferences}
         where user_id = $1
           and name = $2
+        returning *
+    `;
+
+    const deletePreferenceByIdSql = `
+        delete
+        from ${schema}.${preferences}
+        where id = $1
+        returning *
     `;
 
     const getPreferenceByNameSql = `
@@ -43,6 +51,7 @@ export function getPreferencesSql(schema, tableNames = {}) {
 
     return {
         deletePreferenceByNameSql,
+        deletePreferenceByIdSql,
         getPreferenceByNameSql,
         getPreferencesByUserIdSql,
         getPreferenceByIdSql,
@@ -55,18 +64,24 @@ export function composePreferencesDataAccess(schema, tableNames = {}) {
 
     const {
         deletePreferenceByNameSql,
+        deletePreferenceByIdSql,
         getPreferenceByNameSql,
         getPreferencesByUserIdSql,
         getPreferenceByIdSql,
         upsertPreferenceSql
     } = getPreferencesSql(schema, tableNames);
 
-    async function deletePreferenceByName(client, name, userId) {
+    async function deletePreferenceByName(client, userId, name) {
         const res = await client.query(deletePreferenceByNameSql, [userId, name]);
-        return res.rowCount;
+        return res.rowCount >= 1 ? res.rows[0] : null;
     }
 
-    async function getPreferenceByName(client, name, userId) {
+    async function deletePreferenceById(client, id) {
+        const res = await client.query(deletePreferenceByIdSql, [id]);
+        return res.rowCount >= 1 ? res.rows[0] : null;
+    }
+
+    async function getPreferenceByName(client, userId, name) {
         const res = await client.query(getPreferenceByNameSql, [userId, name]);
         return res.rows.length === 1 ? res.rows[0] : null;
     }
@@ -81,7 +96,7 @@ export function composePreferencesDataAccess(schema, tableNames = {}) {
         return res.rows.length === 1 ? res.rows[0] : null;
     }
 
-    async function upsertPreference(client, name, userId, value) {
+    async function upsertPreference(client, userId, name, value) {
         const res = await client.query(upsertPreferenceSql, [name, userId, value]);
         return res.rows.length === 1 ? res.rows[0] : null;
     }
@@ -89,6 +104,7 @@ export function composePreferencesDataAccess(schema, tableNames = {}) {
 
     return {
         deletePreferenceByName,
+        deletePreferenceById,
         getPreferenceByName,
         getPreferencesByUserId,
         getPreferenceById,

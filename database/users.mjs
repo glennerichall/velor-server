@@ -153,16 +153,6 @@ export function getUsersSql(schema, tableNames = {}) {
         order by a.permission, a.resource
     `;
 
-    const deleteApiKeyByUserSql = `
-        DELETE
-        FROM ${schema}.api_keys
-        WHERE id IN (SELECT api_keys.id
-                     FROM ${schema}.api_keys
-                              INNER JOIN ${schema}.users_api_keys ON users_api_keys.api_key_id = api_keys.id
-                     WHERE users_api_keys.user_id = $1
-                       AND api_keys.public_id = $2) returning *
-    `;
-
     const addApiKeyOwnerSql = `
         insert into ${schema}.users_api_keys
             (api_key_id, user_id)
@@ -234,7 +224,6 @@ export function getUsersSql(schema, tableNames = {}) {
         revokeUserRoleByUserIdSql,
         getUserAclRulesByUserIdSql,
         getPrimaryAuthByAuthIdSql,
-        deleteApiKeyByUserSql,
         addApiKeyOwnerSql,
         countUsersSql,
         queryApiKeyByAuthSql,
@@ -262,7 +251,6 @@ export function composeUsersDataAccess(schema, tableNames = {}) {
         revokeUserRoleByUserIdSql,
         getUserAclRulesByUserIdSql,
         getPrimaryAuthByAuthIdSql,
-        deleteApiKeyByUserSql,
         addApiKeyOwnerSql,
         countUsersSql,
         queryApiKeyByAuthSql,
@@ -335,11 +323,6 @@ export function composeUsersDataAccess(schema, tableNames = {}) {
         return res.rows;
     }
 
-    async function deleteApiKeyByUser(client, publicId, userId) {
-        const res = await client.query(deleteApiKeyByUserSql, [userId, publicId]);
-        return res.rowCount === 1 ? res.rows[0] : null;
-    }
-
     async function addApiKeyOwner(client, apiKeyId, userId) {
         const res = await client.query(addApiKeyOwnerSql, [apiKeyId, userId]);
         return res.rowCount === 1;
@@ -389,7 +372,6 @@ export function composeUsersDataAccess(schema, tableNames = {}) {
         revokeUserRoleByProfile,
         revokeUserRoleByUserId,
         getUserAclRulesByUserId,
-        deleteApiKeyByUser,
         addApiKeyOwner,
         queryApiKeyByAuth,
         queryApiKeyByUser,

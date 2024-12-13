@@ -100,6 +100,15 @@ export function getApiKeysSql(schema, tableNames = {}) {
         order by a.permission, a.resource
     `;
 
+
+    const deleteApiKeyByPublicIdSql = `
+        DELETE
+        FROM ${schema}.${apiKeys}
+        WHERE id IN (SELECT ${apiKeys}.id
+                     FROM ${schema}.${apiKeys}
+                     WHERE ${apiKeys}.public_id = $1) returning *
+    `;
+
     return {
         getAllApiKeysSql,
         createApiKeySql,
@@ -108,6 +117,7 @@ export function getApiKeysSql(schema, tableNames = {}) {
         getApiKeyByIdSql,
         getApiKeyByPublicIdSql,
         getApiKeyAclRulesByIdSql,
+        deleteApiKeyByPublicIdSql,
     };
 
 }
@@ -122,6 +132,7 @@ export function composeApiKeysDataAccess(schema, tableNames = {}) {
         getApiKeyByIdSql,
         getApiKeyByPublicIdSql,
         getApiKeyAclRulesByIdSql,
+        deleteApiKeyByPublicIdSql,
     } = getApiKeysSql(schema, tableNames);
 
     async function getAllApiKeys(client) {
@@ -186,6 +197,12 @@ export function composeApiKeysDataAccess(schema, tableNames = {}) {
         return res.rows;
     }
 
+
+    async function deleteApiKeyByPublicId(client, publicId) {
+        const res = await client.query(deleteApiKeyByPublicIdSql, [publicId]);
+        return res.rowCount === 1 ? res.rows[0] : null;
+    }
+
     return {
         getAllApiKeys,
         createApiKey,
@@ -194,5 +211,6 @@ export function composeApiKeysDataAccess(schema, tableNames = {}) {
         getApiKeyById,
         getApiKeyByPublicId,
         getApiKeyAclRulesById,
+        deleteApiKeyByPublicId,
     }
 }

@@ -133,4 +133,18 @@ describe('ApiKey', () => {
         expect(rules.map(rule => rule.id)).includes(rule1.id);
         expect(rules.map(rule => rule.id)).includes(rule2.id);
     })
+
+    it('should delete api key by public id', async () => {
+        let saved = await apiKey.saveOne({name: 'an api key'});
+        let loaded = await apiKey.loadOne({id: saved.id});
+
+        expect(loaded.id).to.eq(saved.id);
+
+        await apiKey.deleteOne({
+            publicId: saved.publicId,
+        });
+
+        loaded = await apiKey.loadOne({id: saved.id});
+        expect(loaded).to.be.null;
+    })
 })

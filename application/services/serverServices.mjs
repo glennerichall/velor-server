@@ -10,6 +10,7 @@ import {
     s_preferenceDAO,
     s_rateLimiter,
     s_roleDAO,
+    s_routerBuilder,
     s_ruleDAO,
     s_server,
     s_userDAO,
@@ -80,4 +81,8 @@ export function getWsManagerProvider(services) {
 
 export function getRateLimiter(services, configs) {
     return getProvider(services)[s_rateLimiter](configs);
+}
+
+export function getRouterBuilder(services) {
+    return getProvider(services)[s_routerBuilder]();
 }

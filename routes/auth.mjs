@@ -1,7 +1,4 @@
-import {validateSession} from "../session/createSessionValidation.mjs";
-
 import {
-    URL_CONFIRM_EMAIL,
     URL_LOGIN,
     URL_LOGIN_FAILURE,
     URL_LOGIN_SUCCESS,

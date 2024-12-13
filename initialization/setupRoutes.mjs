@@ -9,11 +9,14 @@ import {patchPassport} from "../passport/middlewares/patchPassport.mjs";
 import passport from "passport";
 import flash from "connect-flash";
 import {composeGetWsId} from "../sockets/upgrade/composeGetWsId.mjs";
+import {getRouterBuilder} from "../application/services/serverServices.mjs";
+import {composeApiKeys} from "../routes/apiKeys.mjs";
 
 export function setupRoutes(services) {
     let providers = getAuthProvidersConfigs(services);
 
     let auth = composeAuth(services, providers);
+    // let apiKeys = composeApiKeys(services);
 
     let session = composeSessionParser(services);
     let cookies = composeCookieParser(services);
@@ -21,7 +24,8 @@ export function setupRoutes(services) {
     let requestScope = composeRequestScope(services);
     let {getWsId, createWsIdCookie} = composeGetWsId(services);
 
-    return new express.Router()
+    return getRouterBuilder(services)
+
         // create a request scope in services
         .use(requestScope)
 
@@ -48,6 +52,9 @@ export function setupRoutes(services) {
 
         // declare here all api routes
         .use('/api/v2/csrf', csrf)
-        .use('/api/v2/ws-id', createWsIdCookie)
+        .use('/api/v2/ws', createWsIdCookie)
         .use('/api/v2/auth', auth)
+        // .use('/api/v2/api-keys', apiKeys)
+
+        .done()
 }

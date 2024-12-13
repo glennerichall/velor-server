@@ -10,6 +10,7 @@ import {
     getUserDAO
 } from "../application/services/serverServices.mjs";
 import {services} from "../tests/fixtures/services.mjs";
+import {NotImplementedError} from "velor-utils/utils/errors/NotImplementedError.mjs";
 
 const apiKeySymbol = Symbol("ApiKey");
 
@@ -69,5 +70,21 @@ export class ApiKeyDAO extends DAOPolicy({
 
     async insertOne(data) {
         return getDataApiKeys(this).createApiKey(data.name);
+    }
+
+    async deleteOne(query) {
+        let result;
+
+        if (query.publicId) {
+            result = await getDataApiKeys(this).deleteApiKeyByPublicId(query.publicId);
+
+        } else if (query.value) {
+            throw new NotImplementedError();
+
+        } else if (query.id) {
+            throw new NotImplementedError();
+        }
+
+        return result;
     }
 }

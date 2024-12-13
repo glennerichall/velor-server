@@ -1,7 +1,7 @@
 import {createAuthConfiguration} from "../routes/auth.mjs";
-import {createRouterBuilder} from "../core/createRouterBuilder.mjs";
+import {getRouterBuilder} from "../application/services/serverServices.mjs";
 
 export function composeAuth(services, providers) {
     const authConfigs = createAuthConfiguration(services, providers);
-    return createRouterBuilder().configure(authConfigs).done();
+    return getRouterBuilder(services).configure(authConfigs).done();
 }
