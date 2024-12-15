@@ -45,6 +45,7 @@
     "velor-api": "github:glennerichall/velor-api",
     "velor-contrib": "github:glennerichall/velor-contrib",
     "velor-database": "github:glennerichall/velor-database",
+    "velor-dbuser": "github:glennerichall/velor-dbuser",
     "velor-distribution": "github:glennerichall/velor-distribution",
     "velor-messaging": "github:glennerichall/velor-messaging",
     "velor-services": "github:glennerichall/velor-services",

@@ -1,4 +1,4 @@
-import {getRateLimiter} from "../../application/services/serverServices.mjs";
+import {getRateLimiter} from "../../application/services/services.mjs";
 import {socketConnectionUpgradeLimiter} from "../../guards/rate/limiterConfigs.mjs";
 import {limitByPathAndIp} from "../../guards/rate/rateLimiterCreation.mjs";
 

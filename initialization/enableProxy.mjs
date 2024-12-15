@@ -1,8 +1,8 @@
 import {
     isProduction,
     isStaging,
-} from "velor-services/injection/baseServices.mjs";
-import {getExpressApp} from "../application/services/serverServices.mjs";
+} from "velor-services/application/services/baseServices.mjs";
+import {getExpressApp} from "../application/services/services.mjs";
 
 export function enableProxy(services) {
     let expressApp = getExpressApp(services);

@@ -1,4 +1,4 @@
-import {getRouterBuilder} from "../application/services/serverServices.mjs";
+import {getRouterBuilder} from "../application/services/services.mjs";
 import {identOp} from "velor-utils/utils/functional.mjs";
 import {
     getItemUrlName,

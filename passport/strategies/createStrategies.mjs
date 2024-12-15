@@ -5,7 +5,7 @@ import {
     AUTH_OPENID,
     AUTH_TOKEN,
 } from "velor-contrib/contrib/authProviders.mjs";
-import {getUserSerializer} from "../../application/services/serverServices.mjs";
+import {getUserSerializer} from "../../application/services/services.mjs";
 import {VelorStrategy} from "./velor.mjs";
 
 export function createStrategies(services, providers) {

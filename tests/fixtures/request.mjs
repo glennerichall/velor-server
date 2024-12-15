@@ -1,4 +1,4 @@
-import {getExpressApp} from "../../application/services/serverServices.mjs";
+import {getExpressApp} from "../../application/services/services.mjs";
 import supertest from "supertest";
 import {setCookies} from "../contrib/request/setCookies.mjs";
 import {setCsrfToken} from "../contrib/request/setCsrf.mjs";

@@ -1,10 +1,10 @@
 import {EncryptionProvider} from "../../core/EncryptionProvider.mjs";
-import {getEnvValue} from "velor-services/injection/baseServices.mjs";
+import {getEnvValue} from "velor-services/application/services/baseServices.mjs";
 
 import {
     USER_ENCRYPT_IV,
     USER_ENCRYPT_KEY
-} from "../services/serverEnvKeys.mjs";
+} from "../services/envKeys.mjs";
 
 export function createUserSerializerInstance(services) {
 

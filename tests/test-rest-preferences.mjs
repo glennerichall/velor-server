@@ -1,11 +1,12 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {URL_PREFERENCES} from "velor-contrib/contrib/urls.mjs";
 import {getDataFromResponse} from "velor-api/api/ops/getDataFromResponse.mjs";
+
+import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
 import {
     getPreferenceDAO,
     getUserDAO
-} from "../application/services/serverServices.mjs";
-import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
+} from "velor-dbuser/application/services/services.mjs";
 
 const {
     expect,
@@ -18,7 +19,7 @@ const {
 
 describe('Preferences', () => {
 
-    it('should create preference', async ({api, services}) => {
+    it('should create preference as string', async ({api, services}) => {
         let {context} = await api.loginWithToken();
 
         let response = await api.resources(context)
@@ -46,7 +47,7 @@ describe('Preferences', () => {
         expect(loaded).to.have.property('value', 'preference-value');
     })
 
-    it('should get preference', async ({api, services}) => {
+    it('should get preference as string', async ({api, services}) => {
         let {context} = await api.loginWithToken();
 
         await api.resources(context)

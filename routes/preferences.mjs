@@ -1,10 +1,10 @@
 import {
-    getPreferenceDAO,
     getResourceBuilder
-} from "../application/services/serverServices.mjs";
+} from "../application/services/services.mjs";
 import {getUser} from "../application/services/requestServices.mjs";
 import {isLoggedIn} from "../guards/guardMiddleware.mjs";
 import {URL_PREFERENCES} from "velor-contrib/contrib/urls.mjs";
+import {getPreferenceDAO} from "velor-dbuser/application/services/services.mjs";
 
 
 export function composePreferences(services, defaultPreferences = {}) {

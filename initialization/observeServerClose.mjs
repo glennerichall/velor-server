@@ -2,16 +2,18 @@ import {bindOnAfterMethods} from "velor-utils/utils/proxy.mjs";
 import {
     isDevelopment,
     isTest,
-} from "velor-services/injection/baseServices.mjs";
-import {getLogger} from "velor-services/injection/services.mjs";
-import {getUuid} from "velor-services/injection/ServicesContext.mjs";
-import {getMessageQueue} from "velor-distribution/application/services/distributionServices.mjs";
+} from "velor-services/application/services/baseServices.mjs";
 import {
     getEmitter,
+    getLogger
+} from "velor-services/application/services/services.mjs";
+import {getUuid} from "velor-services/injection/ServicesContext.mjs";
+import {getMessageQueue} from "velor-distribution/application/services/services.mjs";
+import {
     getServer,
     getWsConnectionManager
-} from "../application/services/serverServices.mjs";
-import {EVENT_SERVER_CLOSED} from "../application/services/serverEventKeys.mjs";
+} from "../application/services/services.mjs";
+import {EVENT_SERVER_CLOSED} from "../application/services/eventKeys.mjs";
 
 export function observeServerClose(services) {
 

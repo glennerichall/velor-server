@@ -1,4 +1,4 @@
-import {getServer} from "../application/services/serverServices.mjs";
+import {getServer} from "../application/services/services.mjs";
 import {composeResponse} from "../sockets/upgrade/composeResponse.mjs";
 import {composeWsUpgradeHandler} from "../sockets/upgrade/composeWsUpgradeHandler.mjs";
 

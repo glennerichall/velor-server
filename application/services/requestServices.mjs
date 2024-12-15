@@ -3,13 +3,13 @@ import {
     getEnvValue,
     getProvider,
     isDevelopment
-} from "velor-services/injection/baseServices.mjs";
+} from "velor-services/application/services/baseServices.mjs";
 import {forRequestSession} from "../../distribution/matchingRules.mjs";
-import {getClientProvider} from "velor-distribution/application/services/distributionServices.mjs";
+import {getClientProvider} from "velor-distribution/application/services/services.mjs";
 import {
     BACKEND_URL,
     FULL_HOST_URLS
-} from "./serverEnvKeys.mjs";
+} from "./envKeys.mjs";
 
 export function getRequest(request) {
     return getProvider(request).request();

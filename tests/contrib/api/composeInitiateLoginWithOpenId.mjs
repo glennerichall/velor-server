@@ -5,7 +5,7 @@ import {getServiceBuilder} from "velor-services/injection/ServicesContext.mjs";
 import {
     BACKEND_URL,
     FULL_HOST_URLS
-} from "../../../application/services/serverEnvKeys.mjs";
+} from "../../../application/services/envKeys.mjs";
 
 export function composeInitiateLoginWithOpenId(services, request, rest) {
     const getCsrfToken = composeGetCsrfToken(services, request);

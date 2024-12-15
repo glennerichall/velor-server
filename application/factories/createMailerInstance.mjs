@@ -1,12 +1,12 @@
 import {
     getEnvValue,
     getProvider
-} from "velor-services/injection/baseServices.mjs";
+} from "velor-services/application/services/baseServices.mjs";
 
-import {s_mailerTransport} from "../services/serverServiceKeys.mjs";
+import {s_mailerTransport} from "../services/serviceKeys.mjs";
 import {
     AUTH_EMAIL_USER,
-} from "../services/serverEnvKeys.mjs";
+} from "../services/envKeys.mjs";
 import {Mailer} from "../../mailer/Mailer.mjs";
 
 export function createMailerInstance(services) {

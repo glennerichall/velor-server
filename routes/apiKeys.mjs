@@ -1,7 +1,7 @@
 import sanitizeHtml from "sanitize-html";
-import {getApiKeyDAO} from "../application/services/serverServices.mjs";
 import {getUser} from "../application/services/requestServices.mjs";
 import {ResourceBuilder} from "../core/ResourceBuilder.mjs";
+import {getApiKeyDAO} from "velor-dbuser/application/services/services.mjs";
 
 
 export const getApiKeys = async (req, res) => {

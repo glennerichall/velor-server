@@ -1,6 +1,6 @@
 import cookieParser from 'cookie-parser';
-import {getEnvValueArray} from "velor-services/injection/baseServices.mjs";
-import {COOKIE_SECRETS} from "../application/services/serverEnvKeys.mjs";
+import {getEnvValueArray} from "velor-services/application/services/baseServices.mjs";
+import {COOKIE_SECRETS} from "../application/services/envKeys.mjs";
 
 export function composeCookieParser(services) {
     const secrets = getEnvValueArray(services, COOKIE_SECRETS);

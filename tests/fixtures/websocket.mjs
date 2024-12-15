@@ -7,13 +7,13 @@ import {mergeDefaultServerOptions} from "../../application/services/mergeDefault
 import {
     s_server,
     s_wsConnectionManager
-} from "../../application/services/serverServiceKeys.mjs";
-import {s_logger} from "velor-services/injection/serviceKeys.mjs";
+} from "../../application/services/serviceKeys.mjs";
+import {s_logger} from "velor-services/application/services/serviceKeys.mjs";
 import {noOpLogger} from "velor-utils/utils/noOpLogger.mjs";
 import {
     getWsConnectionManager,
     getWsManagerProvider
-} from "../../application/services/serverServices.mjs";
+} from "../../application/services/services.mjs";
 import {observeWsConnectionUpgrade} from "../../initialization/observeWsConnectionUpgrade.mjs";
 import {createCsrfDirect} from "../contrib/createCsrfDirect.mjs";
 import {createWsIdDirect} from "../contrib/createWsIdDirect.mjs";

@@ -1,9 +1,9 @@
 import {monitorServer} from "./monitorClient.mjs";
 import {fromWsData} from "./fromWsData.mjs";
 import {Emitter} from "velor-utils/utils/Emitter.mjs";
-import {getLogger} from "velor-services/injection/services.mjs";
+import {getLogger} from "velor-services/application/services/services.mjs";
 import {NotImplementedError} from "velor-utils/utils/errors/NotImplementedError.mjs";
-import {getMessageBuilder} from "velor-distribution/application/services/distributionServices.mjs";
+import {getMessageBuilder} from "velor-distribution/application/services/services.mjs";
 import {WsConnection} from "./WsConnection.mjs";
 import {WebSocketServer} from "ws";
 

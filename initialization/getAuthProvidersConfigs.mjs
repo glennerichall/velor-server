@@ -6,12 +6,12 @@ import {
     getEnvValue,
     isProduction,
     isStaging
-} from "velor-services/injection/baseServices.mjs";
+} from "velor-services/application/services/baseServices.mjs";
 import {
     AUTH_OPENID_CLIENT_ID,
     AUTH_OPENID_CLIENT_SECRET,
     AUTH_TOKEN_SECRET
-} from "../application/services/serverEnvKeys.mjs";
+} from "../application/services/envKeys.mjs";
 
 export function getAuthProvidersConfigs(services) {
 

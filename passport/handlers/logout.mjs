@@ -1,6 +1,6 @@
-import {getEmitter} from "../../application/services/serverServices.mjs";
-import {EVENT_USER_LOGOUT} from "../../application/services/serverEventKeys.mjs";
+import {EVENT_USER_LOGOUT} from "../../application/services/eventKeys.mjs";
 import {getUser} from "../../application/services/requestServices.mjs";
+import {getEmitter} from "velor-services/application/services/services.mjs";
 
 export async function logout(req, res) {
     return new Promise((resolve, reject) => {

@@ -12,8 +12,8 @@ import {getResourceApi} from "velor-api/api/api/ResourceApi.mjs";
 import {
     s_fetch,
     s_urlProvider
-} from "velor-api/api/application/services/apiServiceKeys.mjs";
-import {getProvider} from "velor-services/injection/baseServices.mjs";
+} from "velor-api/api/application/services/serviceKeys.mjs";
+import {getProvider} from "velor-services/application/services/baseServices.mjs";
 import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 
 export const api =

@@ -1,4 +1,4 @@
-import {getWsManagerProvider} from "../../application/services/serverServices.mjs";
+import {getWsManagerProvider} from "../../application/services/services.mjs";
 
 export function composeGetWsManager(services) {
     return (req, res, next) => {

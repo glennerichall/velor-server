@@ -1,4 +1,4 @@
-import {getLogger} from "velor-services/injection/services.mjs";
+import {getLogger} from "velor-services/application/services/services.mjs";
 
 export function composeGetAuthStrategy(strategies) {
 

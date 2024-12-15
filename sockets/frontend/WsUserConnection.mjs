@@ -1,5 +1,5 @@
 import {WsConnection} from "../core/WsConnection.mjs";
-import {getLogger} from "velor-services/injection/services.mjs";
+import {getLogger} from "velor-services/application/services/services.mjs";
 
 export class WsUserConnection extends WsConnection {
     #sessionId;

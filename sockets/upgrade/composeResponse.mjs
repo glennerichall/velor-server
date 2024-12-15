@@ -1,4 +1,4 @@
-import {getLogger} from "velor-services/injection/services.mjs";
+import {getLogger} from "velor-services/application/services/services.mjs";
 import status from 'statuses';
 
 export function composeResponse(services) {

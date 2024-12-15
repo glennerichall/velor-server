@@ -3,10 +3,10 @@ import {
     getEnvValueArray,
     isProduction,
     isStaging
-} from "velor-services/injection/baseServices.mjs";
+} from "velor-services/application/services/baseServices.mjs";
 import {
     SESSION_SECRETS,
-} from "../application/services/serverEnvKeys.mjs";
+} from "../application/services/envKeys.mjs";
 
 
 export function composeSessionParser(services) {

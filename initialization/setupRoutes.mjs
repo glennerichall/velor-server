@@ -9,7 +9,7 @@ import {patchPassport} from "../passport/middlewares/patchPassport.mjs";
 import passport from "passport";
 import flash from "connect-flash";
 import {composeGetWsId} from "../sockets/upgrade/composeGetWsId.mjs";
-import {getRouterBuilder} from "../application/services/serverServices.mjs";
+import {getRouterBuilder} from "../application/services/services.mjs";
 import {composeApiKeys} from "../routes/apiKeys.mjs";
 import {composePreferences} from "../routes/preferences.mjs";
 

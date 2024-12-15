@@ -7,43 +7,33 @@ import {
     SESSION_SECRETS,
     USER_ENCRYPT_IV,
     USER_ENCRYPT_KEY
-} from "../../application/services/serverEnvKeys.mjs";
-import {DATABASE_SCHEMA} from "velor-database/application/services/databaseEnvKeys.mjs";
+} from "../../application/services/envKeys.mjs";
 import {createAppServicesInstance} from "velor-services/injection/ServicesContext.mjs";
-import {s_poolManager} from "velor-database/application/services/databaseServiceKeys.mjs";
-import {s_logger} from "velor-services/injection/serviceKeys.mjs";
 import {noOpLogger} from "velor-utils/utils/noOpLogger.mjs";
 import crypto from "crypto";
-import {s_mailerTransport} from "../../application/services/serverServiceKeys.mjs";
+import {s_mailerTransport} from "../../application/services/serviceKeys.mjs";
 import {mailerTransport} from "./mailerTransport.mjs";
-import {s_clientProvider} from "velor-distribution/application/services/distributionServiceKeys.mjs";
+import {s_clientProvider} from "velor-distribution/application/services/serviceKeys.mjs";
 import {ClientTrackerPubSub} from "velor-distribution/distribution/ClientTrackerPubSub.mjs";
-import {LOG_LEVEL} from "velor-distribution/application/services/distributionEnvKeys.mjs";
+import {LOG_LEVEL} from "velor-distribution/application/services/envKeys.mjs";
+import {s_logger} from "velor-services/application/services/serviceKeys.mjs";
 
 export const services =
-    async ({configs, databaseConnectionPool}, use, testInfo) => {
-
-        const {
-            schema,
-        } = configs;
-
-        const {
-            pool
-        } = databaseConnectionPool;
+    async ({databaseServicesOptions}, use) => {
 
         let options = mergeDefaultServerOptions(
             {
                 factories: {
-                    [s_poolManager]: () => pool,
+                    ...databaseServicesOptions.factories,
                     [s_logger]: () => noOpLogger,
                     [s_mailerTransport]: () => mailerTransport,
                     [s_clientProvider]: ClientTrackerPubSub,
                 },
                 env: {
+                    ...databaseServicesOptions.env,
                     [CSRF_SECRETS]: 'double-submit-csrf-secret1;double-submit-csrf-secret2',
                     [AUTH_TOKEN_SECRET]: 'a-secret-token',
                     [AUTH_EMAIL_USER]: 'zupfe@velor.ca',
-                    [DATABASE_SCHEMA]: schema,
                     [SESSION_SECRETS]: 'session-secret-1;session-secret-2;session-secret-3',
                     [COOKIE_SECRETS]: 'cookie-secret-1;cookie-secret-2;cookie-secret-3',
                     [USER_ENCRYPT_KEY]: crypto.randomBytes(32).toString('hex'),

@@ -1,7 +1,7 @@
-import {getEmitter} from "../../application/services/serverServices.mjs";
-import {EVENT_USER_LOGIN} from "../../application/services/serverEventKeys.mjs";
+import {EVENT_USER_LOGIN} from "../../application/services/eventKeys.mjs";
 import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 import {URL_LOGIN_SUCCESS} from "velor-contrib/contrib/urls.mjs";
+import {getEmitter} from "velor-services/application/services/services.mjs";
 
 
 export async function login(req, res) {

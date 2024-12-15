@@ -1,8 +1,8 @@
 import {
     isProduction,
     isStaging
-} from "velor-services/injection/baseServices.mjs";
-import {getRouterBuilder} from "../../application/services/serverServices.mjs";
+} from "velor-services/application/services/baseServices.mjs";
+import {getRouterBuilder} from "../../application/services/services.mjs";
 import {URL_WS_ID} from "velor-contrib/contrib/urls.mjs";
 
 export function composeGetWsId(services, options = {}) {

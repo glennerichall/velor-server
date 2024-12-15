@@ -2,7 +2,7 @@
 // import {timeoutAsync} from "velor/utils/sync.mjs";
 //
 // import {getDatabase} from "../../src/backend/application/services/backendServices.mjs";
-// import {getEnvironment} from "velor/utils/injection/baseServices.mjs";
+// import {getEnvironment} from "velor/utils/application/services/baseServices.mjs";
 // import {setupTestContext} from "../fixtures/setupTestContext.mjs";
 //
 // const {test, expect} = setupTestContext();

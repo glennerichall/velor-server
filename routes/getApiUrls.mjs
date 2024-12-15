@@ -2,12 +2,12 @@ import {
     getFullHostUrls,
     getUrls
 } from "../application/services/requestServices.mjs";
-import {getEnvValue} from "velor-services/injection/baseServices.mjs";
+import {getEnvValue} from "velor-services/application/services/baseServices.mjs";
 import {stripUrls} from "../contrib/stripUrls.mjs";
 import {
     DEPLOY_DATE,
     VERSION
-} from "../application/services/serverEnvKeys.mjs";
+} from "../application/services/envKeys.mjs";
 
 export const getApiUrls = version => async (req, res) => {
     let hostOff = req.query.host === 'off';

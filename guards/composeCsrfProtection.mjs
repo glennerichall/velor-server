@@ -3,13 +3,13 @@ import {
     getEnvValueArray,
     isProduction,
     isStaging
-} from "velor-services/injection/baseServices.mjs";
-import {CSRF_SECRETS} from "../application/services/serverEnvKeys.mjs";
+} from "velor-services/application/services/baseServices.mjs";
+import {CSRF_SECRETS} from "../application/services/envKeys.mjs";
 import {getSessionId} from "../application/services/requestServices.mjs";
 import {URL_CSRF} from "velor-contrib/contrib/urls.mjs";
 import {chainHandlers} from "../core/chainHandlers.mjs";
 import {E_BAD_CSRF_TOKEN} from "velor-contrib/contrib/errors.mjs";
-import {getRouterBuilder} from "../application/services/serverServices.mjs";
+import {getRouterBuilder} from "../application/services/services.mjs";
 
 export function composeCsrfProtection(services, options = {}) {
     const {

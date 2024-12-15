@@ -1,4 +1,4 @@
-import {getExpressApp} from "../application/services/serverServices.mjs";
+import {getExpressApp} from "../application/services/services.mjs";
 import {getAppEndpoints} from "../core/getAppEndpoints.mjs";
 import {getServiceBuilder} from "velor-services/injection/ServicesContext.mjs";
 

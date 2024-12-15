@@ -1,5 +1,5 @@
 import {getClientsBySession} from "../application/services/requestServices.mjs";
-import {getMessageFactory} from "../application/services/serverServices.mjs";
+import {getMessageFactory} from "../application/services/services.mjs";
 
 
 export async function emitLoggedIn(req) {

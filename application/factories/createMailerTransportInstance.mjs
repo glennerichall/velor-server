@@ -1,10 +1,10 @@
-import {getEnvValue} from "velor-services/injection/baseServices.mjs";
+import {getEnvValue} from "velor-services/application/services/baseServices.mjs";
 import {
     AUTH_EMAIL_HOST,
     AUTH_EMAIL_PASSWORD,
     AUTH_EMAIL_PORT,
     AUTH_EMAIL_USER
-} from "../services/serverEnvKeys.mjs";
+} from "../services/envKeys.mjs";
 import nodemailer from "nodemailer";
 
 export function createMailerTransportInstance(services) {

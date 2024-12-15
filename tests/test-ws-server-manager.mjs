@@ -2,7 +2,7 @@ import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import sinon from "sinon";
 import {WsManagerPolicy} from "../sockets/core/WsManagerPolicy.mjs";
 import {Emitter} from "velor-utils/utils/Emitter.mjs";
-import {getLogger} from "velor-services/injection/services.mjs";
+import {getLogger} from "velor-services/application/services/services.mjs";
 
 const {
     expect,

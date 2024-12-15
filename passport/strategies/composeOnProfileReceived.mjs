@@ -1,11 +1,13 @@
+import {EVENT_USER_LOGIN} from "../../application/services/eventKeys.mjs";
+import {
+    getEmitter,
+    getLogger
+} from "velor-services/application/services/services.mjs";
 import {
     getAuthDAO,
-    getEmitter,
-    getUserDAO,
-} from "../../application/services/serverServices.mjs";
-import {EVENT_USER_LOGIN} from "../../application/services/serverEventKeys.mjs";
-import {conformProfile} from "../../models/conform/conformProfile.mjs";
-import {getLogger} from "velor-services/injection/services.mjs";
+    getUserDAO
+} from "velor-dbuser/application/services/services.mjs";
+import {conformProfile} from "velor-dbuser/models/conform/conformProfile.mjs";
 
 export const composeOnProfileReceived = (provider) => {
     return async (req, tok1, tok2, profile, done) => {
