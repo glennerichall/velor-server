@@ -9,14 +9,14 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@playwright/test": "^1.48.1",
+    "@playwright/test": "^1.49.1",
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.0",
     "chai-exclude": "^3.0.0",
     "cheerio": "^1.0.0",
     "connect-flash": "^0.1.1",
     "dotenv": "^16.4.5",
-    "playwright": "^1.48.1",
+    "playwright": "^1.49.1",
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",
     "supertest": "^7.0.0"

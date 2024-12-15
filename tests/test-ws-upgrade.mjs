@@ -16,7 +16,7 @@ describe('observeWsConnectionUpgrade', () => {
     let manager, onUpgrade,
         wsSocket, req, head,
         wsServer, verifyClient,
-        wsClient, services, clock;
+        wsClient, services;
 
     beforeEach(async ({websocket}) => {
         ({
@@ -25,13 +25,9 @@ describe('observeWsConnectionUpgrade', () => {
             wsServer, verifyClient,
             wsClient, services
         } = websocket);
-        clock =  sinon.useFakeTimers({
-            shouldClearNativeTimers: true, // Automatically clear native timers
-        });
     })
 
     afterEach(async () => {
-        clock.restore();
     })
 
     it('should return 503 if closed', async () => {
@@ -96,23 +92,36 @@ describe('observeWsConnectionUpgrade', () => {
 
     describe('rate limiting', () => {
         it('should rate limit 3 connection attempts', async () => {
+
+            let clock =  sinon.useFakeTimers({
+                shouldClearNativeTimers: true, // Automatically clear native timers
+            });
+
             verifyClient.returns(false);
             await onUpgrade(req, wsSocket, head);
-            clock.tick(1000);
+            await clock.tickAsync(1000);
 
             await onUpgrade(req, wsSocket, head);
-            clock.tick(1000);
+            await clock.tickAsync(1000);
 
             await onUpgrade(req, wsSocket, head);
-            clock.tick(17_999);
+            await clock.tickAsync(17_999);
 
             // deny too many requests
             wsSocket.write.resetHistory();
             await onUpgrade(req, wsSocket, head);
             expect(wsSocket.write).calledWith('HTTP/1.1 429 Too Many Requests\r\n\r\n');
+
+            clock.restore();
         })
 
         it('should rate limit per ip, path', async () => {
+
+
+            let clock =  sinon.useFakeTimers({
+                shouldClearNativeTimers: true, // Automatically clear native timers
+            });
+
 
             let req2 = {
                 ...req,
@@ -123,35 +132,45 @@ describe('observeWsConnectionUpgrade', () => {
             };
             verifyClient.returns(false);
             await onUpgrade(req, wsSocket, head);
-            clock.tick(1000);
+            await clock.tickAsync(1000);
 
             await onUpgrade(req, wsSocket, head);
-            clock.tick(1000);
+            await clock.tickAsync(1000);
 
             // other client tries
             await onUpgrade(req2, wsSocket, head);
-            clock.tick(17_999);
+            await clock.tickAsync(17_999);
 
             wsSocket.write.resetHistory();
             await onUpgrade(req, wsSocket, head);
             expect(wsSocket.write).calledWith('HTTP/1.1 401 Unauthorized\r\n\r\n');
+
+            clock.restore();
         })
 
         it('should rate limit attempts per 20 seconds', async () => {
+
+            let clock =  sinon.useFakeTimers({
+                shouldClearNativeTimers: true, // Automatically clear native timers
+            });
+
+
             verifyClient.returns(false);
             await onUpgrade(req, wsSocket, head);
-            clock.tick(1000);
+            await clock.tickAsync(1000);
 
             await onUpgrade(req, wsSocket, head);
-            clock.tick(1000);
+            await clock.tickAsync(1000);
 
             await onUpgrade(req, wsSocket, head);
-            clock.tick(18_000);
+            await clock.tickAsync(18_000);
 
             wsSocket.write.resetHistory();
             await onUpgrade(req, wsSocket, head);
 
             expect(wsSocket.write).calledWith('HTTP/1.1 401 Unauthorized\r\n\r\n');
+
+            clock.restore();
         })
     })
 

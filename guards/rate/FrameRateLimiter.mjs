@@ -1,5 +1,3 @@
-import {Timer} from "velor-utils/utils/Timer.mjs";
-
 export class FrameRateLimiterError extends Error {
     constructor(info) {
         super();

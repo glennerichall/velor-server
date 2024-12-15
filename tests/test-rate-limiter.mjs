@@ -13,17 +13,12 @@ const {
 
 describe('FrameRateLimiter', () => {
     let frameRateLimiter;
-    let clock;
 
     beforeEach(() => {
         frameRateLimiter = new FrameRateLimiter();
-        clock = sinon.useFakeTimers({
-            shouldClearNativeTimers: true, // Automatically clear native timers
-        }); // Mock the Date and timers
     });
 
     afterEach(() => {
-        clock.restore();
         sinon.restore();
     });
 
@@ -43,12 +38,19 @@ describe('FrameRateLimiter', () => {
     });
 
     it('should consume points and calculate intrinsic rate correctly', async () => {
+        let clock = sinon.useFakeTimers({
+            now: new Date(),
+            shouldClearNativeTimers: true, // Automatically clear native timers
+        }); // Mock the Date and timers
+
         frameRateLimiter.setMaxRate('key1', 10);
         await frameRateLimiter.consume('key1', 1);
-        clock.tick(100);
+        await clock.tickAsync(100);
         await frameRateLimiter.consume('key1', 1);
         const intrinsicRate = frameRateLimiter.getIntrinsicRate('key1');
         expect(intrinsicRate).to.be.greaterThan(0);
+
+        clock.restore();
     });
 
     it('should throw an error when consuming frames too quickly', async () => {
@@ -60,27 +62,48 @@ describe('FrameRateLimiter', () => {
     });
 
     it('should delete old streams during cleanUp', async () => {
+        let clock = sinon.useFakeTimers({
+            now: new Date(),
+            shouldClearNativeTimers: true, // Automatically clear native timers
+        }); // Mock the Date and timers
+
         frameRateLimiter.setMaxRate('key1', 10);
-        clock.tick(1000 * 60 * 11); // Move forward 11 minutes
+        await clock.tickAsync(1000 * 60 * 11); // Move forward 11 minutes
         frameRateLimiter.cleanUp();
         expect(frameRateLimiter.getIntrinsicRate('key1')).to.equal(0);
+
+        clock.restore();
     });
 
     it('should not delete active streams during cleanUp', async () => {
+        let clock = sinon.useFakeTimers({
+            now: new Date(),
+            shouldClearNativeTimers: true, // Automatically clear native timers
+        }); // Mock the Date and timers
+
+
         frameRateLimiter.setMaxRate('key1', 10);
         await frameRateLimiter.consume('key1', 1);
-        clock.tick(200);
+        await clock.tickAsync(200);
         await frameRateLimiter.consume('key1', 1);
 
-        clock.tick(1000 * 60 * 9); // Move forward 9 minutes
+        await clock.tickAsync(1000 * 60 * 9); // Move forward 9 minutes
         frameRateLimiter.cleanUp();
         expect(frameRateLimiter.getIntrinsicRate('key1')).to.be.greaterThan(0);
+
+        clock.restore();
     });
 
     it('should calculate intrinsic rate only after multiple frames', async () => {
+        let clock = sinon.useFakeTimers({
+            now: new Date(),
+            shouldClearNativeTimers: true, // Automatically clear native timers
+        }); // Mock the Date and timers
+
+
         frameRateLimiter.setMaxRate('key1', 10);
         await frameRateLimiter.consume('key1', 1);
-        clock.tick(200);
+        await clock.tickAsync(200);
         await frameRateLimiter.consume('key1', 1);
         const intrinsicRate = frameRateLimiter.getIntrinsicRate('key1');
         expect(intrinsicRate).to.be.greaterThan(0);
@@ -93,14 +116,24 @@ describe('FrameRateLimiter', () => {
     });
 
     it('should handle multiple keys independently', async () => {
+        let clock = sinon.useFakeTimers({
+            now: new Date(),
+            shouldClearNativeTimers: true, // Automatically clear native timers
+        }); // Mock the Date and timers
+
+
         frameRateLimiter.setMaxRate('key1', 10);
         frameRateLimiter.setMaxRate('key2', 20);
         await frameRateLimiter.consume('key1', 1);
         await frameRateLimiter.consume('key2', 1);
-        clock.tick(100);
+
+        await clock.tickAsync(100);
+
         await frameRateLimiter.consume('key2', 1);
         expect(frameRateLimiter.getIntrinsicRate('key1')).to.be.eq(0);
         expect(frameRateLimiter.getIntrinsicRate('key2')).to.be.greaterThan(0);
+
+        clock.restore();
     });
 
     it('should stop the cleanUp timer on destruction', async () => {
