@@ -1,8 +1,8 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
-import {getFullHostUrls} from "../application/services/requestServices.mjs";
 import {addSeconds} from "date-fns";
 import {uuidPattern} from "./contrib/constants.mjs";
 import {URL_API_KEYS} from "velor-contrib/contrib/urls.mjs";
+import {getFullHostUrls} from "../application/services/constants.js";
 
 const {test, expect} = setupTestContext();
 
@@ -10,7 +10,7 @@ test.describe('rest-api', function () {
 
     test.describe('api-keys', () => {
 
-        test.skip('should create api key', async ({api, services, request}) => {
+        test('should create api key', async ({api, services, request}) => {
 
             const {context} = await api.loginWithToken();
 

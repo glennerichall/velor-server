@@ -1,5 +1,6 @@
 import {getProvider} from "velor-services/application/services/baseServices.mjs";
 import {
+    s_eventHandler,
     s_expressApp,
     s_mailer,
     s_messageFactory,
@@ -50,4 +51,8 @@ export function getRouterBuilder(services) {
 
 export function getResourceBuilder(services, configs) {
     return getProvider(services)[s_resourceBuilder](configs);
+}
+
+export function getEventHandler(services) {
+    return getProvider(services)[s_eventHandler]();
 }

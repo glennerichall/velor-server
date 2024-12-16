@@ -1,27 +1,12 @@
-import {
-    getConstants,
-    getEnvValue,
-    getProvider,
-    isDevelopment
-} from "velor-services/application/services/baseServices.mjs";
-import {forRequestSession} from "../../distribution/matchingRules.mjs";
+import {getProvider} from "velor-services/application/services/baseServices.mjs";
 import {getClientProvider} from "velor-distribution/application/services/services.mjs";
 import {
-    BACKEND_URL,
-    FULL_HOST_URLS
-} from "./envKeys.mjs";
+    getChannelForSession,
+    getChannelForUserId
+} from "../../distribution/channels.mjs";
 
 export function getRequest(request) {
     return getProvider(request).request();
-}
-
-export function getUrls(req) {
-    const {endpoints} = getConstants(req);
-    return endpoints;
-}
-
-export function getRequestInfo(req) {
-    return getRequest(req).requestDetails;
 }
 
 export function getSessionId(req) {
@@ -36,45 +21,22 @@ export function getSession(req) {
     return getRequest(req).session;
 }
 
-export function getFullHostUrl(req) {
-    const fullHostUrls = getEnvValue(req, FULL_HOST_URLS);
-    const backendUrl = getEnvValue(req, BACKEND_URL);
-
-    if (req.query?.host === 'off' || !fullHostUrls && req.query?.host !== 'on') {
-        return '';
-
-    } else if (typeof fullHostUrls === 'string') {
-        return fullHostUrls;
-
-    } else if (typeof fullHostUrls === 'function') {
-        return fullHostUrls();
-
-    } else if (!backendUrl || isDevelopment(req)) {
-        const port = !!req.port ? `:${req.port}` : '';
-        const host = req.get('host');
-        return `${req.protocol}://${host}${port}`;
-    }
-
-    return backendUrl;
-}
-
-export function getFullHostUrls(req) {
-    const urls = getUrls(req);
-    const hostUrl = getFullHostUrl(req);
-    let fullHostUrls = {}
-    for (let key in urls) {
-        fullHostUrls[key] = hostUrl + urls[key];
-    }
-    return fullHostUrls;
-}
-
 export function getUser(req) {
     return getRequest(req).user;
 }
 
-export function getClientsBySession(req, context) {
-    if (!context) context = getRequestInfo(req);
-    return getClientProvider(req).getClients(forRequestSession(context));
+export function getClientsBySession(req) {
+    let sessionId = getSession(req);
+    return getClientProvider(req).getClients(
+        getChannelForSession(sessionId)
+    );
+}
+
+export function getClientByUser(req) {
+    let user = getUser(req);
+    return getClientProvider(req).getClients(
+        getChannelForUserId(user.id)
+    );
 }
 
 export function getClientsForUser(req, ...userIds) {

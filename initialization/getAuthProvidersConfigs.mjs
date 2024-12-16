@@ -24,18 +24,16 @@ export function getAuthProvidersConfigs(services) {
         }
     }
 
-    {
-        let clientId = getEnvValue(services, AUTH_OPENID_CLIENT_ID);
-        let clientSecret = getEnvValue(services, AUTH_OPENID_CLIENT_SECRET);
+    let clientId = getEnvValue(services, AUTH_OPENID_CLIENT_ID);
+    let clientSecret = getEnvValue(services, AUTH_OPENID_CLIENT_SECRET);
 
-        if (clientId && clientSecret) {
-            providers[AUTH_OPENID] = {
-                clientId,
-                clientSecret,
-            };
-        } else if (clientId || clientSecret) {
-            throw new Error("clientId and clientSecret must be provided to enable openid provider");
-        }
+    if (clientId && clientSecret) {
+        providers[AUTH_OPENID] = {
+            clientId,
+            clientSecret,
+        };
+    } else if (clientId || clientSecret) {
+        throw new Error("clientId and clientSecret must be provided to enable openid provider");
     }
 
     return providers;

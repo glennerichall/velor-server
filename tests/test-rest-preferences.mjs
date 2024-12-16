@@ -7,6 +7,7 @@ import {
     getPreferenceDAO,
     getUserDAO
 } from "velor-dbuser/application/services/services.mjs";
+import {doNotThrowOnStatusRule} from "velor-api/api/ops/rules.mjs";
 
 const {
     expect,
@@ -16,6 +17,9 @@ const {
     beforeEach,
     it,
 } = setupTestContext();
+
+
+// testing preferences also tests ResourceBuilder
 
 describe('Preferences', () => {
 
@@ -67,5 +71,67 @@ describe('Preferences', () => {
         expect(preference).to.have.property('value', 'preference-value');
 
         expect(Object.keys(preference)).to.have.length(2);
+    })
+
+    it('should not get unknown preference', async ({api, services}) => {
+        let {context} = await api.loginWithToken();
+
+        let response = await api.resources(context)
+            .for(URL_PREFERENCES)
+            .withRule(doNotThrowOnStatusRule(404))
+            .getOne('preference-name').send();
+
+        expect(response.status).to.eq(404);
+    })
+
+    it('should not delete unknown preference', async ({api, services}) => {
+        let {context} = await api.loginWithToken();
+
+        let response = await api.resources(context)
+            .for(URL_PREFERENCES)
+            .withRule(doNotThrowOnStatusRule(404))
+            .delete('preference-name').send();
+
+        expect(response.status).to.eq(404);
+    })
+
+    it('should not delete preference if not logged in', async ({api, services}) => {
+        let {context} = await api.getCsrfToken();
+        let response = await api.resources(context)
+            .for(URL_PREFERENCES)
+            .withRule(doNotThrowOnStatusRule(401))
+            .delete('preference-name').send();
+        expect(response.status).to.eq(401);
+    })
+
+    it('should not save preference if not logged in', async ({api, services}) => {
+        let {context} = await api.getCsrfToken();
+        let response = await api.resources(context)
+            .for(URL_PREFERENCES)
+            .withRule(doNotThrowOnStatusRule(401))
+            .create().send({
+                name: 'preference-name',
+                value: 'preference-value'
+            });
+        expect(response.status).to.eq(401);
+    })
+
+    it('should not get preference if not logged in', async ({api, services}) => {
+        let {context} = await api.getCsrfToken();
+        let response = await api.resources(context)
+            .for(URL_PREFERENCES)
+            .withRule(doNotThrowOnStatusRule(401))
+            .getOne('preference-name').send();
+        expect(response.status).to.eq(401);
+    })
+
+    it('should get default preferences', async({api, services}) => {
+        let {context} = await api.loginWithToken();
+
+        let response = await api.resources(context)
+            .for(URL_PREFERENCES)
+            .withRule(doNotThrowOnStatusRule(404))
+            .delete('preference-name').send();
+
     })
 })

@@ -1,5 +1,3 @@
-import {getFullHostUrls} from "../application/services/requestServices.mjs";
-
 import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {
@@ -13,6 +11,7 @@ import {
 } from "../application/services/eventKeys.mjs";
 import {getUserDAO} from "velor-dbuser/application/services/services.mjs";
 import {getEventQueue} from "velor-services/application/services/services.mjs";
+import {getFullHostUrls} from "../application/services/constants.js";
 
 const {
     expect,

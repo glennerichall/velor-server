@@ -2,6 +2,7 @@ import {observeServerClose} from "./observeServerClose.mjs";
 import {enableProxy} from "./enableProxy.mjs";
 import {createConstants} from "./createConstants.mjs";
 import {observeWsConnectionUpgrade} from "./observeWsConnectionUpgrade.mjs";
+import {setupEvents} from "./setupEvents.mjs";
 
 export async function setupServer(services) {
 
@@ -18,4 +19,6 @@ export async function setupServer(services) {
     // listen to websocket connections on the server.
     observeWsConnectionUpgrade(services);
 
+    // initialize event handling
+    await setupEvents(services);
 }

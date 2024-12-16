@@ -1,8 +1,28 @@
 import {getLogger} from "velor-services/application/services/services.mjs";
+import {
+    EVENT_APIKEY_CREATED,
+    EVENT_APIKEY_DELETED,
+    EVENT_FETCH_DONE,
+    EVENT_FILE_PROCESSED,
+    EVENT_FILE_REMOVED,
+    EVENT_FILE_UPLOADED,
+    EVENT_FILES_PURGED,
+    EVENT_LOGGED_IN,
+    EVENT_LOGGED_OUT,
+    EVENT_NEW_FILE_CREATED,
+    EVENT_NOTIFICATION_ERROR,
+    EVENT_NOTIFICATION_INFO,
+    EVENT_NOTIFICATION_SUCCESS,
+    EVENT_NOTIFICATION_WARNING,
+    EVENT_PENDING_FILE_ABORTED,
+    EVENT_PREFERENCES_CHANGED,
+    EVENT_SYSTEM_STATUS_CHANGED,
+} from "velor-contrib/contrib/events.mjs";
+import {eventNames} from "velor-contrib/contrib/eventNames.mjs";
 
 export class MessageFactory {
     #builder;
-    
+
     constructor(builder) {
         this.#builder = builder;
     }
@@ -26,10 +46,6 @@ export class MessageFactory {
 
     apiKeyDeleted(apiKey) {
         return this.emitEvent(EVENT_APIKEY_DELETED, {apiKey});
-    }
-
-    requireLogin(url) {
-        return this.invokeRpc(RPC_REQUIRE_LOGIN, {url});
     }
 
     loggedOut() {
@@ -100,14 +116,6 @@ export class MessageFactory {
 
     preferencesChanged(name) {
         return this.emitEvent(EVENT_PREFERENCES_CHANGED, {name});
-    }
-
-    sendWsId(wsId) {
-        return this.emitEvent(EVENT_WS_CONNECTION, {wsId});
-    }
-
-    readStream(type, data, streamId) {
-        return this.invokeRpc(RPC_REQUEST_STREAM, {type, data, streamId});
     }
 
     requestDone(id, url, status) {

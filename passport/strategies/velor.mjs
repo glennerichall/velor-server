@@ -2,10 +2,10 @@ import {Strategy} from 'openid-client/passport';
 import * as client from 'openid-client';
 import Url from "node:url";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
-import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 import {URL_PASSPORT_CALLBACK} from "velor-contrib/contrib/urls.mjs";
 import {StrategyBase} from "./StrategyBase.mjs";
 import {AUTH_OPENID} from "velor-contrib/contrib/authProviders.mjs";
+import {getFullHostUrls} from "../../application/services/constants.js";
 
 function composeOnProfileReceivedAdapter(onProfileReceived) {
     return (req, tokens, done) => {

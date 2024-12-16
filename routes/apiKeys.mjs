@@ -1,115 +1,42 @@
-import sanitizeHtml from "sanitize-html";
+import {
+    getApiKeyDAO,
+    getUserDAO
+} from "velor-dbuser/application/services/services.mjs";
+import {getResourceBuilder} from "../application/services/services.mjs";
+import {URL_API_KEYS} from "velor-contrib/contrib/urls.mjs";
+import {
+    guard,
+    isLoggedIn
+} from "../guards/guardMiddleware.mjs";
 import {getUser} from "../application/services/requestServices.mjs";
-import {ResourceBuilder} from "../core/ResourceBuilder.mjs";
-import {getApiKeyDAO} from "velor-dbuser/application/services/services.mjs";
+import {ITEM_PARAM} from "velor-api/api/api/ResourceApi.mjs";
 
-
-export const getApiKeys = async (req, res) => {
-    let query = {
-        user: getUser(req).id
-    };
-    let apiKeys = await getApiKeyDAO(req).loadMany(query);
-
-    res.send(
-        apiKeys.map(apiKey => {
-            return {
-                name: apiKey.name,
-                creation: apiKey.creation,
-                id: apiKey.public_id
-            }
-        })
-    );
-};
-
-export const getApiKey = async (req, res) => {
-    const publicId = req.params.key;
-    const apiKey = await getApiKeyDAO(req).loadOne({publicId});
-    if (apiKey) {
-        res.send(
-            {
-                name: apiKey.name,
-                creation: apiKey.creation,
-                id: apiKey.public_id
-            });
-    } else {
-        res.sendStatus(404);
-    }
-};
-
-export const createApiKey = async (req, res) => {
-    let name = req.body.name ?? null;
-    if (name !== null) {
-        name = sanitizeHtml(name);
+async function isApiKeyOwner(req) {
+    if (req.method === "POST") {
+        // we can create a new api key
+        return true;
     }
 
-    const apiKey = await getApiKeyDAO(req).insertOne({name});
-
-    res.status(201).send({
-        name: apiKey.name,
-        value: apiKey.api_key,
-        creation: apiKey.creation,
-        id: apiKey.public_id
-    });
-};
-
-export const deleteApiKey = async (req, res) => {
-    const publicId = req.params.key;
-    const apiKey = await getApiKeyDAO(req).deleteOne({publicId});
-    if (apiKey) {
-        res.send({
-            creation: apiKey.creation,
-            name: apiKey.name,
-            id: apiKey.public_id
-        });
-    } else {
-        res.sendStatus(404);
-    }
-};
+    let user = getUser(req);
+    let apiKey = await getUserDAO(req).getApiKey(user, req.param[ITEM_PARAM]);
+    return !!apiKey;
+}
 
 export function composeApiKeys(services) {
-    // const configs = [
-    //     {
-    //         path: '/',
-    //         name: URL_API_KEYS,
-    //         get: getApiKeys,
-    //         post: createApiKey,
-    //         delete: deleteApiKey,
-    //
-    //         router: {
-    //             path: '/:key',
-    //             get: getApiKey
-    //         }
-    //     }
-    // ];
-    //
-    // return getRouterBuilder(services).configure(configs).done();
+    const configuration = {
+        name: URL_API_KEYS,
+        daoProvider: getApiKeyDAO,
+        itemResponseMapper: (apiKey) => {
 
-    const getDao = req => getApiKeyDAO(req);
-
-    const createGetData = req => {
-        let name = req.body.name ?? null;
-        if (name !== null) {
-            name = sanitizeHtml(name);
-        }
-        return {name};
+        },
+        guard: [
+            isLoggedIn,
+            guard(isApiKeyOwner)
+        ]
     };
 
-    const createMapResponse = apiKey => {
-        return {
-            name: apiKey.name,
-            value: apiKey.api_key,
-            creation: apiKey.creation,
-            id: apiKey.public_id
-        };
-    }
-
-    return new ResourceBuilder(getApiKeyDAO)
-        .create(createGetData, {mapper: createMapResponse})
-        .delete()
-        .getMany()
-        .getOne()
-        .done()
+    return getResourceBuilder(services, configuration)
+        .all().done();
 
 }
 
-// export const verifyApiKeyOwner = verify(isApiKeyOwner, 403);

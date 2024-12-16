@@ -1,12 +1,8 @@
-import {
-    getExpressApp,
-} from "../../application/services/services.mjs";
+import {getExpressApp,} from "../../application/services/services.mjs";
 import {setupServer} from "../../initialization/setupServer.mjs";
 
 import {setupRoutes} from "../../initialization/setupRoutes.mjs";
 import {getRoleDAO} from "velor-dbuser/application/services/services.mjs";
-import {getEventQueue} from "velor-services/application/services/services.mjs";
-import {setupEvents} from "../../initialization/setupEvents.mjs";
 
 export const rest =
     async ({services}, use, testInfo) => {
@@ -34,8 +30,7 @@ export const rest =
 
             .use((req, res, next) => {
                 _afterAll(req, res, next);
-            })
-        ;
+            });
 
         // setup must be called after routes have been mounted
         await setupServer(services);
@@ -43,8 +38,6 @@ export const rest =
         // create normal role
         await getRoleDAO(services).saveOne({name: 'normal'});
 
-        // initialize event queue
-        await setupEvents(services);
 
         await use({
             beforeAll,

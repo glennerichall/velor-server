@@ -11,6 +11,7 @@ export function composePreferences(services, defaultPreferences = {}) {
     const configuration = {
         name: URL_PREFERENCES,
         daoProvider: getPreferenceDAO,
+
         getItemData: (body, req) => {
             let user = getUser(req);
             return {
@@ -18,6 +19,7 @@ export function composePreferences(services, defaultPreferences = {}) {
                 ...body
             };
         },
+
         itemQueryMapper: (req, name) => {
             let user = getUser(req);
             return {
@@ -25,6 +27,7 @@ export function composePreferences(services, defaultPreferences = {}) {
                 name
             };
         },
+
         itemResponseMapper: (preference, query) => {
             let defaultValues = defaultPreferences[query.name] ?? {};
             if (typeof preference.value === 'object') {
@@ -42,6 +45,7 @@ export function composePreferences(services, defaultPreferences = {}) {
                 };
             }
         },
+
         guard: isLoggedIn
     };
 

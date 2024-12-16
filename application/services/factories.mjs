@@ -1,7 +1,9 @@
 import {
+    s_eventHandler,
     s_expressApp,
     s_mailer,
     s_mailerTransport,
+    s_messageFactory,
     s_rateLimiter,
     s_resourceBuilder,
     s_routerBuilder,
@@ -19,12 +21,20 @@ import {s_clientProvider} from "velor-distribution/application/services/serviceK
 import {ClientProviderPubSub} from "velor-distribution/distribution/ClientProviderPubSub.mjs";
 import {createWsUserConnectionManagerInstance} from "../factories/createWsUserConnectionManagerInstance.mjs";
 import {WsManagerProvider} from "../../sockets/WsManagerProvider.mjs";
-import {SCOPE_PROTOTYPE} from "velor-services/injection/ServicesContext.mjs";
+import {
+    SCOPE_PROTOTYPE,
+    SCOPE_REQUEST
+} from "velor-services/injection/ServicesContext.mjs";
 import {RateLimiterMemory} from "rate-limiter-flexible";
 import {createRouterBuilder} from "../../core/RouterBuilder.mjs";
 import {ResourceBuilder} from "../../core/ResourceBuilder.mjs";
+import {createMessageFactoryInstance} from "../factories/createMessageFactoryInstance.mjs";
+import {EventHandler} from "../../events/EventHandler.mjs";
 
 export const factories = {
+
+    // Singletons
+
     [s_server]: createServerInstance,
     [s_expressApp]: () => express(),
     [s_userSerializer]: createUserSerializerInstance,
@@ -33,6 +43,10 @@ export const factories = {
     [s_clientProvider]: ClientProviderPubSub,
     [s_wsConnectionManager]: createWsUserConnectionManagerInstance,
     [s_wsManagerProvider]: WsManagerProvider,
+    [s_messageFactory]: createMessageFactoryInstance,
+
+    // Prototypes
+
     [s_rateLimiter]: {
         scope: SCOPE_PROTOTYPE,
         factory: (_, configs) => new RateLimiterMemory(configs),
@@ -44,5 +58,12 @@ export const factories = {
     [s_resourceBuilder]: {
         scope: SCOPE_PROTOTYPE,
         clazz: ResourceBuilder
-    }
+    },
+
+    // Request scope
+
+    [s_eventHandler]: {
+        scope: SCOPE_REQUEST,
+        clazz: EventHandler
+    },
 }

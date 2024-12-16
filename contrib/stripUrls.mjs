@@ -1,7 +1,7 @@
 import {
     URL_ADMIN,
     URL_SYSTEM
-} from "../routes/urls.mjs";
+} from "velor-contrib/contrib/urls.mjs";
 
 export async function stripUrls(req, urls) {
     let needsAuth = [URL_ADMIN, URL_SYSTEM];

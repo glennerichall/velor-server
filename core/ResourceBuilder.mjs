@@ -9,6 +9,9 @@ import {proceed} from "../guards/guardMiddleware.mjs";
 export const composeGetOne = (getDao, getQuery, mapper) => async (req, res) => {
     let query = getQuery(req, req.params.item);
     let item = await getDao(req).loadOne(query);
+    if (!item) {
+        return res.sendStatus(404);
+    }
     res.send(mapper(item, query, req));
 };
 
@@ -21,7 +24,10 @@ export const composeGetMany = (getDao, getQuery, mapper) => async (req, res) => 
 
 export const composeDeleteOne = (getDao, getQuery, mapper) => async (req, res) => {
     let query = getQuery(req, req.params.item);
-    let item = await getDao(req).deleteOne(query);
+    let item = await getDao(req).delete(query);
+    if (!item) {
+        return res.sendStatus(404);
+    }
     res.send(mapper(item, query, req));
 };
 

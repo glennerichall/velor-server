@@ -11,61 +11,66 @@ import {mergeDefaultApiOptions} from "velor-api/api/application/services/mergeDe
 import {getResourceApi} from "velor-api/api/api/ResourceApi.mjs";
 import {
     s_fetch,
+    s_requestStore,
     s_urlProvider
 } from "velor-api/api/application/services/serviceKeys.mjs";
 import {getProvider} from "velor-services/application/services/baseServices.mjs";
-import {getFullHostUrls} from "../../application/services/requestServices.mjs";
+import {MapArray} from "velor-utils/utils/map.mjs";
+import {getFullHostUrls} from "../../application/services/constants.js";
 
 export const api =
     async ({services, request, rest}, use) => {
 
+        let urlProvider = {
+            getUrl(name) {
+                return this.urls[name];
+            },
+            urls: getFullHostUrls(services)
+        };
+
+        let fetch = {
+            async send(url, options) {
+                let context = getProvider(this)['context']();
+
+                let method = options.method.toLowerCase();
+                let req = request(context)[method](url);
+
+                for (let [key, value] of options.headers.entries()) {
+                    req.set(key, value);
+                }
+
+                if (options.body) {
+                    req = req.send(options.body);
+                }
+
+                let response = await req;
+
+                return {
+                    ok: response.ok,
+                    data: response.body,
+                    body: response.body,
+                    text: () => response.text,
+                    status: response.status,
+                    headers: {
+                        get(key) {
+                            return response.headers[key];
+                        }
+                    }
+                }
+            },
+        }
+
         let apiServices = createAppServicesInstance(
             mergeDefaultApiOptions({
                 factories: {
-                    [s_urlProvider]: () => {
-                        return {
-                            getUrl(name) {
-                                return this.urls[name];
-                            },
-                            urls: getFullHostUrls(services)
-                        };
-                    },
-                    [s_fetch]: {
-                        scope: SCOPE_REQUEST,
-                        factory: (services) => {
-                            return {
-                                async send(url, options) {
-                                    let context = getProvider(services)['context']();
-                                    let method = options.method.toLowerCase();
-                                    let req = request(context)[method](url);
-                                    for (let [key, value] of options.headers.entries()) {
-                                        req.set(key, value);
-                                    }
-                                    if (options.body) {
-                                        req = req.send(options.body);
-                                    }
-                                    let response = await req;
-                                    return {
-                                        ok: response.ok,
-                                        data: response.body,
-                                        body: response.body,
-                                        text: () => response.text,
-                                        status: response.status,
-                                        headers: {
-                                            get(key) {
-                                                return response.headers[key];
-                                            }
-                                        }
-                                    }
-                                },
-                            }
-                        }
-                    }
+                    [s_urlProvider]: () => urlProvider,
+                    [s_fetch]: ()=> fetch,
+                    [s_requestStore]: ()=> new MapArray()
                 }
             })
         );
 
-        function createResourceApiWithContext(context) {
+        function createResourceApiWithContext(context = {}) {
             let clone = getServiceBuilder(apiServices).clone()
                 .addScope(SCOPE_REQUEST, {context})
                 .done();

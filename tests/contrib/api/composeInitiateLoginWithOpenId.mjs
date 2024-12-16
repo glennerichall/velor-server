@@ -1,4 +1,3 @@
-import {getFullHostUrls} from "../../../application/services/requestServices.mjs";
 import {getOpenIdLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {composeGetCsrfToken} from "./composeGetCsrfToken.mjs";
 import {getServiceBuilder} from "velor-services/injection/ServicesContext.mjs";
@@ -6,6 +5,7 @@ import {
     BACKEND_URL,
     FULL_HOST_URLS
 } from "../../../application/services/envKeys.mjs";
+import {getFullHostUrls} from "../../../application/services/constants.js";
 
 export function composeInitiateLoginWithOpenId(services, request, rest) {
     const getCsrfToken = composeGetCsrfToken(services, request);

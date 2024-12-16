@@ -17,6 +17,12 @@ import {s_clientProvider} from "velor-distribution/application/services/serviceK
 import {ClientTrackerPubSub} from "velor-distribution/distribution/ClientTrackerPubSub.mjs";
 import {LOG_LEVEL} from "velor-distribution/application/services/envKeys.mjs";
 import {s_logger} from "velor-services/application/services/serviceKeys.mjs";
+import {getEventQueue} from "velor-services/application/services/services.mjs";
+import {
+    EVENT_SERVER_CLOSED,
+    EVENT_USER_LOGIN,
+    EVENT_USER_LOGOUT
+} from "../../application/services/eventKeys.mjs";
 
 export const services =
     async ({databaseServicesOptions}, use) => {
@@ -43,6 +49,11 @@ export const services =
                 }
             });
         let services = createAppServicesInstance(options);
+
+        getEventQueue(services)
+            .listen(EVENT_USER_LOGIN)
+            .listen(EVENT_USER_LOGOUT)
+            .listen(EVENT_SERVER_CLOSED);
 
         await use(services);
     }

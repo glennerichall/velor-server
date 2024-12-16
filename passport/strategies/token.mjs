@@ -2,10 +2,10 @@ import Custom from 'passport-custom';
 import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
 import {chainHandlers} from "../../core/chainHandlers.mjs";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
-import {getFullHostUrls} from "../../application/services/requestServices.mjs";
 import {URL_LOGIN_SUCCESS} from "velor-contrib/contrib/urls.mjs";
 import os from "os";
 import {StrategyBase} from "./StrategyBase.mjs";
+import {getFullHostUrls} from "../../application/services/constants.js";
 
 function composeOnProfileReceivedTokenAdapter(onProfileReceived, token) {
     return (req, done) => {
