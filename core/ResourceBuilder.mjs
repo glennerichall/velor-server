@@ -7,7 +7,7 @@ import {
 import {proceed} from "../guards/guardMiddleware.mjs";
 
 export const composeGetOne = (getDao, getQuery, mapper) => async (req, res) => {
-    let query = getQuery(req, req.params.item);
+    let query = getQuery(req, getItemId(req));
     let item = await getDao(req).loadOne(query);
     if (!item) {
         return res.sendStatus(404);
@@ -23,7 +23,7 @@ export const composeGetMany = (getDao, getQuery, mapper) => async (req, res) => 
 };
 
 export const composeDeleteOne = (getDao, getQuery, mapper) => async (req, res) => {
-    let query = getQuery(req, req.params.item);
+    let query = getQuery(req, getItemId(req));
     let item = await getDao(req).delete(query);
     if (!item) {
         return res.sendStatus(404);
@@ -38,6 +38,9 @@ export const composeCreate = (getDao, getData, mapper) => async (req, res) => {
     res.status(201).send(mapper(item, data, req));
 };
 
+export function getItemId(req) {
+    return req.params[ITEM_PARAM];
+}
 
 export class ResourceBuilder {
 
@@ -70,7 +73,6 @@ export class ResourceBuilder {
 
     initialize() {
         this.#routerBuilder = getRouterBuilder(this);
-        this.use(this.#guard);
     }
 
     use(middleware) {
@@ -84,7 +86,7 @@ export class ResourceBuilder {
 
         this.#routerBuilder
             .name(getItemUrlName(this.#name))
-            .get(`/:${ITEM_PARAM}`, getOne);
+            .get(`/:${ITEM_PARAM}`, this.#guard, getOne);
 
         return this;
     }
@@ -95,7 +97,7 @@ export class ResourceBuilder {
 
         this.#routerBuilder
             .name(this.#name)
-            .get('/', getMany);
+            .get('/', this.#guard, getMany);
 
         return this;
     }
@@ -106,7 +108,7 @@ export class ResourceBuilder {
 
         this.#routerBuilder
             .name(getItemUrlName(this.#name))
-            .delete('/:item', deleteOne);
+            .delete(`/:${ITEM_PARAM}`, this.#guard, deleteOne);
 
         return this;
     }
@@ -117,7 +119,7 @@ export class ResourceBuilder {
 
         this.#routerBuilder
             .name(this.#name)
-            .post('/', create);
+            .post('/', this.#guard, create);
 
         return this;
     }

@@ -2,7 +2,7 @@ import {getEnvValue} from "velor-services/application/services/baseServices.mjs"
 import {AUTH_TOKEN_SECRET} from "../../../application/services/envKeys.mjs";
 import {getTokenLoginUrl} from "velor-contrib/contrib/getUrl.mjs";
 import {composeGetCsrfToken} from "./composeGetCsrfToken.mjs";
-import {getFullHostUrls} from "../../../application/services/constants.js";
+import {getFullHostUrls} from "../../../application/services/constants.mjs";
 
 export function composeLoginWithToken(services, request) {
     const getCsrfToken = composeGetCsrfToken(services, request);

@@ -5,7 +5,7 @@ import {
     BACKEND_URL,
     FULL_HOST_URLS
 } from "../../../application/services/envKeys.mjs";
-import {getFullHostUrls} from "../../../application/services/constants.js";
+import {getFullHostUrls} from "../../../application/services/constants.mjs";
 
 export function composeInitiateLoginWithOpenId(services, request, rest) {
     const getCsrfToken = composeGetCsrfToken(services, request);

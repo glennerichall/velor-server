@@ -5,7 +5,7 @@ import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
 import {URL_PASSPORT_CALLBACK} from "velor-contrib/contrib/urls.mjs";
 import {StrategyBase} from "./StrategyBase.mjs";
 import {AUTH_OPENID} from "velor-contrib/contrib/authProviders.mjs";
-import {getFullHostUrls} from "../../application/services/constants.js";
+import {getFullHostUrls} from "../../application/services/constants.mjs";
 
 function composeOnProfileReceivedAdapter(onProfileReceived) {
     return (req, tokens, done) => {

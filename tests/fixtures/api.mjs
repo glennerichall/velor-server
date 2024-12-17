@@ -4,6 +4,7 @@ import {composeLogout} from "../contrib/api/composeLogout.mjs";
 import {composeInitiateLoginWithOpenId} from "../contrib/api/composeInitiateLoginWithOpenId.mjs";
 import {
     createAppServicesInstance,
+    getServiceBinder,
     getServiceBuilder,
     SCOPE_REQUEST
 } from "velor-services/injection/ServicesContext.mjs";
@@ -16,7 +17,9 @@ import {
 } from "velor-api/api/application/services/serviceKeys.mjs";
 import {getProvider} from "velor-services/application/services/baseServices.mjs";
 import {MapArray} from "velor-utils/utils/map.mjs";
-import {getFullHostUrls} from "../../application/services/constants.js";
+import {getFullHostUrls} from "../../application/services/constants.mjs";
+import {ApiKeyApi} from "velor-contrib/api/ApiKeyApi.mjs";
+import {doNotThrowOnStatusRule} from "velor-api/api/ops/rules.mjs";
 
 export const api =
     async ({services, request, rest}, use) => {
@@ -64,17 +67,27 @@ export const api =
             mergeDefaultApiOptions({
                 factories: {
                     [s_urlProvider]: () => urlProvider,
-                    [s_fetch]: ()=> fetch,
-                    [s_requestStore]: ()=> new MapArray()
+                    [s_fetch]: () => fetch,
+                    [s_requestStore]: () => new MapArray()
                 }
             })
         );
 
-        function createResourceApiWithContext(context = {}) {
-            let clone = getServiceBuilder(apiServices).clone()
+        function getServicesForCurrentContext(context) {
+            return getServiceBuilder(apiServices).clone()
                 .addScope(SCOPE_REQUEST, {context})
                 .done();
+        }
+
+        function createResourceApiWithContext(context = {}) {
+            let clone = getServicesForCurrentContext(context);
             return getResourceApi(clone);
+        }
+
+        function createApiKeys(context) {
+            let services = getServicesForCurrentContext(context);
+            return getServiceBinder(services).createInstance(ApiKeyApi,
+                doNotThrowOnStatusRule(400, 404, 403, 401));
         }
 
         await use({
@@ -84,5 +97,7 @@ export const api =
             logout: composeLogout(services, request),
             services: apiServices,
             resources: createResourceApiWithContext,
+            apiKeys: createApiKeys
+
         });
     }

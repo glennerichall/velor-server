@@ -1,5 +1,5 @@
 import {URL_CSRF} from "velor-contrib/contrib/urls.mjs";
-import {getFullHostUrls} from "../../../application/services/constants.js";
+import {getFullHostUrls} from "../../../application/services/constants.mjs";
 
 export function composeGetCsrfToken(services, request) {
 

@@ -11,7 +11,7 @@ import {
 } from "../application/services/eventKeys.mjs";
 import {getUserDAO} from "velor-dbuser/application/services/services.mjs";
 import {getEventQueue} from "velor-services/application/services/services.mjs";
-import {getFullHostUrls} from "../application/services/constants.js";
+import {getFullHostUrls} from "../application/services/constants.mjs";
 
 const {
     expect,

@@ -12,7 +12,7 @@ import {composeGetWsId} from "../sockets/upgrade/composeGetWsId.mjs";
 import {getRouterBuilder} from "../application/services/services.mjs";
 import {composeApiKeys} from "../routes/apiKeys.mjs";
 import {composePreferences} from "../routes/preferences.mjs";
-import {getPreferencesConfigs} from "../application/services/constants.js";
+import {getPreferencesConfigs} from "../application/services/constants.mjs";
 
 export function setupRoutes(services) {
     let providers = getAuthProvidersConfigs(services);

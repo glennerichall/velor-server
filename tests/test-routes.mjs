@@ -1,6 +1,6 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 
-import {getFullHostUrls} from "../application/services/constants.js";
+import {getFullHostUrls} from "../application/services/constants.mjs";
 
 const {
     expect,

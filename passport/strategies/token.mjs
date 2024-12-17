@@ -5,7 +5,7 @@ import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
 import {URL_LOGIN_SUCCESS} from "velor-contrib/contrib/urls.mjs";
 import os from "os";
 import {StrategyBase} from "./StrategyBase.mjs";
-import {getFullHostUrls} from "../../application/services/constants.js";
+import {getFullHostUrls} from "../../application/services/constants.mjs";
 
 function composeOnProfileReceivedTokenAdapter(onProfileReceived, token) {
     return (req, done) => {

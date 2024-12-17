@@ -7,7 +7,7 @@ import {
 import {
     getFullHostUrls,
     getUrls
-} from "../application/services/constants.js";
+} from "../application/services/constants.mjs";
 
 export const getApiUrls = version => async (req, res) => {
     let hostOff = req.query.host === 'off';

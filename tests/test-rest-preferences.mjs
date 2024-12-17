@@ -8,6 +8,7 @@ import {
     getUserDAO
 } from "velor-dbuser/application/services/services.mjs";
 import {doNotThrowOnStatusRule} from "velor-api/api/ops/rules.mjs";
+import {userTest} from "./contrib/userTest.mjs";
 
 const {
     expect,
@@ -41,10 +42,7 @@ describe('Preferences', () => {
 
         expect(Object.keys(preference)).to.have.length(2);
 
-        let user = await getUserDAO(services).loadOne({
-            profileId: 'Token',
-            provider: AUTH_TOKEN
-        });
+        let user = await getUserDAO(services).loadOne(userTest);
         let loaded = await getPreferenceDAO(services).loadOne({user, name: 'preference-name'});
 
         expect(loaded).to.have.property('name', 'preference-name');
