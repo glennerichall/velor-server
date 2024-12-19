@@ -1,12 +1,13 @@
-import {getUserDAO} from "velor-dbuser/application/services/services.mjs";
+import {
+    getApiKeyDAO,
+    getUserDAO
+} from "velor-dbuser/application/services/services.mjs";
 import {getResourceBuilder} from "../application/services/services.mjs";
 import {URL_API_KEYS} from "velor-contrib/contrib/urls.mjs";
-import {
-    guard,
-    isLoggedIn
-} from "../guards/guardMiddleware.mjs";
+import {isLoggedIn} from "../guards/guardMiddleware.mjs";
 import {getUser} from "../application/services/requestServices.mjs";
-import {getItemId} from "../core/ResourceBuilder.mjs";
+
+import {getItemId} from "../core/resources/getItemId.mjs";
 
 async function isApiKeyOwner(req) {
     if (req.method === "POST") {
@@ -33,16 +34,20 @@ function getUserApiKeyDao(req) {
             let user = getUser(req);
             return getUserDAO(req).getApiKeys(user);
         },
-        delete(query) {
-            let user = getUser(req);
-            return getUserDAO(req).loseApiKey(user, query);
+        async delete(query) {
+            // guard the resource to user owned api keys
+            let apiKey = await this.loadOne(query);
+            if (!apiKey) {
+                return null;
+            }
+            return getApiKeyDAO(req).delete(apiKey);
         }
     };
 }
 
 export function composeApiKeys(services) {
     const configuration = {
-        name: URL_API_KEYS,
+        urlName: URL_API_KEYS,
         daoProvider: getUserApiKeyDao,
         itemResponseMapper: (apiKey) => {
             return {

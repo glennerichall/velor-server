@@ -103,24 +103,16 @@ test.describe('rest-api', function () {
             expect(response.status).to.eq(404);
         })
 
-        // test('should not get api key if not logged in', async () => {
-        //     let response = await context
-        //         .newSession()
-        //         .login()
-        //         .request()
-        //         .post(urls[URL_API_KEYS])
-        //         .send({name: 'tototo key'})
-        //         .expect(201);
-        //
-        //     const apiKey = response.body.value;
-        //     const apiKeyId = response.body.id;
-        //     await context
-        //         .newSession()
-        //         .request()
-        //         .get(urls[URL_API_KEY].replace(':key', apiKeyId))
-        //         .expect(401);
-        // })
-        //
+        test('should not get api key if not logged in', async ({api,request}) => {
+            const {context} = await api.getCsrfToken();
+            let apiKey = await getDataFromResponse(
+                api.apiKeys(context).create({name: 'tototo key'})
+            );
+            const apiKeyId = apiKey.id;
+            let response = await api.apiKeys(context).getOne(apiKeyId);
+            expect(response.status).to.eq(401);
+        })
+
         // test('should notify user when api key created', async () => {
         //     const session = await context
         //         .newSession()

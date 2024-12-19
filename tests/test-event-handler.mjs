@@ -72,8 +72,8 @@ describe('EventHandler', () => {
 
             await eventHandler.handleEvent(ELEMENT_CREATED, PREFERENCE, preference);
 
-            expect(mockFactory.preferencesChanged.calledWith('dark_mode')).to.be.true;
-            expect(mockClient.send.calledWith('preferenceMessage')).to.be.true;
+            expect(mockFactory.preferencesChanged).calledWith(preference);
+            expect(mockClient.send).calledWith('preferenceMessage');
         });
 
         it('should send an API key created message on ELEMENT_CREATED event for API_KEY', async () => {

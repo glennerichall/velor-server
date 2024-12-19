@@ -5,10 +5,13 @@ import {getInstanceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {s_clientProvider} from "velor-distribution/application/services/serviceKeys.mjs";
 import sinon from "sinon";
 import {
+    EVENT_APIKEY_CREATED,
+    EVENT_APIKEY_DELETED,
     EVENT_LOGGED_IN,
     EVENT_LOGGED_OUT,
     EVENT_PREFERENCES_CHANGED
 } from "velor-contrib/contrib/events.mjs";
+import {getDataFromResponse} from "velor-api/api/ops/getDataFromResponse.mjs";
 
 const {
     expect,
@@ -103,5 +106,47 @@ describe('Websocket events', () => {
         expect(message.json()).to.deep.eq({
             name: 'preference-name',
         });
+    })
+
+    it('should receive api key created', async ({api, services}) => {
+        let {context} = await api.loginWithToken();
+
+        mockClient.send.reset();
+
+        await api.apiKeys(context).create({name: 'tototo key'});
+
+        let [[message]] = mockClient.send.args;
+
+        expect(message).to.be.an('object');
+        expect(message.isEvent).to.be.true;
+        expect(message.isJson).to.be.true;
+        expect(message.event).to.eq(EVENT_APIKEY_CREATED);
+        expect(message.json()).to.deep.eq({
+            name: 'tototo key',
+        });
+
+    })
+
+    it('should receive api key deleted', async ({api, services}) => {
+        let {context} = await api.loginWithToken();
+
+        let apiKey = await getDataFromResponse(
+            api.apiKeys(context).create({name: 'tototo key'})
+        );
+
+        mockClient.send.reset();
+
+        await api.apiKeys(context).delete(apiKey.id);
+
+        let [[message]] = mockClient.send.args;
+
+        expect(message).to.be.an('object');
+        expect(message.isEvent).to.be.true;
+        expect(message.isJson).to.be.true;
+        expect(message.event).to.eq(EVENT_APIKEY_DELETED);
+        expect(message.json()).to.deep.eq({
+            name: 'tototo key',
+        });
+
     })
 })

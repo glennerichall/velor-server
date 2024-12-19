@@ -28,84 +28,82 @@ export class EventHandler {
         let factory = getMessageFactory(this);
         let {
             userId,
-            name
         } = preference;
-        let message = factory.preferencesChanged(name);
-        let client = this.#getClientForUserId(userId);
+        let message = factory.preferencesChanged(preference);
         return {
-            client,
+            userId,
             message
         };
     }
 
     #handleApiKey(eventName, apiKey) {
         let factory = getMessageFactory(this);
-        let client, message;
+        let message;
         let {
             userId,
         } = apiKey;
         if (eventName === ELEMENT_CREATED) {
-            message = factory.apiKeyCreated({});
+            message = factory.apiKeyCreated(apiKey);
         } else {
-            message = factory.apiKeyDeleted({});
+            message = factory.apiKeyDeleted(apiKey);
         }
-        client = this.#getClientForUserId(userId);
         return {
-            client,
+            userId,
             message
         };
     }
 
     #handleDatabaseEvent(eventName, dao, element) {
-        let client, message;
+        let userId, message;
         if (dao === PREFERENCE) {
-            ({client, message} = this.#handlePreference(element));
+            ({userId, message} = this.#handlePreference(element));
         } else if (dao === API_KEY) {
-            ({client, message} = this.#handleApiKey(eventName, element));
+            ({userId, message} = this.#handleApiKey(eventName, element));
         }
         return {
-            client,
+            userId,
             message
         };
     }
 
     #handleLoginEvent(eventName, user) {
         let factory = getMessageFactory(this);
-        let message, client;
+        let message, userId;
+
+        userId = user.id;
 
         switch (eventName) {
             case EVENT_USER_LOGIN:
                 message = factory.loggedIn();
-                client = this.#getClientForUserId(user.id);
                 break;
 
             case EVENT_USER_LOGOUT:
                 message = factory.loggedOut();
-                client = this.#getClientForUserId(user.id);
                 break;
         }
         return {
-            client,
+            userId,
             message
         };
     }
 
     async handleEvent(eventName, ...args) {
-        let client;
+        let userId;
         let message;
 
         switch (eventName) {
             case ELEMENT_CREATED:
             case ELEMENT_DELETED:
-                ({client, message} = this.#handleDatabaseEvent(eventName, ...args));
+                ({userId, message} = this.#handleDatabaseEvent(eventName, ...args));
                 break;
 
             case EVENT_USER_LOGIN:
             case EVENT_USER_LOGOUT:
-                ({client, message} = this.#handleLoginEvent(eventName, ...args));
+                ({userId, message} = this.#handleLoginEvent(eventName, ...args));
                 break;
         }
 
+        let client = this.#getClientForUserId(userId);
         if (message && client) {
             try {
                 await client.send(message);

@@ -5,47 +5,15 @@ import {
     ITEM_PARAM
 } from "velor-api/api/api/ResourceApi.mjs";
 import {proceed} from "../guards/guardMiddleware.mjs";
-
-export const composeGetOne = (getDao, getQuery, mapper) => async (req, res) => {
-    let query = getQuery(req, getItemId(req));
-    let item = await getDao(req).loadOne(query);
-    if (!item) {
-        return res.sendStatus(404);
-    }
-    res.send(mapper(item, query, req));
-};
-
-export const composeGetMany = (getDao, getQuery, mapper) => async (req, res) => {
-    let query = getQuery(req);
-    let items = await getDao(req).loadMany(query);
-    items = items.map(item => mapper(item, query, req));
-    res.send(items);
-};
-
-export const composeDeleteOne = (getDao, getQuery, mapper) => async (req, res) => {
-    let query = getQuery(req, getItemId(req));
-    let item = await getDao(req).delete(query);
-    if (!item) {
-        return res.sendStatus(404);
-    }
-    res.send(mapper(item, query, req));
-};
-
-
-export const composeCreate = (getDao, getData, mapper) => async (req, res) => {
-    const data = getData(req.body, req);
-    let item = await getDao(req).saveOne(data);
-    res.status(201).send(mapper(item, data, req));
-};
-
-export function getItemId(req) {
-    return req.params[ITEM_PARAM];
-}
+import {composeGetOne} from "./resources/composeGetOne.mjs";
+import {composeGetMany} from "./resources/composeGetMany.mjs";
+import {composeDeleteOne} from "./resources/composeDeleteOne.mjs";
+import {composeCreate} from "./resources/composeCreate.mjs";
 
 export class ResourceBuilder {
 
     #routerBuilder;
-    #name;
+    #urlName;
     #getDao;
     #getItemData;
     #itemQueryMapper;
@@ -56,15 +24,15 @@ export class ResourceBuilder {
 
         const {
             daoProvider,
-            name,
+            urlName,
             getItemData = identOp,
             itemQueryMapper = identOp,
             itemResponseMapper = identOp,
-            guard = proceed
+            guard = proceed,
         } = configuration;
 
         this.#getDao = daoProvider;
-        this.#name = name;
+        this.#urlName = urlName;
         this.#itemQueryMapper = itemQueryMapper;
         this.#itemResponseMapper = itemResponseMapper;
         this.#getItemData = getItemData;
@@ -85,7 +53,7 @@ export class ResourceBuilder {
             this.#itemQueryMapper, this.#itemResponseMapper);
 
         this.#routerBuilder
-            .name(getItemUrlName(this.#name))
+            .name(getItemUrlName(this.#urlName))
             .get(`/:${ITEM_PARAM}`, this.#guard, getOne);
 
         return this;
@@ -96,7 +64,7 @@ export class ResourceBuilder {
             this.#itemQueryMapper, this.#itemResponseMapper);
 
         this.#routerBuilder
-            .name(this.#name)
+            .name(this.#urlName)
             .get('/', this.#guard, getMany);
 
         return this;
@@ -107,7 +75,7 @@ export class ResourceBuilder {
             this.#itemQueryMapper, this.#itemResponseMapper);
 
         this.#routerBuilder
-            .name(getItemUrlName(this.#name))
+            .name(getItemUrlName(this.#urlName))
             .delete(`/:${ITEM_PARAM}`, this.#guard, deleteOne);
 
         return this;
@@ -118,7 +86,7 @@ export class ResourceBuilder {
             this.#getItemData, this.#itemResponseMapper);
 
         this.#routerBuilder
-            .name(this.#name)
+            .name(this.#urlName)
             .post('/', this.#guard, create);
 
         return this;

@@ -1,15 +1,15 @@
 import sinon from "sinon";
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {
-    composeCreate,
-    composeDeleteOne,
-    composeGetMany,
-    composeGetOne,
     ResourceBuilder
 } from "../core/ResourceBuilder.mjs";
 import {getInstanceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {s_routerBuilder} from "../application/services/serviceKeys.mjs";
 import {createRouterBuilder} from "../core/RouterBuilder.mjs";
+import {composeGetOne} from "../core/resources/composeGetOne.mjs";
+import {composeGetMany} from "../core/resources/composeGetMany.mjs";
+import {composeDeleteOne} from "../core/resources/composeDeleteOne.mjs";
+import {composeCreate} from "../core/resources/composeCreate.mjs";
 
 const {
     expect,

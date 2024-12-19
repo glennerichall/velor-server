@@ -41,11 +41,11 @@ export class MessageFactory {
     }
 
     apiKeyCreated(apiKey) {
-        return this.emitEvent(EVENT_APIKEY_CREATED, {apiKey});
+        return this.emitEvent(EVENT_APIKEY_CREATED, {name: apiKey.name});
     }
 
     apiKeyDeleted(apiKey) {
-        return this.emitEvent(EVENT_APIKEY_DELETED, {apiKey});
+        return this.emitEvent(EVENT_APIKEY_DELETED, {name: apiKey.name});
     }
 
     loggedOut() {
@@ -114,8 +114,8 @@ export class MessageFactory {
         return this.emitEvent(EVENT_FILES_PURGED, {files});
     }
 
-    preferencesChanged(name) {
-        return this.emitEvent(EVENT_PREFERENCES_CHANGED, {name});
+    preferencesChanged(preference) {
+        return this.emitEvent(EVENT_PREFERENCES_CHANGED, {name: preference.name});
     }
 
     requestDone(id, url, status) {
