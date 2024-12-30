@@ -6,6 +6,7 @@ import {getFullHostUrls} from "../application/services/constants.mjs";
 import {getDataFromResponse} from "velor-api/api/ops/getDataFromResponse.mjs";
 import {getUserDAO} from "velor-dbuser/application/services/services.mjs";
 import {userTest} from "./contrib/userTest.mjs";
+import {getDatabase} from "velor-database/application/services/services.mjs";
 
 const {test, expect} = setupTestContext();
 

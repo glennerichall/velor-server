@@ -2,10 +2,9 @@ import Custom from 'passport-custom';
 import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
 import {chainHandlers} from "../../core/chainHandlers.mjs";
 import {composeOnProfileReceived} from "./composeOnProfileReceived.mjs";
-import {URL_LOGIN_SUCCESS} from "velor-contrib/contrib/urls.mjs";
 import os from "os";
 import {StrategyBase} from "./StrategyBase.mjs";
-import {getFullHostUrls} from "../../application/services/constants.mjs";
+import {login} from "../handlers/login.mjs";
 
 function composeOnProfileReceivedTokenAdapter(onProfileReceived, token) {
     return (req, done) => {
@@ -37,14 +36,9 @@ function composeInitiator(passport) {
         }
     };
 
-    const replyLoggedIn = (req, res) => {
-        const urls = getFullHostUrls(req)[URL_LOGIN_SUCCESS];
-        res.redirect(urls);
-    };
-
     return chainHandlers(
         initiate,
-        replyLoggedIn,
+        login,
         replyOnError
     );
 }

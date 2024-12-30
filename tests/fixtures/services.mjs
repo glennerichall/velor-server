@@ -8,7 +8,10 @@ import {
     USER_ENCRYPT_IV,
     USER_ENCRYPT_KEY
 } from "../../application/services/envKeys.mjs";
-import {createAppServicesInstance} from "velor-services/injection/ServicesContext.mjs";
+import {
+    createAppServicesInstance,
+    getInstanceBinder
+} from "velor-services/injection/ServicesContext.mjs";
 import {noOpLogger} from "velor-utils/utils/noOpLogger.mjs";
 import crypto from "crypto";
 import {s_mailerTransport} from "../../application/services/serviceKeys.mjs";
@@ -23,9 +26,13 @@ import {
     EVENT_USER_LOGIN,
     EVENT_USER_LOGOUT
 } from "../../application/services/eventKeys.mjs";
+import {getDatabase} from "velor-database/application/services/services.mjs";
+import {s_database} from "velor-database/application/services/serviceKeys.mjs";
+import {getRoleDAO} from "velor-dbuser/application/services/services.mjs";
 
 export const services =
     async ({databaseServicesOptions}, use) => {
+
 
         let options = mergeDefaultServerOptions(
             {
@@ -34,6 +41,7 @@ export const services =
                     [s_logger]: () => noOpLogger,
                     [s_mailerTransport]: () => mailerTransport,
                     [s_clientProvider]: ClientTrackerPubSub,
+                    // [s_database]:
                 },
                 env: {
                     ...databaseServicesOptions.env,
@@ -50,10 +58,20 @@ export const services =
             });
         let services = createAppServicesInstance(options);
 
+        // shadow the real database with a transaction
+        let database = getDatabase(services);
+        database = await database.beginTransact();
+        getInstanceBinder(services).setInstance(s_database, database);
+
         getEventQueue(services)
             .listen(EVENT_USER_LOGIN)
             .listen(EVENT_USER_LOGOUT)
             .listen(EVENT_SERVER_CLOSED);
 
+        // create normal role
+        await getRoleDAO(services).saveOne({name: 'normal'});
+
         await use(services);
+
+        await database.rollback();
     }

@@ -1,7 +1,10 @@
 import sinon from "sinon";
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {EventHandler} from "../events/EventHandler.mjs";
-import {getInstanceBinder} from "velor-services/injection/ServicesContext.mjs";
+import {
+    getInstanceBinder,
+    getServiceBinder
+} from "velor-services/injection/ServicesContext.mjs";
 import {s_clientProvider} from "velor-distribution/application/services/serviceKeys.mjs";
 import {s_messageFactory} from "../application/services/serviceKeys.mjs";
 import {
@@ -17,6 +20,9 @@ import {
     EVENT_USER_LOGOUT
 } from "../application/services/eventKeys.mjs";
 import {setLogger} from "velor-services/application/services/services.mjs";
+import {s_database} from "velor-database/application/services/serviceKeys.mjs";
+import {DATA_USERS} from "velor-dbuser/application/services/dataKeys.mjs";
+import {s_logger} from "velor-services/application/services/serviceKeys.mjs";
 
 const {
     expect,
@@ -33,7 +39,7 @@ describe('EventHandler', () => {
     let mockClient, mockFactory, mockLogger;
 
 
-    beforeEach(() => {
+    beforeEach(({services}) => {
         mockClient = {
             send: sinon.stub().resolves()
         };
@@ -50,14 +56,18 @@ describe('EventHandler', () => {
             error: sinon.stub()
         };
 
-        eventHandler = new EventHandler();
-        getInstanceBinder(eventHandler)
+        eventHandler = getServiceBinder(services).createInstance(EventHandler);
+        getInstanceBinder(services)
             .setInstance(s_clientProvider, {
                 getClient: () => mockClient
             })
-            .setInstance(s_messageFactory, mockFactory);
-
-        setLogger(eventHandler, mockLogger);
+            .setInstance(s_messageFactory, mockFactory)
+            .setInstance(s_database, {
+                [DATA_USERS]: {
+                    getPrimaryAuthByUserId: sinon.stub()
+                }
+            })
+            .setInstance(s_logger, mockLogger);
 
     });
 
@@ -97,7 +107,8 @@ describe('EventHandler', () => {
             expect(mockClient.send.calledWith('apiKeyDeletedMessage')).to.be.true;
         });
 
-        it('should send a logged in message on EVENT_USER_LOGIN', async () => {
+        it('should send a logged in message on EVENT_USER_LOGIN', async ({services}) => {
+
             const user = {id: 'user123'};
             mockFactory.loggedIn.returns('loggedInMessage');
 
@@ -107,7 +118,8 @@ describe('EventHandler', () => {
             expect(mockClient.send.calledWith('loggedInMessage')).to.be.true;
         });
 
-        it('should send a logged out message on EVENT_USER_LOGOUT', async () => {
+        it('should send a logged out message on EVENT_USER_LOGOUT', async ({services}) => {
+
             const user = {id: 'user123'};
             mockFactory.loggedOut.returns('loggedOutMessage');
 
