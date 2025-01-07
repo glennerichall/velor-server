@@ -7,8 +7,8 @@ import {getUserDAO} from "velor-dbuser/application/services/services.mjs";
 import {getLogger} from "velor-services/application/services/services.mjs";
 
 export class LoginHandler extends ClientEventHandler {
-    async handleEvent(eventName, user) {
 
+    async handleEvent(eventName, user) {
         try {
             switch (eventName) {
                 case EVENT_USER_LOGIN:

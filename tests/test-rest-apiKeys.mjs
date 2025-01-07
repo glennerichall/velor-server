@@ -6,11 +6,20 @@ import {getFullHostUrls} from "../application/services/constants.mjs";
 import {getDataFromResponse} from "velor-api/api/ops/getDataFromResponse.mjs";
 import {getUserDAO} from "velor-dbuser/application/services/services.mjs";
 import {userTest} from "./contrib/userTest.mjs";
-import {getDatabase} from "velor-database/application/services/services.mjs";
+import {getInstanceBinder} from "velor-services/injection/ServicesContext.mjs";
+import {s_eventHandler} from "../application/services/serviceKeys.mjs";
+import sinon from "sinon";
 
-const {test, expect} = setupTestContext();
+const {test, expect, beforeEach} = setupTestContext();
 
 test.describe('rest-api', function () {
+
+    beforeEach(async ({services}) => {
+        // mock event handler to ignore login events
+        getInstanceBinder(services).setInstance(s_eventHandler, {
+            handleEvent: sinon.stub()
+        })
+    })
 
     test.describe('api-keys', () => {
 
@@ -104,7 +113,7 @@ test.describe('rest-api', function () {
             expect(response.status).to.eq(404);
         })
 
-        test('should not get api key if not logged in', async ({api,request}) => {
+        test('should not get api key if not logged in', async ({api, request}) => {
             const {context} = await api.getCsrfToken();
             let apiKey = await getDataFromResponse(
                 api.apiKeys(context).create({name: 'tototo key'})

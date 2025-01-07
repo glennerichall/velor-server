@@ -1,6 +1,8 @@
 import {
+    s_clientEventHandler,
     s_eventHandler,
     s_expressApp,
+    s_loginEventHandler,
     s_mailer,
     s_mailerTransport,
     s_messageFactory,
@@ -30,6 +32,8 @@ import {createRouterBuilder} from "../../core/RouterBuilder.mjs";
 import {ResourceBuilder} from "../../core/ResourceBuilder.mjs";
 import {createMessageFactoryInstance} from "../factories/createMessageFactoryInstance.mjs";
 import {EventHandler} from "../../events/EventHandler.mjs";
+import {LoginHandler} from "../../events/LoginHandler.mjs";
+import {ClientEventHandler} from "../../events/ClientEventHandler.mjs";
 
 export const factories = {
 
@@ -44,6 +48,10 @@ export const factories = {
     [s_wsConnectionManager]: createWsUserConnectionManagerInstance,
     [s_wsManagerProvider]: WsManagerProvider,
     [s_messageFactory]: createMessageFactoryInstance,
+
+    [s_eventHandler]: EventHandler,
+    [s_loginEventHandler]: LoginHandler,
+    [s_clientEventHandler]: ClientEventHandler,
 
     // Prototypes
 
@@ -62,8 +70,4 @@ export const factories = {
 
     // Request scope
 
-    [s_eventHandler]: {
-        scope: SCOPE_REQUEST,
-        clazz: EventHandler
-    },
 }

@@ -19,10 +19,10 @@ import {
     EVENT_USER_LOGIN,
     EVENT_USER_LOGOUT
 } from "../application/services/eventKeys.mjs";
-import {setLogger} from "velor-services/application/services/services.mjs";
 import {s_database} from "velor-database/application/services/serviceKeys.mjs";
 import {DATA_USERS} from "velor-dbuser/application/services/dataKeys.mjs";
 import {s_logger} from "velor-services/application/services/serviceKeys.mjs";
+import {mockLogger} from 'velor-utils/test/mockLogger.mjs';
 
 const {
     expect,
@@ -36,7 +36,7 @@ const {
 
 describe('EventHandler', () => {
     let eventHandler;
-    let mockClient, mockFactory, mockLogger;
+    let mockClient, mockFactory;
 
 
     beforeEach(({services}) => {
@@ -50,10 +50,6 @@ describe('EventHandler', () => {
             apiKeyDeleted: sinon.stub(),
             loggedIn: sinon.stub(),
             loggedOut: sinon.stub()
-        };
-
-        mockLogger = {
-            error: sinon.stub()
         };
 
         eventHandler = getServiceBinder(services).createInstance(EventHandler);

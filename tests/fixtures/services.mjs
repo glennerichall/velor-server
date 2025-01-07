@@ -29,6 +29,8 @@ import {
 import {getDatabase} from "velor-database/application/services/services.mjs";
 import {s_database} from "velor-database/application/services/serviceKeys.mjs";
 import {getRoleDAO} from "velor-dbuser/application/services/services.mjs";
+import {createLoggerInstance} from "velor-distribution/application/factories/createLoggerInstance.mjs";
+import {noOp} from "velor-utils/utils/functional.mjs";
 
 export const services =
     async ({databaseServicesOptions}, use) => {
@@ -38,7 +40,7 @@ export const services =
             {
                 factories: {
                     ...databaseServicesOptions.factories,
-                    [s_logger]: () => noOpLogger,
+                    [s_logger]: process.env.LOG_LEVEL !== null ? createLoggerInstance : ()=> noOpLogger,
                     [s_mailerTransport]: () => mailerTransport,
                     [s_clientProvider]: ClientTrackerPubSub,
                     // [s_database]:
@@ -52,7 +54,6 @@ export const services =
                     [COOKIE_SECRETS]: 'cookie-secret-1;cookie-secret-2;cookie-secret-3',
                     [USER_ENCRYPT_KEY]: crypto.randomBytes(32).toString('hex'),
                     [USER_ENCRYPT_IV]: crypto.randomBytes(16).toString('hex'),
-                    [LOG_LEVEL]: "debug",
                     ...process.env
                 }
             });

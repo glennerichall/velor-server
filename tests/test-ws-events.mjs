@@ -1,6 +1,5 @@
 import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {URL_PREFERENCES} from "velor-contrib/contrib/urls.mjs";
-import {getEventHandler} from "../application/services/services.mjs";
 import {getInstanceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {s_clientProvider} from "velor-distribution/application/services/serviceKeys.mjs";
 import sinon from "sinon";
@@ -12,6 +11,7 @@ import {
     EVENT_PREFERENCES_CHANGED
 } from "velor-contrib/contrib/events.mjs";
 import {getDataFromResponse} from "velor-api/api/ops/getDataFromResponse.mjs";
+import {waitForStubCall} from "./contrib/stubs.mjs";
 
 const {
     expect,
@@ -23,23 +23,26 @@ const {
 } = setupTestContext();
 
 describe('Websocket events', () => {
+
     let mockClient;
 
     beforeEach(async ({services}) => {
         mockClient = {
-            send: sinon.stub().resolves()
+            send: sinon.stub()
         };
 
-        let eventHandler = getEventHandler(services);
-
-        getInstanceBinder(eventHandler)
+        getInstanceBinder(services)
             .setInstance(s_clientProvider, {
                 getClient: () => mockClient
             });
+
     })
 
     it('should receive login event', async ({api, services}) => {
+        let promise = waitForStubCall(mockClient.send);
         await api.loginWithToken();
+        await promise;
+
         let [[message]] = mockClient.send.args;
 
         expect(message).to.be.an('object');
@@ -48,10 +51,14 @@ describe('Websocket events', () => {
     })
 
     it('should receive logout event', async ({api, services}) => {
+        let promise = waitForStubCall(mockClient.send);
         let {context} = await api.loginWithToken();
         mockClient.send.reset();
+        await promise;
 
+        promise = waitForStubCall(mockClient.send);
         await api.logout(context);
+        await promise;
 
         let [[message]] = mockClient.send.args;
 
@@ -62,16 +69,19 @@ describe('Websocket events', () => {
     })
 
     it('should receive preference created', async ({api, services}) => {
+        let promise = waitForStubCall(mockClient.send);
         let {context} = await api.loginWithToken();
-
+        await promise;
         mockClient.send.reset();
 
+        promise = waitForStubCall(mockClient.send);
         await api.resources(context).for(URL_PREFERENCES)
             .create().send({
                 name: 'preference-name',
                 value: 'preference-value'
             });
 
+        await promise;
         let [[message]] = mockClient.send.args;
 
         expect(message).to.be.an('object');
@@ -84,8 +94,9 @@ describe('Websocket events', () => {
     })
 
     it('should receive preference deleted', async ({api, services}) => {
+        let promise = waitForStubCall(mockClient.send);
         let {context} = await api.loginWithToken();
-
+        await promise;
         await api.resources(context).for(URL_PREFERENCES)
             .create().send({
                 name: 'preference-name',
@@ -94,8 +105,10 @@ describe('Websocket events', () => {
 
         mockClient.send.reset();
 
+        promise = waitForStubCall(mockClient.send);
         await api.resources(context).for(URL_PREFERENCES)
             .delete('preference-name').send();
+        await promise;
 
         let [[message]] = mockClient.send.args;
 
@@ -109,12 +122,14 @@ describe('Websocket events', () => {
     })
 
     it('should receive api key created', async ({api, services}) => {
+        let promise = waitForStubCall(mockClient.send);
         let {context} = await api.loginWithToken();
-
+        await promise
         mockClient.send.reset();
 
+        promise = waitForStubCall(mockClient.send);
         await api.apiKeys(context).create({name: 'tototo key'});
-
+        await promise
         let [[message]] = mockClient.send.args;
 
         expect(message).to.be.an('object');
@@ -128,16 +143,20 @@ describe('Websocket events', () => {
     })
 
     it('should receive api key deleted', async ({api, services}) => {
+        let promise = waitForStubCall(mockClient.send);
         let {context} = await api.loginWithToken();
+        await promise;
 
+        promise = waitForStubCall(mockClient.send);
         let apiKey = await getDataFromResponse(
             api.apiKeys(context).create({name: 'tototo key'})
         );
-
+        await promise;
         mockClient.send.reset();
 
+        promise = waitForStubCall(mockClient.send);
         await api.apiKeys(context).delete(apiKey.id);
-
+        await promise;
         let [[message]] = mockClient.send.args;
 
         expect(message).to.be.an('object');

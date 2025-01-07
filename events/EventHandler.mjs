@@ -2,6 +2,11 @@ import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {broadcast} from "velor-utils/utils/functional.mjs";
 import {ClientEventHandler} from "./ClientEventHandler.mjs";
 import {LoginHandler} from "./LoginHandler.mjs";
+import {getProvider} from "velor-services/application/services/baseServices.mjs";
+import {
+    s_clientEventHandler,
+    s_loginEventHandler
+} from "../application/services/serviceKeys.mjs";
 
 export class EventHandler {
 
@@ -9,11 +14,8 @@ export class EventHandler {
     #broadcastToHandlers;
 
     initialize() {
-        let clientEventHandler = getServiceBinder(this)
-            .createInstance(ClientEventHandler);
-
-        let loginHandler = getServiceBinder(this)
-            .createInstance(LoginHandler);
+        let clientEventHandler = getProvider(this)[s_clientEventHandler]();
+        let loginHandler = getProvider(this)[s_loginEventHandler]();
 
         this.#handlers = [
             clientEventHandler,

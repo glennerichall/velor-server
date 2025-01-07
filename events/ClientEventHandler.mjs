@@ -101,7 +101,7 @@ export class ClientEventHandler {
                 break;
         }
 
-        let client = this.#getClientForUserId(userId);
+        let client = await this.#getClientForUserId(userId);
         if (message && client) {
             try {
                 await client.send(message);
