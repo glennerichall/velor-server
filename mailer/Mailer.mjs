@@ -1,11 +1,12 @@
 
+const kp_transport = Symbol();
+const kp_sender = Symbol();
+
 export class Mailer {
-    #transport;
-    #sender;
 
     constructor(transport, sender) {
-        this.#transport = transport;
-        this.#sender = sender;
+        this[kp_transport] = transport;
+        this[kp_sender] = sender;
     }
 
     async sendMessage(msg) {
@@ -25,9 +26,9 @@ ${msg.message}`;
     async sendMail(to, subject, text) {
         // send some mail
         try {
-            const response = await this.#transport.sendMail(
+            const response = await this[kp_transport].sendMail(
                 {
-                    from: this.#sender,
+                    from: this[kp_sender],
                     to,
                     subject,
                     text

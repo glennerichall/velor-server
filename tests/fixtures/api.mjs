@@ -31,62 +31,72 @@ export const api =
             urls: getFullHostUrls(services)
         };
 
-        let fetch = {
-            async send(url, options) {
-                let context = getProvider(this)['context']();
+        let createFetchInstance = (services) => {
+            return {
+                async send(url, options) {
+                    // the context should be provided to services and have
+                    // info with csrf token and other cookies
+                    let context = getProvider(services)['context']();
 
-                let method = options.method.toLowerCase();
-                let req = request(context)[method](url);
+                    let method = options.method.toLowerCase();
+                    let req = request(context)[method](url);
 
-                for (let [key, value] of options.headers.entries()) {
-                    req.set(key, value);
-                }
+                    for (let [key, value] of options.headers.entries()) {
+                        req.set(key, value);
+                    }
 
-                if (options.body) {
-                    req = req.send(options.body);
-                }
+                    if (options.body) {
+                        req = req.send(options.body);
+                    }
 
-                let response = await req;
+                    let response = await req;
 
-                return {
-                    ok: response.ok,
-                    data: response.body,
-                    body: response.body,
-                    text: () => response.text,
-                    status: response.status,
-                    headers: {
-                        get(key) {
-                            return response.headers[key];
+                    // mock other fetch response data
+                    return {
+                        ok: response.ok,
+                        data: response.body,
+                        body: response.body,
+                        text: () => response.text,
+                        status: response.status,
+                        headers: {
+                            get(key) {
+                                return response.headers[key];
+                            }
                         }
                     }
-                }
-            },
-        }
+                },
+            }
+        };
 
         let apiServices = createAppServicesInstance(
             mergeDefaultApiOptions({
                 factories: {
                     [s_urlProvider]: () => urlProvider,
-                    [s_fetch]: () => fetch,
+                    [s_fetch]: {
+                        scope: SCOPE_REQUEST,
+                        factory: createFetchInstance
+                    },
                     [s_requestStore]: () => new MapArray()
                 }
             })
         );
 
-        function getServicesForCurrentContext(context) {
-            return getServiceBuilder(apiServices).clone()
-                .addScope(SCOPE_REQUEST, {context})
+        function getApiServicesWithContext(context) {
+            // fetch declared up here will use the context
+            // to call request from test fixtures.
+            return getServiceBuilder(apiServices)
+                .addScope(SCOPE_REQUEST, {instances: {context}})
                 .done();
         }
 
         function createResourceApiWithContext(context = {}) {
-            let clone = getServicesForCurrentContext(context);
+            let clone = getApiServicesWithContext(context);
             return getResourceApi(clone);
         }
 
-        function createApiKeys(context) {
-            let services = getServicesForCurrentContext(context);
-            return getServiceBinder(services).createInstance(ApiKeyApi,
+        function createApiKeys(context = {}) {
+            let apiServices = getApiServicesWithContext(context);
+            return getServiceBinder(apiServices).createInstance(ApiKeyApi,
                 doNotThrowOnStatusRule(400, 404, 403, 401));
         }
 

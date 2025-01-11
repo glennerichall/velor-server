@@ -49,14 +49,24 @@ export function composeApiKeys(services) {
     const configuration = {
         urlName: URL_API_KEYS,
         daoProvider: getUserApiKeyDao,
-        itemResponseMapper: (apiKey) => {
-            return {
-                value: apiKey.value,
-                creation: apiKey.creation,
-                id: apiKey.publicId,
-                lastUsed: apiKey.lastUsed,
-                name: apiKey.name,
-            };
+        itemResponseMapper: {
+            default: (apiKey) => {
+                return {
+                    creation: apiKey.creation,
+                    id: apiKey.publicId,
+                    lastUsed: apiKey.lastUsed,
+                    name: apiKey.name,
+                };
+            },
+            create: (apiKey) => {
+                return {
+                    value: apiKey.value,
+                    creation: apiKey.creation,
+                    id: apiKey.publicId,
+                    lastUsed: apiKey.lastUsed,
+                    name: apiKey.name,
+                };
+            },
         },
         itemQueryMapper: (req, apiKeyId) => {
             return {

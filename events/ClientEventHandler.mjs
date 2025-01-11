@@ -15,14 +15,20 @@ import {
 } from "../application/services/eventKeys.mjs";
 import {getLogger} from "velor-services/application/services/services.mjs";
 
+const km_getClientForUserId = Symbol();
+const km_handlePreference = Symbol();
+const km_handleApiKey = Symbol();
+const km_handleDatabaseEvent = Symbol();
+const km_handleLoginEvent = Symbol();
+
 export class ClientEventHandler {
-    #getClientForUserId(userId) {
+    [km_getClientForUserId](userId) {
         return getClientProvider(this).getClient(
             getChannelForUserId(userId)
         );
     }
 
-    #handlePreference(preference) {
+    [km_handlePreference](preference) {
         let factory = getMessageFactory(this);
         let {
             userId,
@@ -34,7 +40,7 @@ export class ClientEventHandler {
         };
     }
 
-    #handleApiKey(eventName, apiKey) {
+    [km_handleApiKey](eventName, apiKey) {
         let factory = getMessageFactory(this);
         let message;
         let {
@@ -51,12 +57,12 @@ export class ClientEventHandler {
         };
     }
 
-    #handleDatabaseEvent(eventName, dao, element) {
+    [km_handleDatabaseEvent](eventName, dao, element) {
         let userId, message;
         if (dao === PREFERENCE) {
-            ({userId, message} = this.#handlePreference(element));
+            ({userId, message} = this[km_handlePreference](element));
         } else if (dao === API_KEY) {
-            ({userId, message} = this.#handleApiKey(eventName, element));
+            ({userId, message} = this[km_handleApiKey](eventName, element));
         }
         return {
             userId,
@@ -64,7 +70,7 @@ export class ClientEventHandler {
         };
     }
 
-    #handleLoginEvent(eventName, user) {
+    [km_handleLoginEvent](eventName, user) {
         let factory = getMessageFactory(this);
         let message, userId;
 
@@ -92,16 +98,16 @@ export class ClientEventHandler {
         switch (eventName) {
             case ELEMENT_CREATED:
             case ELEMENT_DELETED:
-                ({userId, message} = this.#handleDatabaseEvent(eventName, ...args));
+                ({userId, message} = this[km_handleDatabaseEvent](eventName, ...args));
                 break;
 
             case EVENT_USER_LOGIN:
             case EVENT_USER_LOGOUT:
-                ({userId, message} = this.#handleLoginEvent(eventName, ...args));
+                ({userId, message} = this[km_handleLoginEvent](eventName, ...args));
                 break;
         }
 
-        let client = await this.#getClientForUserId(userId);
+        let client = await this[km_getClientForUserId](userId);
         if (message && client) {
             try {
                 await client.send(message);

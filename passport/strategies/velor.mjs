@@ -14,33 +14,34 @@ function composeOnProfileReceivedAdapter(onProfileReceived) {
     };
 }
 
+const kp_strategy = Symbol();
+const kp_clientID = Symbol();
+const kp_clientSecret = Symbol();
+const kp_velorUrl = Symbol();
+
 export class VelorStrategy extends StrategyBase {
-    #strategy;
-    #clientID;
-    #clientSecret;
-    #velorUrl;
 
     constructor(passport, clientID, clientSecret, velorUrl = 'https://auth.velor.ca') {
         super(passport)
-        this.#clientID = clientID;
-        this.#clientSecret = clientSecret;
-        this.#velorUrl = velorUrl;
+        this[kp_clientID] = clientID;
+        this[kp_clientSecret] = clientSecret;
+        this[kp_velorUrl] = velorUrl;
     }
 
     async use() {
-        if (this.#strategy) return;
+        if (this[kp_strategy]) return;
 
         let config = await client.discovery(
-            new Url.URL(`${this.#velorUrl}/realms/${this.#clientID}/.well-known/openid-configuration`),
-            this.#clientID,
-            this.#clientSecret,
+            new Url.URL(`${this[kp_velorUrl]}/realms/${this[kp_clientID]}/.well-known/openid-configuration`),
+            this[kp_clientID],
+            this[kp_clientSecret],
             undefined,
         );
 
         let scope = 'openid email profile';
         let callbackURL = getFullHostUrls(this)[URL_PASSPORT_CALLBACK].replace(':provider', AUTH_OPENID);
 
-        this.#strategy = new Strategy(
+        this[kp_strategy] = new Strategy(
             {
                 config,
                 scope,
@@ -52,11 +53,11 @@ export class VelorStrategy extends StrategyBase {
             ),
         );
 
-        this.#strategy.currentUrl = req => {
+        this[kp_strategy].currentUrl = req => {
             return new URL(`${req.protocol}://${req.host}:${req.socket.localPort}${req.originalUrl ?? req.url}`);
         }
 
-        this.passport.use(AUTH_OPENID, this.#strategy);
+        this.passport.use(AUTH_OPENID, this[kp_strategy]);
     }
 
     initiate(req, res, next) {

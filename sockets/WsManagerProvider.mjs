@@ -1,11 +1,14 @@
+const kp_managers = Symbol();
+
 export class WsManagerProvider {
-    #managers = new Map();
+
 
     constructor(managers) {
+        this[kp_managers] = new Map();
     }
 
     add(path, manager) {
-        this.#managers.set(path, manager);
+        this[kp_managers].set(path, manager);
         return this;
     }
 
@@ -15,6 +18,6 @@ export class WsManagerProvider {
     }
 
     getFromPath(path) {
-        return this.#managers.get(path);
+        return this[kp_managers].get(path);
     }
 }

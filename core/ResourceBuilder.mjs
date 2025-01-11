@@ -10,15 +10,16 @@ import {composeGetMany} from "./resources/composeGetMany.mjs";
 import {composeDeleteOne} from "./resources/composeDeleteOne.mjs";
 import {composeCreate} from "./resources/composeCreate.mjs";
 
-export class ResourceBuilder {
+const kp_routerBuilder = Symbol();
+const kp_urlName = Symbol();
+const kp_getDao = Symbol();
+const kp_getItemData = Symbol();
+const kp_itemQueryMapper = Symbol();
+const kp_itemResponseMapper = Symbol();
+const kp_guard = Symbol();
+const km_getMapper = Symbol();
 
-    #routerBuilder;
-    #urlName;
-    #getDao;
-    #getItemData;
-    #itemQueryMapper;
-    #itemResponseMapper;
-    #guard;
+export class ResourceBuilder {
 
     constructor(configuration) {
 
@@ -31,63 +32,71 @@ export class ResourceBuilder {
             guard = proceed,
         } = configuration;
 
-        this.#getDao = daoProvider;
-        this.#urlName = urlName;
-        this.#itemQueryMapper = itemQueryMapper;
-        this.#itemResponseMapper = itemResponseMapper;
-        this.#getItemData = getItemData;
-        this.#guard = guard;
+        this[kp_getDao] = daoProvider;
+        this[kp_urlName] = urlName;
+        this[kp_itemQueryMapper] = itemQueryMapper;
+        this[kp_itemResponseMapper] = itemResponseMapper;
+        this[kp_getItemData] = getItemData;
+        this[kp_guard] = guard;
     }
 
     initialize() {
-        this.#routerBuilder = getRouterBuilder(this);
+        this[kp_routerBuilder] = getRouterBuilder(this);
     }
 
     use(middleware) {
-        this.#routerBuilder.use(middleware);
+        this[kp_routerBuilder].use(middleware);
         return this;
     }
 
-    getOne(options = {}) {
-        let getOne = composeGetOne(this.#getDao,
-            this.#itemQueryMapper, this.#itemResponseMapper);
+    [km_getMapper](type) {
+        let mapper = this[kp_itemResponseMapper];
+        if (typeof mapper === 'object') {
+            mapper = mapper[type] ?? mapper.default;
+        }
+        return mapper;
+    }
 
-        this.#routerBuilder
-            .name(getItemUrlName(this.#urlName))
-            .get(`/:${ITEM_PARAM}`, this.#guard, getOne);
+    getOne(options = {}) {
+        let getOne = composeGetOne(this[kp_getDao],
+            this[kp_itemQueryMapper], this[km_getMapper]('get'));
+
+        this[kp_routerBuilder]
+            .name(getItemUrlName(this[kp_urlName]))
+            .get(`/:${ITEM_PARAM}`, this[kp_guard], getOne);
 
         return this;
     }
 
     getMany(options = {}) {
-        let getMany = composeGetMany(this.#getDao,
-            this.#itemQueryMapper, this.#itemResponseMapper);
+        let getMany = composeGetMany(this[kp_getDao],
+            this[kp_itemQueryMapper], this[km_getMapper]('get'));
 
-        this.#routerBuilder
-            .name(this.#urlName)
-            .get('/', this.#guard, getMany);
+        this[kp_routerBuilder]
+            .name(this[kp_urlName])
+            .get('/', this[kp_guard], getMany);
 
         return this;
     }
 
     delete(options = {}) {
-        let deleteOne = composeDeleteOne(this.#getDao,
-            this.#itemQueryMapper, this.#itemResponseMapper);
+        let deleteOne = composeDeleteOne(this[kp_getDao],
+            this[kp_itemQueryMapper], this[km_getMapper]('delete'));
 
-        this.#routerBuilder
-            .name(getItemUrlName(this.#urlName))
-            .delete(`/:${ITEM_PARAM}`, this.#guard, deleteOne);
+        this[kp_routerBuilder]
+            .name(getItemUrlName(this[kp_urlName]))
+            .delete(`/:${ITEM_PARAM}`, this[kp_guard], deleteOne);
 
         return this;
     }
 
     create(options = {}) {
-        let create = composeCreate(this.#getDao,
-            this.#getItemData, this.#itemResponseMapper);
+        let create = composeCreate(this[kp_getDao],
+            this[kp_getItemData], this[km_getMapper]('create'));
 
-        this.#routerBuilder
-            .name(this.#urlName)
-            .post('/', this.#guard, create);
+        this[kp_routerBuilder]
+            .name(this[kp_urlName])
+            .post('/', this[kp_guard], create);
 
         return this;
     }
@@ -100,7 +109,7 @@ export class ResourceBuilder {
     }
 
     done() {
-        return this.#routerBuilder.done();
+        return this[kp_routerBuilder].done();
     }
 
 }

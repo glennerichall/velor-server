@@ -7,6 +7,9 @@ import {getMessageBuilder} from "velor-distribution/application/services/service
 import {WsConnection} from "./WsConnection.mjs";
 import {WebSocketServer} from "ws";
 
+const kp_server = Symbol();
+const kp_clients = Symbol();
+
 export function WsManagerPolicy(policy = {}) {
 
     const {
@@ -17,25 +20,23 @@ export function WsManagerPolicy(policy = {}) {
     } = policy;
 
     return class extends Emitter {
-        #server;
-        #clients;
 
         constructor() {
             super();
-            this.#server = null;
-            this.#clients = new Map();
+            this[kp_server] = null;
+            this[kp_clients] = new Map();
         }
 
         get isOpened() {
-            return this.#server !== null;
+            return this[kp_server] !== null;
         }
 
         get clients() {
-            return [...this.#clients.values()];
+            return [...this[kp_clients].values()];
         }
 
         handleUpgrade(request, wsSocket, head) {
-            if (this.#server) {
+            if (this[kp_server]) {
                 // Set a cookie in the upgrade response
                 const setCookieHeader = `Set-Cookie: myCookie=myValue; Path=/; HttpOnly`;
 
@@ -47,15 +48,15 @@ export function WsManagerPolicy(policy = {}) {
                     `\r\n`
                 );
 
-                this.#server.handleUpgrade(request, wsSocket, head,
+                this[kp_server].handleUpgrade(request, wsSocket, head,
                     (wsClient) => {
-                        this.#server.emit('connection', wsClient, request);
+                        this[kp_server].emit('connection', wsClient, request);
                     });
             }
         }
 
         getClient(id) {
-            return this.#clients.get(id);
+            return this[kp_clients].get(id);
         }
 
         onClientConnected(ws, req, client) {
@@ -68,7 +69,7 @@ export function WsManagerPolicy(policy = {}) {
         }
 
         verifyClient(request, wsSocket, head) {
-            return this.#server !== null && verifyClient(this, request, wsSocket, head);
+            return this[kp_server] !== null && verifyClient(this, request, wsSocket, head);
         }
 
         unpackMessage(wsClient, data) {
@@ -109,7 +110,7 @@ export function WsManagerPolicy(policy = {}) {
         }
 
         count() {
-            return this.#clients.size;
+            return this[kp_clients].size;
         }
 
         appendClient(wsClient) {
@@ -123,18 +124,18 @@ export function WsManagerPolicy(policy = {}) {
             ws.on('error', (err) => getLogger(this).error(err.message));
 
             ws.on('close', () => {
-                this.#clients.delete(wsClient.id);
+                this[kp_clients].delete(wsClient.id);
                 super.emit('disconnection', wsClient);
             });
-            this.#clients.set(wsClient.id, wsClient);
+            this[kp_clients].set(wsClient.id, wsClient);
         }
 
         open() {
-            if (this.#server) return;
+            if (this[kp_server]) return;
 
-            this.#server = createWsServer();
+            this[kp_server] = createWsServer();
 
-            this.#server.on('connection', (ws, req) => {
+            this[kp_server].on('connection', (ws, req) => {
                 ws.on('close', () => ws.terminate());
 
                 let client = createWsClient(ws, req);
@@ -142,21 +143,21 @@ export function WsManagerPolicy(policy = {}) {
                 this.onClientConnected(ws, req, client);
             });
 
-            this.#server.on('error', (...args) => getLogger(this).error(args));
+            this[kp_server].on('error', (...args) => getLogger(this).error(args));
 
-            monitorServer(this.#server);
+            monitorServer(this[kp_server]);
         }
 
         async close() {
             if (!this.isOpened) return;
 
-            for (let [_, client] of this.#clients) {
+            for (let [_, client] of this[kp_clients]) {
                 client.close();
             }
 
-            this.#clients.clear();
-            this.#server.close();
-            this.#server = null;
+            this[kp_clients].clear();
+            this[kp_server].close();
+            this[kp_server] = null;
         }
     };
 }

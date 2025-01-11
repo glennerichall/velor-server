@@ -1,14 +1,15 @@
 import {WsConnection} from "../core/WsConnection.mjs";
 import {getLogger} from "velor-services/application/services/services.mjs";
 
+const kp_sessionId = Symbol();
+const kp_userId = Symbol();
+
 export class WsUserConnection extends WsConnection {
-    #sessionId;
-    #userId;
 
     constructor(sessionId, userId, ...args) {
         super(...args);
-        this.#sessionId = sessionId;
-        this.#userId = userId;
+        this[kp_sessionId] = sessionId;
+        this[kp_userId] = userId;
     }
 
     get isLoggedIn() {
@@ -16,16 +17,16 @@ export class WsUserConnection extends WsConnection {
     }
 
     get sessionId() {
-        return this.#sessionId;
+        return this[kp_sessionId];
     }
 
     get userId() {
-        return this.#userId;
+        return this[kp_userId];
     }
 
     setUserId(userId) {
         getLogger(this).debug(`Setting user's id in session[${this.sessionId}] to --> ` + userId)
-        this.#userId = userId;
+        this[kp_userId] = userId;
     }
 
     getInfo() {

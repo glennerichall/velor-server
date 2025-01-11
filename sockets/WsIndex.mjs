@@ -5,38 +5,40 @@ import {getServiceBinder} from "velor/utils/injection/ServicesContext.mjs";
 const WS_CLIENT_INDEX = "websockets.clients";
 const WS_PRINTER_INDEX = "websockets.printers";
 
+const kp_clients = Symbol();
+const kp_printers = Symbol();
+
 export class WsIndex {
 
-    #clients;
-    #printers;
+
 
     initialize() {
         let keyStore = getKeyStore(this);
-        this.#clients = getServiceBinder(this).createInstance(ClientIndex, WS_CLIENT_INDEX, keyStore);
-        this.#printers = getServiceBinder(this).createInstance(ClientIndex, WS_PRINTER_INDEX, keyStore);
+        this[kp_clients] = getServiceBinder(this).createInstance(ClientIndex, WS_CLIENT_INDEX, keyStore);
+        this[kp_printers] = getServiceBinder(this).createInstance(ClientIndex, WS_PRINTER_INDEX, keyStore);
     }
 
     addClient(transport) {
-        return this.#clients.add(transport);
+        return this[kp_clients].add(transport);
     }
 
     removeClient(...transports) {
-        return this.#clients.remove(...transports);
+        return this[kp_clients].remove(...transports);
     }
 
     addPrinter(transport) {
-        return this.#printers.add(transport);
+        return this[kp_printers].add(transport);
     }
 
     removePrinter(...transports) {
-        return this.#printers.remove(...transports);
+        return this[kp_printers].remove(...transports);
     }
 
     getClients() {
-        return this.#clients.getAll();
+        return this[kp_clients].getAll();
     }
 
     getPrinters() {
-        return this.#printers.getAll();
+        return this[kp_printers].getAll();
     }
 }

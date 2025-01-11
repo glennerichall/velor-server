@@ -1,12 +1,14 @@
+const kp_passport = Symbol();
+
 export class StrategyBase {
-    #passport;
+
 
     constructor(passport) {
-        this.#passport = passport;
+        this[kp_passport] = passport;
     }
 
     get passport() {
-        return this.#passport;
+        return this[kp_passport];
     }
 
     use() {

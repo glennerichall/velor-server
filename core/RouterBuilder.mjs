@@ -1,6 +1,8 @@
 import express from "express";
 import {tryCatchAsyncHandler as defaultTryCatchAsyncHandler} from "./tryCatchAsyncHandler.mjs";
 
+const kp_router = Symbol();
+const kp_name = Symbol();
 
 export const routerBuilderPolicy = ({
                                         tryCatchAsyncHandler = defaultTryCatchAsyncHandler,
@@ -12,62 +14,60 @@ export const routerBuilderPolicy = ({
 
     return class RouterBuilder {
 
-        #router;
-        #name;
-
         constructor(router) {
-            this.#router = router ?? newRouter();
-            this.#name = null;
+            if (!router) router = newRouter();
+            this[kp_router] = {router};
+            this[kp_name] = null;
         }
 
         use(path, ...handlers) {
             if (typeof path === 'function') {
-                this.#router.use(tryCatchAsyncHandler(path), ...tryCatchAsyncHandler(handlers, this.#name));
+                this[kp_router].router.use(tryCatchAsyncHandler(path), ...tryCatchAsyncHandler(handlers, this[kp_name]));
             } else {
-                this.#router.use(path, ...tryCatchAsyncHandler(handlers, this.#name));
+                this[kp_router].router.use(path, ...tryCatchAsyncHandler(handlers, this[kp_name]));
             }
-            this.#name = null;
+            this[kp_name] = null;
             return this;
         }
 
         all(path, ...handlers) {
-            this.#router.all(path, ...tryCatchAsyncHandler(handlers, this.#name));
-            this.#name = null;
+            this[kp_router].router.all(path, ...tryCatchAsyncHandler(handlers, this[kp_name]));
+            this[kp_name] = null;
             return this;
         }
 
         get(path, ...handlers) {
-            this.#router.get(path, ...tryCatchAsyncHandler(handlers, this.#name));
-            this.#name = null;
+            this[kp_router].router.get(path, ...tryCatchAsyncHandler(handlers, this[kp_name]));
+            this[kp_name] = null;
             return this;
         }
 
         post(path, ...handlers) {
-            this.#router.post(path, ...tryCatchAsyncHandler(handlers, this.#name));
-            this.#name = null;
+            this[kp_router].router.post(path, ...tryCatchAsyncHandler(handlers, this[kp_name]));
+            this[kp_name] = null;
             return this;
         }
 
         put(path, ...handlers) {
-            this.#router.put(path, ...tryCatchAsyncHandler(handlers, this.#name));
-            this.#name = null;
+            this[kp_router].router.put(path, ...tryCatchAsyncHandler(handlers, this[kp_name]));
+            this[kp_name] = null;
             return this;
         }
 
         delete(path, ...handlers) {
-            this.#router.delete(path, ...tryCatchAsyncHandler(handlers, this.#name));
-            this.#name = null;
+            this[kp_router].router.delete(path, ...tryCatchAsyncHandler(handlers, this[kp_name]));
+            this[kp_name] = null;
             return this;
         }
 
         options(path, ...handlers) {
-            this.#router.options(path, ...tryCatchAsyncHandler(handlers));
-            this.#name = null;
+            this[kp_router].router.options(path, ...tryCatchAsyncHandler(handlers));
+            this[kp_name] = null;
             return this;
         }
 
         name(name) {
-            this.#name = name;
+            this[kp_name] = name;
             return this;
         }
 
@@ -113,7 +113,7 @@ export const routerBuilderPolicy = ({
         }
 
         done() {
-            return this.#router;
+            return this[kp_router].router;
         }
     }
 }

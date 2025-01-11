@@ -5,40 +5,43 @@ export class FrameRateLimiterError extends Error {
     }
 }
 
+const kp_streams = Symbol();
+const kp_cleanUpTimer = Symbol();
+const kp_configs = Symbol();
+const km_calculateIntrinsicRate = Symbol();
+
 export class FrameRateLimiter {
-    #streams;
-    #cleanUpTimer;
-    #configs;
+
 
     constructor(configs = {}) {
-        this.#configs = {
+        this[kp_configs] = {
             cleanup: 1000 * 60 * 10, // 10 minutes
             maxRate: 6, //6fps
             ...configs
         };
-        this.#streams = new Map();
+        this[kp_streams] = new Map();
         const {
             cleanup
-        } = this.#configs;
-        this.#cleanUpTimer = setInterval(() => this.cleanUp(), cleanup);
+        } = this[kp_configs];
+        this[kp_cleanUpTimer] = setInterval(() => this.cleanUp(), cleanup);
     }
 
     cleanUp() {
         const {
             cleanup
-        } = this.#configs;
+        } = this[kp_configs];
         const cleanUpTime = Date.now() - cleanup;
-        for (let [key, streamInfo] of this.#streams) {
+        for (let [key, streamInfo] of this[kp_streams]) {
             if (streamInfo.lastFrameTime < cleanUpTime) {
                 // If last frame time is more than 10 minutes ago, delete the stream
-                this.#streams.delete(key);
+                this[kp_streams].delete(key);
             }
         }
     }
 
     // Sets or updates the max rate for a specific key (client)
     setMaxRate(key, maxRatePerSecond) {
-        let streamInfo = this.#streams.get(key);
+        let streamInfo = this[kp_streams].get(key);
         if (!streamInfo) {
             // Initialize stream info if it doesn't exist
             streamInfo = {
@@ -51,19 +54,19 @@ export class FrameRateLimiter {
             // Update max rate for existing stream
             streamInfo.maxRate = maxRatePerSecond;
         }
-        this.#streams.set(key, streamInfo);
+        this[kp_streams].set(key, streamInfo);
     }
 
     async consume(key, points) {
         const currentTime = new Date().getTime();
-        let streamInfo = this.#streams.get(key);
+        let streamInfo = this[kp_streams].get(key);
 
         if (!streamInfo) {
             let {
                 maxRate
-            } = this.#configs;
+            } = this[kp_configs];
             this.setMaxRate(key, maxRate);
-            streamInfo = this.#streams.get(key);
+            streamInfo = this[kp_streams].get(key);
         }
 
         const elapsedTime = currentTime - streamInfo.lastFrameTime;
@@ -74,16 +77,16 @@ export class FrameRateLimiter {
         if (elapsedTime >= desiredInterval || streamInfo.frameCount === 0) {
             // If enough time has passed since the last frame, or if it's the first frame
             streamInfo.frameCount++;
-            this.#calculateIntrinsicRate(key, currentTime);
+            this[km_calculateIntrinsicRate](key, currentTime);
             streamInfo.lastFrameTime = currentTime;
-            this.#streams.set(key, streamInfo);
+            this[kp_streams].set(key, streamInfo);
         } else {
             throw new FrameRateLimiterError(streamInfo);
         }
     }
 
-    #calculateIntrinsicRate(key, currentTime) {
-        const streamInfo = this.#streams.get(key);
+    [km_calculateIntrinsicRate](key, currentTime) {
+        const streamInfo = this[kp_streams].get(key);
         const durationInSeconds = (currentTime - streamInfo.lastFrameTime) / 1000;
         if (durationInSeconds > 0 && streamInfo.frameCount > 1) {
             streamInfo.intrinsicRate = streamInfo.frameCount / durationInSeconds;
@@ -91,7 +94,7 @@ export class FrameRateLimiter {
     }
 
     getIntrinsicRate(key) {
-        const streamInfo = this.#streams.get(key);
+        const streamInfo = this[kp_streams].get(key);
         if (streamInfo) {
             return streamInfo.intrinsicRate;
         }
@@ -99,10 +102,10 @@ export class FrameRateLimiter {
     }
 
     dispose() {
-        if (this.#cleanUpTimer) {
-            clearInterval(this.#cleanUpTimer);
-            this.#cleanUpTimer = null;
+        if (this[kp_cleanUpTimer]) {
+            clearInterval(this[kp_cleanUpTimer]);
+            this[kp_cleanUpTimer] = null;
         }
-        this.#streams.clear();
+        this[kp_streams].clear();
     }
 }

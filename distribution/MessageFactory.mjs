@@ -20,20 +20,22 @@ import {
 } from "velor-contrib/contrib/events.mjs";
 import {eventNames} from "velor-contrib/contrib/eventNames.mjs";
 
+const kp_builder = Symbol();
+
 export class MessageFactory {
-    #builder;
+
 
     constructor(builder) {
-        this.#builder = builder;
+        this[kp_builder] = builder;
     }
 
     emitEvent(event, data) {
         getLogger(this).debug(`Creating new event ${eventNames[event]}`);
-        return this.#builder.newEvent(event, data);
+        return this[kp_builder].newEvent(event, data);
     }
 
     invokeRpc(command, data) {
-        return this.#builder.newCommand(command, data);
+        return this[kp_builder].newCommand(command, data);
     }
 
     systemStatusChanged() {

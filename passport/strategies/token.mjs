@@ -43,29 +43,29 @@ function composeInitiator(passport) {
     );
 }
 
-export class TokenStrategy extends StrategyBase {
+const kp_strategy = Symbol();
+const kp_initiator = Symbol();
+const kp_token = Symbol();
 
-    #strategy;
-    #initiator;
-    #token;
+export class TokenStrategy extends StrategyBase {
 
     constructor(passport, token) {
         super(passport);
-        this.#token = token;
-        this.#initiator = composeInitiator(passport);
+        this[kp_token] = token;
+        this[kp_initiator] = composeInitiator(passport);
     }
 
     initialize() {
-        this.#strategy = new Custom.Strategy(
+        this[kp_strategy] = new Custom.Strategy(
             composeOnProfileReceivedTokenAdapter(
                 composeOnProfileReceived(AUTH_TOKEN),
-                this.#token
+                this[kp_token]
             )
         );
-        this.passport.use(AUTH_TOKEN, this.#strategy);
+        this.passport.use(AUTH_TOKEN, this[kp_strategy]);
     }
 
     initiate(req, res, next) {
-        return this.#initiator(req, res, next);
+        return this[kp_initiator](req, res, next);
     }
 }

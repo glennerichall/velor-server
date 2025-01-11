@@ -1,6 +1,9 @@
-import {makeRequestScope} from "../../core/makeRequestScope.mjs";
+import {getServiceBinder} from "velor-services/injection/ServicesContext.mjs";
+import {composeRequestScope} from "../../routes/composeRequestScope.mjs";
 
 export function composeConformRequest(services) {
+
+    const requestScope = composeRequestScope(services);
 
     return (req, res, next) => {
         const forwardedFor = req.headers['x-forwarded-for'];
@@ -12,8 +15,6 @@ export function composeConformRequest(services) {
         // api from websocket are not patched with custom properties
         // when bootstrapped. Inject the services into the request so
         // authentication can be done.
-        makeRequestScope(services, req);
-
-        next();
+        requestScope(req, res, next);
     };
 }

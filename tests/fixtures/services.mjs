@@ -18,7 +18,6 @@ import {s_mailerTransport} from "../../application/services/serviceKeys.mjs";
 import {mailerTransport} from "./mailerTransport.mjs";
 import {s_clientProvider} from "velor-distribution/application/services/serviceKeys.mjs";
 import {ClientTrackerPubSub} from "velor-distribution/distribution/ClientTrackerPubSub.mjs";
-import {LOG_LEVEL} from "velor-distribution/application/services/envKeys.mjs";
 import {s_logger} from "velor-services/application/services/serviceKeys.mjs";
 import {getEventQueue} from "velor-services/application/services/services.mjs";
 import {
@@ -30,7 +29,6 @@ import {getDatabase} from "velor-database/application/services/services.mjs";
 import {s_database} from "velor-database/application/services/serviceKeys.mjs";
 import {getRoleDAO} from "velor-dbuser/application/services/services.mjs";
 import {createLoggerInstance} from "velor-distribution/application/factories/createLoggerInstance.mjs";
-import {noOp} from "velor-utils/utils/functional.mjs";
 
 export const services =
     async ({databaseServicesOptions}, use) => {
@@ -43,7 +41,6 @@ export const services =
                     [s_logger]: process.env.LOG_LEVEL !== null ? createLoggerInstance : ()=> noOpLogger,
                     [s_mailerTransport]: () => mailerTransport,
                     [s_clientProvider]: ClientTrackerPubSub,
-                    // [s_database]:
                 },
                 env: {
                     ...databaseServicesOptions.env,
