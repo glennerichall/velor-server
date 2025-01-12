@@ -6,13 +6,14 @@ import os from "os";
 import {StrategyBase} from "./StrategyBase.mjs";
 import {login} from "../handlers/login.mjs";
 
-function composeOnProfileReceivedTokenAdapter(onProfileReceived, token) {
+function composeOnProfileReceivedTokenAdapter(onProfileReceived, tokens) {
     return (req, done) => {
-        if (req.get('Authorization') === token) {
+        let idx = tokens.indexOf(req.get('Authorization'));
+        if (idx >= 0) {
             const currentUser = os.userInfo().username;
 
             onProfileReceived(req, null, null, {
-                id: 'Token',
+                id: `token_${idx}`,
                 email: 'zupfe@velor.ca',
                 displayName: currentUser,
             }, done);
@@ -45,13 +46,13 @@ function composeInitiator(passport) {
 
 const kp_strategy = Symbol();
 const kp_initiator = Symbol();
-const kp_token = Symbol();
+const kp_tokens = Symbol();
 
 export class TokenStrategy extends StrategyBase {
 
-    constructor(passport, token) {
+    constructor(passport, tokens) {
         super(passport);
-        this[kp_token] = token;
+        this[kp_tokens] = tokens;
         this[kp_initiator] = composeInitiator(passport);
     }
 
@@ -59,7 +60,7 @@ export class TokenStrategy extends StrategyBase {
         this[kp_strategy] = new Custom.Strategy(
             composeOnProfileReceivedTokenAdapter(
                 composeOnProfileReceived(AUTH_TOKEN),
-                this[kp_token]
+                this[kp_tokens]
             )
         );
         this.passport.use(AUTH_TOKEN, this[kp_strategy]);

@@ -26,7 +26,7 @@ export function createStrategies(services, providers) {
         strategies[AUTH_TOKEN] =
             getServiceBinder(services).createInstance(TokenStrategy,
                 passport,
-                token.token);
+                token.tokens);
     }
 
     const userSerializer = getUserSerializer(services);

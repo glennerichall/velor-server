@@ -15,11 +15,16 @@ import {
     s_requestStore,
     s_urlProvider
 } from "velor-api/api/application/services/serviceKeys.mjs";
-import {getProvider} from "velor-services/application/services/baseServices.mjs";
+import {
+    getEnvValueArray,
+    getEnvValues,
+    getProvider
+} from "velor-services/application/services/baseServices.mjs";
 import {MapArray} from "velor-utils/utils/map.mjs";
 import {getFullHostUrls} from "../../application/services/constants.mjs";
 import {ApiKeyApi} from "velor-contrib/api/ApiKeyApi.mjs";
 import {doNotThrowOnStatusRule} from "velor-api/api/ops/rules.mjs";
+import {AUTH_TOKEN_SECRETS} from "../../application/services/envKeys.mjs";
 
 export const api =
     async ({services, request, rest}, use) => {
@@ -100,8 +105,11 @@ export const api =
                 doNotThrowOnStatusRule(400, 404, 403, 401));
         }
 
+        const loginWithToken = composeLoginWithToken(services, request);
         await use({
-            loginWithToken: composeLoginWithToken(services, request),
+            loginWithToken,
+            loginWithFirstToken: ()=> loginWithToken({token:getEnvValueArray(services, AUTH_TOKEN_SECRETS)[0]}),
+            loginWithSecondToken: ()=> loginWithToken({token:getEnvValueArray(services, AUTH_TOKEN_SECRETS)[1]}),
             initiateLoginWithOpenId: composeInitiateLoginWithOpenId(services, request, rest),
             getCsrfToken: composeGetCsrfToken(services, request),
             logout: composeLogout(services, request),

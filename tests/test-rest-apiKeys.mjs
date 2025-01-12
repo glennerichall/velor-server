@@ -8,10 +8,11 @@ import {
     getApiKeyDAO,
     getUserDAO
 } from "velor-dbuser/application/services/services.mjs";
-import {userTest} from "./contrib/userTest.mjs";
+import {userTest0} from "./contrib/userTest0.mjs";
 import {getInstanceBinder} from "velor-services/injection/ServicesContext.mjs";
 import {s_eventHandler} from "../application/services/serviceKeys.mjs";
 import sinon from "sinon";
+import {api} from "./fixtures/api.mjs";
 
 const {test, expect, beforeEach} = setupTestContext();
 
@@ -45,7 +46,7 @@ test.describe('rest-api', function () {
             expect(response.body.value).to.match(uuidPattern);
 
             let apiKey = await getUserDAO(services)
-                .loadOne({userTest, publicId: response.body.id});
+                .loadOne({userTest: userTest0, publicId: response.body.id});
 
             let date = new Date(response.body.creation);
             let now = new Date();
@@ -66,18 +67,18 @@ test.describe('rest-api', function () {
                 .expect(401);
         })
 
-        // test('should not create api key if not authorized', async () => {
-        //     const {context} = await api.loginWithToken();
-        //
-        //     await database.users.revokeUserRole('DevOps', 'dev.token', 'god');
-        //     await context
-        //         .newSession()
-        //         .login()
-        //         .request()
-        //         .post(urls[URL_API_KEYS])
-        //         .send({name: 'toto key'})
-        //         .expect(403);
-        // })
+        test.skip('should not create api key if not authorized', async () => {
+            const {context} = await api.loginWithToken();
+
+            // await database.users.revokeUserRole('DevOps', 'dev.token', 'god');
+            // await context
+            //     .newSession()
+            //     .login()
+            //     .request()
+            //     .post(urls[URL_API_KEYS])
+            //     .send({name: 'toto key'})
+            //     .expect(403);
+        })
 
         test('should get api key info', async ({api, request, services}) => {
             const {context} = await api.loginWithToken();
@@ -111,7 +112,7 @@ test.describe('rest-api', function () {
                 api.apiKeys(context).create({name: 'tototo key'})
             );
             const apiKeyId = apiKey.id;
-            await getUserDAO(services).loseApiKey(userTest, {publicId: apiKeyId});
+            await getUserDAO(services).loseApiKey(userTest0, {publicId: apiKeyId});
             let response = await api.apiKeys(context).getOne(apiKeyId);
             expect(response.status).to.eq(404);
         })
@@ -156,8 +157,8 @@ test.describe('rest-api', function () {
 
         })
 
-        test('should not delete not owned key', async ({api, services}) => {
-            const {context} = await api.loginWithToken();
+        test('should not delete api key if not logged in', async ({api, services}) => {
+            let {context} = await api.loginWithToken();
             let apiKey = await getDataFromResponse(
                 api.apiKeys(context).create({name: 'tototo key'})
             );
@@ -167,55 +168,32 @@ test.describe('rest-api', function () {
             let loaded = await getApiKeyDAO(services).loadOne(apiKey);
             expect(loaded).to.not.be.undefined;
 
-            let response = await api.apiKeys().delete(apiKeyId);
-
-            expect(response).to.have.property('status', 404);
+            ({context} = await api.getCsrfToken());
+            let response = await api.apiKeys(context).delete(apiKeyId);
+            expect(response).to.have.property('status', 401);
 
             loaded = await getApiKeyDAO(services).loadOne(apiKey);
             expect(loaded).to.not.be.undefined;
         })
 
-        // test('should not delete api key if not logged in', async () => {
-        //     let response = await context
-        //         .newSession()
-        //         .login()
-        //         .request()
-        //         .post(urls[URL_API_KEYS])
-        //         .send({name: 'tototo key'})
-        //         .expect(201);
-        //
-        //     const apiKey = response.body.value;
-        //     const apiKeyId = response.body.id;
-        //     await context
-        //         .newSession()
-        //         .request()
-        //         .delete(urls[URL_API_KEY].replace(':key', apiKeyId))
-        //         .expect(401);
-        // })
-        //
-        // test('should notify user when api key deleted', async () => {
-        //     const session = await context
-        //         .newSession()
-        //         .login();
-        //
-        //     const response = await session
-        //         .request()
-        //         .post(urls[URL_API_KEYS])
-        //         .send({name: 'tototo key'})
-        //         .expect(201);
-        //
-        //     const apiKey = response.body.value;
-        //     const apiKeyId = response.body.id;
-        //
-        //     await session
-        //         .request()
-        //         .delete(urls[URL_API_KEY].replace(':key', apiKeyId))
-        //         .expect(200);
-        //
-        //     const message = await session.dequeMessage();
-        //     expect(message.isEvent).to.be.true;
-        //     expect(message.event === EVENT_APIKEY_DELETED);
-        // })
+        test('should not delete not owned key', async ({api, services}) => {
+            let {context} = await api.loginWithFirstToken();
+            let apiKey = await getDataFromResponse(
+                api.apiKeys(context).create({name: 'tototo key'})
+            );
+
+            const apiKeyId = apiKey.id;
+
+            let loaded = await getApiKeyDAO(services).loadOne(apiKey);
+            expect(loaded).to.not.be.undefined;
+
+            ({context} = await api.loginWithSecondToken());
+            let response = await api.apiKeys(context).delete(apiKeyId);
+            expect(response).to.have.property('status', 404);
+
+            loaded = await getApiKeyDAO(services).loadOne(apiKey);
+            expect(loaded).to.not.be.undefined;
+        })
     })
 
 })

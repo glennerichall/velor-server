@@ -4,13 +4,15 @@ import {
 } from "velor-contrib/contrib/authProviders.mjs";
 import {
     getEnvValue,
+    getEnvValueArray,
+    getEnvValues,
     isProduction,
     isStaging
 } from "velor-services/application/services/baseServices.mjs";
 import {
     AUTH_OPENID_CLIENT_ID,
     AUTH_OPENID_CLIENT_SECRET,
-    AUTH_TOKEN_SECRET
+    AUTH_TOKEN_SECRETS
 } from "../application/services/envKeys.mjs";
 
 export function getAuthProvidersConfigs(services) {
@@ -18,9 +20,9 @@ export function getAuthProvidersConfigs(services) {
     let providers = {};
 
     if (!isProduction(services) || !isStaging(services)) {
-        const token = getEnvValue(services, AUTH_TOKEN_SECRET);
-        if (token) {
-            providers[AUTH_TOKEN] = {token};
+        const tokens = getEnvValueArray(services, AUTH_TOKEN_SECRETS);
+        if (tokens) {
+            providers[AUTH_TOKEN] = {tokens};
         }
     }
 

@@ -12,6 +12,7 @@ import {
 import {getUserDAO} from "velor-dbuser/application/services/services.mjs";
 import {getEventQueue} from "velor-services/application/services/services.mjs";
 import {getFullHostUrls} from "../application/services/constants.mjs";
+import {userTest0} from "./contrib/userTest0.mjs";
 
 const {
     expect,
@@ -43,10 +44,7 @@ describe('login with token', function () {
         test('should have normal role', async ({services, api}) => {
             let {context} = await api.getCsrfToken();
             await api.loginWithToken({context}).expect(302);
-            const roles = await getUserDAO(services).getRoles({
-                profileId: 'Token',
-                provider: AUTH_TOKEN
-            });
+            const roles = await getUserDAO(services).getRoles(userTest0);
             expect(roles).to.have.length(1);
             expect(roles[0].name).to.eq('normal');
         })
@@ -78,10 +76,7 @@ describe('login with token', function () {
             await api.loginWithToken();
             let [user] = await getEventQueue(services).waitDequeue(EVENT_USER_LOGIN);
 
-            let saved = await getUserDAO(services).loadOne({
-                profileId: 'Token',
-                provider: AUTH_TOKEN
-            });
+            let saved = await getUserDAO(services).loadOne(userTest0);
 
             expect(user).to.deep.eq(saved);
         })
@@ -123,10 +118,7 @@ describe('login with token', function () {
 
             let [user] = await getEventQueue(services).waitDequeue(EVENT_USER_LOGOUT);
 
-            let saved = await getUserDAO(services).loadOne({
-                profileId: 'Token',
-                provider: AUTH_TOKEN
-            });
+            let saved = await getUserDAO(services).loadOne(userTest0);
 
             expect(user).to.have.property("id");
             expect(user).to.have.property("primaryAuthId");

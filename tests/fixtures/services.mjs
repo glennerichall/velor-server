@@ -1,7 +1,7 @@
 import {mergeDefaultServerOptions} from "../../application/services/mergeDefaultServerOptions.mjs";
 import {
     AUTH_EMAIL_USER,
-    AUTH_TOKEN_SECRET,
+    AUTH_TOKEN_SECRETS,
     COOKIE_SECRETS,
     CSRF_SECRETS,
     SESSION_SECRETS,
@@ -45,7 +45,7 @@ export const services =
                 env: {
                     ...databaseServicesOptions.env,
                     [CSRF_SECRETS]: 'double-submit-csrf-secret1;double-submit-csrf-secret2',
-                    [AUTH_TOKEN_SECRET]: 'a-secret-token',
+                    [AUTH_TOKEN_SECRETS]: 'secret-token1;secret-token2;secret-token3',
                     [AUTH_EMAIL_USER]: 'zupfe@velor.ca',
                     [SESSION_SECRETS]: 'session-secret-1;session-secret-2;session-secret-3',
                     [COOKIE_SECRETS]: 'cookie-secret-1;cookie-secret-2;cookie-secret-3',
