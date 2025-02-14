@@ -8,10 +8,12 @@ import {servicesOptions} from 'velor-dbuser/tests/fixtures/servicesOptions.mjs';
 import {databaseConnectionPool} from 'velor-dbuser/tests/fixtures/databaseConnectionPool.mjs';
 import {configs} from 'velor-dbuser/tests/fixtures/configs.mjs';
 import {database} from 'velor-dbuser/tests/fixtures/database.mjs';
+import {assets} from "./assets.mjs";
 
 export function setupTestContext() {
     return setupTest({
         services,
+        assets,
         request,
         rest,
         api,

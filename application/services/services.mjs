@@ -2,6 +2,8 @@ import {getProvider} from "velor-services/application/services/baseServices.mjs"
 import {
     s_eventHandler,
     s_expressApp,
+    s_fileManager,
+    s_fileStore,
     s_mailer,
     s_messageFactory,
     s_rateLimiter,
@@ -55,4 +57,12 @@ export function getResourceBuilder(services, configs) {
 
 export function getEventHandler(services) {
     return getProvider(services)[s_eventHandler]();
+}
+
+export function getFileManager(services) {
+    return getProvider(services)[s_fileManager]();
+}
+
+export function getFileStore(services) {
+    return getProvider(services)[s_fileStore]();
 }

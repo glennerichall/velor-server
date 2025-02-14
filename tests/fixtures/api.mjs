@@ -17,7 +17,6 @@ import {
 } from "velor-api/api/application/services/serviceKeys.mjs";
 import {
     getEnvValueArray,
-    getEnvValues,
     getProvider
 } from "velor-services/application/services/baseServices.mjs";
 import {MapArray} from "velor-utils/utils/map.mjs";

@@ -2,6 +2,8 @@ import {
     s_clientEventHandler,
     s_eventHandler,
     s_expressApp,
+    s_fileManager,
+    s_fileStore,
     s_loginEventHandler,
     s_mailer,
     s_mailerTransport,
@@ -24,8 +26,7 @@ import {ClientProviderPubSub} from "velor-distribution/distribution/ClientProvid
 import {createWsUserConnectionManagerInstance} from "../factories/createWsUserConnectionManagerInstance.mjs";
 import {WsManagerProvider} from "../../sockets/WsManagerProvider.mjs";
 import {
-    SCOPE_PROTOTYPE,
-    SCOPE_REQUEST
+    SCOPE_PROTOTYPE
 } from "velor-services/injection/ServicesContext.mjs";
 import {RateLimiterMemory} from "rate-limiter-flexible";
 import {createRouterBuilder} from "../../core/RouterBuilder.mjs";
@@ -34,6 +35,8 @@ import {createMessageFactoryInstance} from "../factories/createMessageFactoryIns
 import {EventHandler} from "../../events/EventHandler.mjs";
 import {LoginHandler} from "../../events/LoginHandler.mjs";
 import {ClientEventHandler} from "../../events/ClientEventHandler.mjs";
+import {FileManager} from "../../files/FileManager.mjs";
+import {createFileStoreInstance} from "../factories/createFileStoreInstance.mjs";
 
 export const factories = {
 
@@ -52,6 +55,9 @@ export const factories = {
     [s_eventHandler]: EventHandler,
     [s_loginEventHandler]: LoginHandler,
     [s_clientEventHandler]: ClientEventHandler,
+    [s_fileManager]: FileManager,
+    [s_fileStore]: createFileStoreInstance,
+
 
     // Prototypes
 

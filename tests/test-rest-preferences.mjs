@@ -2,7 +2,6 @@ import {setupTestContext} from "./fixtures/setupTestContext.mjs";
 import {URL_PREFERENCES} from "velor-contrib/contrib/urls.mjs";
 import {getDataFromResponse} from "velor-api/api/ops/getDataFromResponse.mjs";
 
-import {AUTH_TOKEN} from "velor-contrib/contrib/authProviders.mjs";
 import {
     getPreferenceDAO,
     getUserDAO
@@ -123,13 +122,12 @@ describe('Preferences', () => {
         expect(response.status).to.eq(401);
     })
 
-    it.fail('should get default preferences', async({api, services}) => {
+    it('should get default preferences', async({api, services}) => {
         let {context} = await api.loginWithToken();
 
         let response = await api.resources(context)
             .for(URL_PREFERENCES)
             .withRule(doNotThrowOnStatusRule(404))
             .delete('preference-name').send();
-
     })
 })
